@@ -348,3 +348,20 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+## Include everything in these folders:
+## Project Specific Exceptions:
+!Source/SDL/*
+!Source/SDL/include/*
+!Source/SDL/docs/*
+!Source/SDL/lib/*
+!Source/SDL/lib/x86/*
+!Source/SDL/lib/x64/*
+!Source/GLEW/*
+!Source/GLEW/doc/*
+!Source/GLEW/include/*
+!Source/GLEW/include/GL/*
+!Source/GLEW/lib/*
+!Source/GLEW/lib/Release/*
+!Source/GLEW/lib/Release/Win32/*
+!Source/GLEW/lib/Release/x64/*
