@@ -99,11 +99,6 @@ void ModuleRender::InitializeGLEW()
 	GLenum err = glewInit();
 	// Check for errors:
 	LOG("Using Glew %s", glewGetString(GLEW_VERSION)); // This should log GLEW version as 2.0
-    
-	// Configure OpenGL:
-	glEnable(GL_DEPTH_TEST);    // Enable depth test
-	glEnable(GL_CULL_FACE);     // Enable cull backward faces
-	glFrontFace(GL_CCW);        // Front faces will be counter clockwise
 }
 
 void ModuleRender::LogHardware()
@@ -158,6 +153,9 @@ void ModuleRender::InitializeRenderPipelineOptions()
 	{
 		glDisable(GL_STENCIL_TEST);
 	}
+    
+    // Set counter clockwise triangles as front facing:
+    glFrontFace(GL_CCW);
 }
 
 
