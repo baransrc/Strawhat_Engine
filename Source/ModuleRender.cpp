@@ -2,11 +2,10 @@
 #include "Application.h"
 #include "ModuleRender.h"
 #include "ModuleWindow.h"
+#include "ModuleShaderProgram.h"
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
-#include <random>
-#include <iostream>
-#include <iomanip>
+#include "Util.h"
 
 ModuleRender::ModuleRender()
 {
@@ -30,23 +29,26 @@ bool ModuleRender::Init()
     
 	// Initialize Render Pipline Options According to the Settings in Globals.h:
 	InitializeRenderPipelineOptions();
-    
-	// Random
-	std::srand(std::time(nullptr));
-    
+
+	// Initialize OpenGL debug features and vao.
+	InitializeOpenGL();
+
 	return true;
 }
 
 update_status ModuleRender::PreUpdate()
 {
 	// Resize the viewport to the newly resized window:
-	glViewport(0, 0, App->window->window_width, App->window->window_height);
-    
-	// Change Clear Color
-	glClearColor((float)(rand()) / RAND_MAX, (float)(rand()) / RAND_MAX, (float)(rand()) / RAND_MAX, 1.0f);
-    
+	glViewport(0, 0, viewport_width, viewport_height);
+
+	// Clear to black:
+	glClearColor(0.0f , 0.0f, 0.0f, 1.0f);
+
 	// Clear to the selected Clear color:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Use the shader program created in ModuleShaderProgram:
+	glUseProgram(App->shader_program->GetProgramId());
     
 	return update_status::UPDATE_CONTINUE;
 }
@@ -54,7 +56,6 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
-    
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -71,14 +72,50 @@ bool ModuleRender::CleanUp()
 {
 	LOG("Destroying renderer");
     
+	// Delete vertex_array_object:
+	glDeleteVertexArrays(1, &vertex_array_object);
+
 	//Delete OpenGL Context:
 	SDL_GL_DeleteContext(context);
-    
+	    
 	return true;
 }
 
 void ModuleRender::WindowResized(unsigned width, unsigned height)
 {
+	viewport_width = width;
+	viewport_height = height;
+}
+
+void ModuleRender::InitializeOpenGL()
+{
+#ifdef _DEBUG
+	// Enable OpenGL context debug flags:
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+	// Enable output callbacks:
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	// Set OpenGL debug message callback:
+	glDebugMessageCallback(&util::OpenGLDebugCallback, nullptr);
+
+	// Filter Notifications:
+	glDebugMessageControl(GL_DONT_CARE, 
+					      GL_DONT_CARE, 
+		                  GL_DONT_CARE,
+		                  0, 
+		                  nullptr,
+		                  true);
+#endif //  DEBUG
+
+	
+	// Generate vertex array object:
+	int num_of_arrays = 1;
+	glGenVertexArrays(num_of_arrays, &vertex_array_object);
+
+	// Bind vertex_array_object:
+	glBindVertexArray(vertex_array_object);
 }
 
 void ModuleRender::InitializeGLEW()

@@ -20,7 +20,7 @@ enum class update_status
 #define RESIZABLE true
 #define RENDERER_CULL_FACE true
 #define RENDERER_DEPTH_TEST true
-#define RENDERER_SCISSOR_TEST true
-#define RENDERER_STENCIL_TEST true
+#define RENDERER_SCISSOR_TEST false
+#define RENDERER_STENCIL_TEST false
 #define VSYNC true
-#define TITLE "Super Awesome Engine"
+#define TITLE "Strawhat Engine"
