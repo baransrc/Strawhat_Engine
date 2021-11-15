@@ -12,6 +12,7 @@ class ModuleRenderExercise;
 class ModuleShaderProgram;
 class ModuleRenderExercise;
 class ModuleEditor;
+class ModuleCamera;
 
 class Application
 {
@@ -33,6 +34,7 @@ public:
 	ModuleShaderProgram* shader_program = nullptr;
 	ModuleRenderExercise* render_exercise = nullptr;
 	ModuleEditor* editor = nullptr;
+	ModuleCamera* camera = nullptr;
 
 private:
 	char* working_directory = nullptr;
