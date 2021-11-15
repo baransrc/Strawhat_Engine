@@ -74,13 +74,29 @@ void ModuleEditor::DrawAboutWindow()
 	ImGui::Separator();
 	ImGui::TextWrapped("Strawhat Engine is being developed for UPC Master's degree in Advanced Programming for Videogames.\n");
 	
+	
+	ImGui::TextWrapped("\n");
+	ImGui::TextWrapped("Repository");
+	ImGui::Separator();
+	ImGui::TextWrapped("Feel free to check the GitHub Repository of Strawhat Engine.");
+	if (ImGui::Button("Open Repository in Browser", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+	{
+		// If Button is clicked, open the repository link in browser:
+		util::OpenLink(LINK_TO_REPOSITORY);
+	}
+
 	ImGui::TextWrapped("\n");
 	ImGui::TextWrapped("Author(s)");
 	ImGui::Separator();
 	ImGui::TextWrapped("I. Baran Sürücü");
-	
+
 	ImGui::TextWrapped("\n");
-	ImGui::TextWrapped("LICENSE");
+	ImGui::TextWrapped("Libraries");
+	ImGui::Separator();
+	ImGui::TextWrapped(LIBRARIES_USED);
+
+	ImGui::TextWrapped("\n");
+	ImGui::TextWrapped("License");
 	ImGui::Separator();
 
 	if (license_buffer == nullptr)
