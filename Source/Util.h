@@ -102,6 +102,11 @@ namespace util
 
 		return concat_string;
 	}
+
+	inline void OpenLink(const char* link)
+	{
+		ShellExecute(NULL, "open", link, NULL, NULL, SW_SHOWNORMAL);
+	}
 }
 
 #endif
