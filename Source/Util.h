@@ -40,6 +40,7 @@ namespace util
 		LOG("<Source:%s> <Type:%s> <Severity:%s> <ID:%d> <Message:%s>\n", tmp_source, tmp_type, tmp_severity, id, message);
 	}
 
+	// TODO: ModuleShaderProgram must use this function too.
 	inline void ReadFile(const char* file_name, char** data)
 	{
 		FILE* file = nullptr;
@@ -78,7 +79,6 @@ namespace util
 			// Close the file:
 			fclose(file);
 		}
-
 	}
 
 	inline void GetWorkingDirectory(char** buffer)
