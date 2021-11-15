@@ -67,7 +67,7 @@ bool ModuleRenderExercise::CleanUp()
 
 update_status ModuleRenderExercise::Update()
 {
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 3); // NOTE: Should this be in PostUpdate?
 	
     return update_status::UPDATE_CONTINUE;
 }
