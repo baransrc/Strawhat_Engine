@@ -1,9 +1,15 @@
-#pragma once
+#ifndef _UTIL_H
+#define _UTIL_H
+
 #include "GL/glew.h"
+#include "windows.h"
+#include "string.h"
+#include <direct.h> // _getcwd
+#include <iostream>
 
 namespace util
 {
-	void __stdcall OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	inline void __stdcall OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
 		const char* tmp_source = "", * tmp_type = "", * tmp_severity = "";
 		switch (source) {
@@ -33,4 +39,69 @@ namespace util
 		};
 		LOG("<Source:%s> <Type:%s> <Severity:%s> <ID:%d> <Message:%s>\n", tmp_source, tmp_type, tmp_severity, id, message);
 	}
+
+	inline void ReadFile(const char* file_name, char** data)
+	{
+		FILE* file = nullptr;
+
+		// In unix like systems and linux, r and rb are the same since they have single
+		// character for endline, \n, but in windows there are multiple characters for
+		// endline and additional b mode maps all those into \n.
+		// r stands for read mode.
+		fopen_s(&file, file_name, "rb"); // TODO: Get current working directory and find the shader file inside folder.
+
+		if (file)
+		{
+			// Number of bytes to offset from origin:
+			static long file_offset = 0;
+			// Size in bytes, of each element to be read (since a char is one byte):
+			size_t element_size_bytes = 1;
+
+			// To the end of the file:
+			fseek(file, file_offset, SEEK_END);
+
+			// Set size to location of the end of the file:
+			int size = ftell(file);
+
+			// Allocate needed amont of memory for file:
+			*data = (char*)malloc(size + 1);
+
+			// Go to the start of the file:
+			fseek(file, 0, SEEK_SET);
+
+			// Read file and write to data:
+			fread(*data, element_size_bytes, size, file);
+
+			// Set end of data to null-character:
+			(*data)[size] = 0;
+
+			// Close the file:
+			fclose(file);
+		}
+
+	}
+
+	inline void GetWorkingDirectory(char** buffer)
+	{
+		*buffer = (char*)malloc(MAX_PATH);
+		_getcwd(*buffer, MAX_PATH);
+	}
+
+	inline char* ConcatCStrings(const char* first, const char* second)
+	{
+		uint32_t first_size = strlen(first);
+		uint32_t second_size = strlen(second);
+		uint32_t concat_size = first_size + second_size;
+
+		char* concat_string = (char*)malloc(concat_size + 1);
+
+		memcpy(concat_string, first, first_size);
+		memcpy(&(concat_string[first_size]), second, second_size);
+
+		concat_string[concat_size] = '\0';
+
+		return concat_string;
+	}
 }
+
+#endif
