@@ -5,6 +5,7 @@
 #include "ModuleInput.h"
 #include "ModuleShaderProgram.h"
 #include "ModuleRenderExercise.h"
+#include "ModuleEditor.h"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ Application::Application()
     modules.push_back(shader_program = new ModuleShaderProgram());
     modules.push_back(render_exercise = new ModuleRenderExercise());
 	modules.push_back(input = new ModuleInput());
+    modules.push_back(editor = new ModuleEditor());
 }
 
 Application::~Application()

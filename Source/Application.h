@@ -11,6 +11,7 @@ class ModuleInput;
 class ModuleRenderExercise;
 class ModuleShaderProgram;
 class ModuleRenderExercise;
+class ModuleEditor;
 
 class Application
 {
@@ -29,6 +30,7 @@ public:
 	ModuleInput* input = nullptr;
 	ModuleShaderProgram* shader_program = nullptr;
 	ModuleRenderExercise* render_exercise = nullptr;
+	ModuleEditor* editor = nullptr;
 
 private:
 

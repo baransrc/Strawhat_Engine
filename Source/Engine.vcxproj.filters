@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="log.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="ModuleInput.cpp" />
+    <ClCompile Include="ModuleRender.cpp" />
+    <ClCompile Include="ModuleRenderExercise.cpp" />
+    <ClCompile Include="ModuleShaderProgram.cpp" />
+    <ClCompile Include="ModuleWindow.cpp" />
+    <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_opengl3.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\imgui.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\imgui_demo.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\imgui_draw.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\imgui_tables.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\imgui_widgets.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleEditor.cpp" />
+    <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_sdl.cpp">
+      <Filter>DearImGui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Application.h" />
+    <ClInclude Include="Dummy.h" />
+    <ClInclude Include="Globals.h" />
+    <ClInclude Include="Module.h" />
+    <ClInclude Include="ModuleInput.h" />
+    <ClInclude Include="ModuleRender.h" />
+    <ClInclude Include="ModuleRenderExercise.h" />
+    <ClInclude Include="ModuleShaderProgram.h" />
+    <ClInclude Include="ModuleWindow.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3_loader.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\imconfig.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\imgui.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\imgui_internal.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\imstb_rectpack.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\imstb_textedit.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\imstb_truetype.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleEditor.h" />
+    <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_sdl.h">
+      <Filter>DearImGui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DearImGui">
+      <UniqueIdentifier>{4c50ea1f-e686-4ced-8cdf-8ac5e3c4d744}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

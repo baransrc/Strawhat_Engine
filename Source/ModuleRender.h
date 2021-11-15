@@ -23,6 +23,9 @@ public:
 	update_status PostUpdate();
 	bool CleanUp();
 	void WindowResized(unsigned width, unsigned height);
+
+	const void* GetContext() const { return context; };
+
 private:
 	void InitializeOpenGL();
 	void InitializeGLEW();
