@@ -13,6 +13,8 @@ enum class update_status
 	UPDATE_ERROR
 };
 
+#define GLSL_VERSION "#version 330"
+
 // Configuration -----------
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
