@@ -24,6 +24,8 @@ public:
 	update_status Update();
 	bool CleanUp();
 
+	const char* GetWorkingDirectory() const { return working_directory; };
+
 public:
 	ModuleRender* renderer = nullptr;
 	ModuleWindow* window = nullptr;
@@ -33,7 +35,7 @@ public:
 	ModuleEditor* editor = nullptr;
 
 private:
-
+	char* working_directory = nullptr;
 	std::list<Module*> modules;
 
 };
