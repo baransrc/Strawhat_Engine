@@ -8,11 +8,14 @@ struct SDL_Rect;
 
 class ModuleRender : public Module
 {
-private:
+public:
 	void* context;
+
+private:
 	unsigned int vertex_array_object = 0;
 	unsigned int viewport_width = SCREEN_WIDTH;
 	unsigned int viewport_height = SCREEN_HEIGHT;
+
 public:
 	ModuleRender();
 	~ModuleRender();
