@@ -89,9 +89,9 @@ namespace util
 
 	inline char* ConcatCStrings(const char* first, const char* second)
 	{
-		uint32_t first_size = strlen(first);
-		uint32_t second_size = strlen(second);
-		uint32_t concat_size = first_size + second_size;
+		size_t first_size = strlen(first);
+		size_t second_size = strlen(second);
+		size_t concat_size = first_size + second_size;
 
 		char* concat_string = (char*)malloc(concat_size + 1);
 
