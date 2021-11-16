@@ -15,7 +15,7 @@ enum class update_status
 };
 
 #define GLSL_VERSION "#version 330"
-#define LIBRARIES_USED "SDL 2.0.16\nGLEW 2.1.0\nDear ImGui 1.86"
+#define LIBRARIES_USED "SDL 2.0.16\nGLEW 2.1.0\nDear ImGui 1.86\nDevIL 1.8.0"
 #define LINK_TO_REPOSITORY "https://github.com/baransrc/Strawhat_Engine"
 
 // Configuration -----------
