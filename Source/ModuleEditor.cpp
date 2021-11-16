@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+#include "Globals.h"
 
 ModuleEditor::ModuleEditor()
 {
@@ -59,6 +60,20 @@ void ModuleEditor::DrawMainMenuBar()
 			ImGui::EndMenu();
 		}
 
+		// Begin Drawing Tools Menu:
+		if (ImGui::BeginMenu("Tools"))
+		{
+
+			if (ImGui::MenuItem("Console"))
+			{
+				// If user clicks on Console, trigger console window:
+				show_console_window = true;
+			}
+
+			// End Drawing Tools Menu:
+			ImGui::EndMenu();
+		}
+
 		// End Drawing Main Menu Bar:
 		ImGui::EndMainMenuBar();
 	}
@@ -73,7 +88,6 @@ void ModuleEditor::DrawAboutWindow()
 	ImGui::TextWrapped("Strawhat Engine");
 	ImGui::Separator();
 	ImGui::TextWrapped("Strawhat Engine is being developed for UPC Master's degree in Advanced Programming for Videogames.\n");
-	
 	
 	ImGui::TextWrapped("\n");
 	ImGui::TextWrapped("Repository");
@@ -114,6 +128,25 @@ void ModuleEditor::DrawAboutWindow()
 	ImGui::End();
 }
 
+void ModuleEditor::DrawConsoleWindow()
+{
+	if (!show_console_window)
+	{
+		return;
+	}
+
+	// Begin Console Window:
+	ImGui::Begin("Console");
+
+	console->ToImGuiText();
+
+	//static int i = 0;
+	//LOG("i:%i", ++i);
+
+	// End Console Window:
+	ImGui::End();
+}
+
 update_status ModuleEditor::PreUpdate()
 {
 	// Start the Dear ImGui frame:
@@ -126,12 +159,16 @@ update_status ModuleEditor::PreUpdate()
 
 update_status ModuleEditor::Update()
 {
+
+
 	DrawMainMenuBar();
 
 	if (show_about_window)
 	{
 		DrawAboutWindow();
 	}
+
+	DrawConsoleWindow();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

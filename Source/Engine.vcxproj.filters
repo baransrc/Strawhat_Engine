@@ -424,6 +424,7 @@
     <ClInclude Include="MATH_GEO_LIB\Time\Clock.h">
       <Filter>MathGeoLib</Filter>
     </ClInclude>
+    <ClInclude Include="Console.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="DearImGui">

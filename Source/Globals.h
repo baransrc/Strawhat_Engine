@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <stdio.h>
+#include "Console.h"
 
 #define LOG(format, ...) log(__FILE__, __LINE__, format, __VA_ARGS__);
 

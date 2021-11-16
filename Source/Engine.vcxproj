@@ -206,6 +206,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_sdl.h" />

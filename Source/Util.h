@@ -37,7 +37,8 @@ namespace util
 		case GL_DEBUG_SEVERITY_LOW: tmp_severity = "low"; break;
 		case GL_DEBUG_SEVERITY_NOTIFICATION: tmp_severity = "notification"; break;
 		};
-		LOG("<Source:%s> <Type:%s> <Severity:%s> <ID:%d> <Message:%s>\n", tmp_source, tmp_type, tmp_severity, id, message);
+		// TODO: Uncomment this, for now it's commented out because if the computer uses nVidia GPU, it logs the same message every single frame, and it's cringe:
+		//LOG("<Source:%s> <Type:%s> <Severity:%s> <ID:%d> <Message:%s>\n", tmp_source, tmp_type, tmp_severity, id, message);
 	}
 
 	// TODO: ModuleShaderProgram must use this function too.

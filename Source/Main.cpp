@@ -16,12 +16,15 @@ enum class main_states
 	MAIN_EXIT
 };
 
+Console* console = NULL;
 Application* App = NULL;
 
 int main(int argc, char ** argv)
 {
 	int main_return = EXIT_FAILURE;
 	main_states state = main_states::MAIN_CREATION;
+
+	console = new Console();
     
 	while (state != main_states::MAIN_EXIT)
 	{
@@ -82,7 +85,8 @@ int main(int argc, char ** argv)
         
 	}
     
-	delete App;
 	LOG("Bye :)\n");
+	delete App;
+	delete console;
 	return main_return;
 }

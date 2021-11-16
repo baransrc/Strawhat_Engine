@@ -6,6 +6,7 @@ class ModuleEditor : public Module
 private:
 	bool show_demo_window = true;
 	bool show_about_window = false;
+	bool show_console_window = true;
 	char* license_buffer = nullptr;
 
 public:
@@ -21,6 +22,7 @@ public:
 
 	void DrawMainMenuBar();
 	void DrawAboutWindow();
+	void DrawConsoleWindow();
 
 private:
 	void InitializeDearImGui();
