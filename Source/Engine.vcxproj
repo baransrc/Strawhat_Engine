@@ -101,13 +101,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;LOGGING_SUPPORT_DISABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\;R:\Strawhat_Engine\Source\DEVIL\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\GLEW\lib\Release\x64;R:\Strawhat_Engine\Source\DEVIL\lib\x64\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -202,6 +202,7 @@
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleRenderExercise.cpp" />
     <ClCompile Include="ModuleShaderProgram.cpp" />
+    <ClCompile Include="ModuleTexture.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -216,6 +217,14 @@
     <ClInclude Include="DEAR_IMGUI\include\imstb_rectpack.h" />
     <ClInclude Include="DEAR_IMGUI\include\imstb_textedit.h" />
     <ClInclude Include="DEAR_IMGUI\include\imstb_truetype.h" />
+    <ClInclude Include="DEVIL\include\IL\devil_cpp_wrapper.hpp" />
+    <ClInclude Include="DEVIL\include\IL\devil_internal_exports.h" />
+    <ClInclude Include="DEVIL\include\IL\il.h" />
+    <ClInclude Include="DEVIL\include\IL\ilu.h" />
+    <ClInclude Include="DEVIL\include\IL\ilut.h" />
+    <ClInclude Include="DEVIL\include\IL\ilut_config.h" />
+    <ClInclude Include="DEVIL\include\IL\ilu_region.h" />
+    <ClInclude Include="DEVIL\include\IL\il_wrap.h" />
     <ClInclude Include="Dummy.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK.h" />
@@ -300,6 +309,7 @@
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleRenderExercise.h" />
     <ClInclude Include="ModuleShaderProgram.h" />
+    <ClInclude Include="ModuleTexture.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>

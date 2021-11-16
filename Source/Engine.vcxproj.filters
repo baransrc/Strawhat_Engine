@@ -158,6 +158,7 @@
     <ClCompile Include="MATH_GEO_LIB\Time\Clock.cpp">
       <Filter>MathGeoLib</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -425,6 +426,31 @@
       <Filter>MathGeoLib</Filter>
     </ClInclude>
     <ClInclude Include="Console.h" />
+    <ClInclude Include="DEVIL\include\IL\devil_cpp_wrapper.hpp">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\devil_internal_exports.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\il.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\il_wrap.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\ilu.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\ilu_region.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\ilut.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="DEVIL\include\IL\ilut_config.h">
+      <Filter>DevIL</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="DearImGui">
@@ -432,6 +458,9 @@
     </Filter>
     <Filter Include="MathGeoLib">
       <UniqueIdentifier>{43c86621-6f6e-4273-8cf3-cea004d47d00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DevIL">
+      <UniqueIdentifier>{b5de9a61-7245-42b0-9710-50977920d150}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
