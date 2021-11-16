@@ -365,3 +365,12 @@ MigrationBackup/
 !Source/GLEW/lib/Release/*
 !Source/GLEW/lib/Release/Win32/*
 !Source/GLEW/lib/Release/x64/*
+!Source/DEVIL/*
+!Source/DEVIL/include/IL/*
+!Source/DEVIL/lib/*
+!Source/DEVIL/lib/x64/*
+!Source/DEVIL/lib/x64/Release/*
+!Source/DEVIL/lib/x64/unicode/*
+!Source/DEVIL/lib/x86/*
+!Source/DEVIL/lib/x86/Release/*
+!Source/DEVIL/lib/x86/unicode/*
