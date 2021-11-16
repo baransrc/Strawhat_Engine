@@ -1,0 +1,55 @@
+GIVEN AS HOMEWORK:
+- Implement model, view and projection matrices to the engine using MathGeoLib.
+	* Modify our triangle rendering example so we can multiply each vertex by model.
+	* Use Frustum class in MathGeoLib to get projection matrix.
+	* Use float4x4 class in MathGeoLib to get model and view matrix.
+	* Note: For view matrix you can create your own LookAt function or use MathGeoLib LookAt.
+- Integrate the library in debug_draw.zip
+	* Add source and header files to project.
+	* Create ModuleDebugDraw in Application class
+	* Call drawing primitives each render.
+		# dd::axisTriad(float4x4::identity, 0.1f, 1.0f);
+		# dd::xzSquareGrid(-10, 10, 0.0f, 1.0f, dd::colors::Gray);
+	* Call ModuleDebugDraw::Draw method passing projection, view, and screen width & height as arguments.
+	* Note: Draw method must be called after drawing all primitives.
+- Implement texture mapping:
+	* Create a ModuleTexture to load textures
+	* Use DeviL to load textures
+	* Load Lenna texture, the classic!
+	* Modify or render triangle exercise to display a texture in a generated Quad: 2 triangles.
+	* Add a ImGui Menu to:
+		# Show the width/height size, pixel depth and format
+		# Allow switching options: Wrap mode, Mag/Min filter, Mipmaps
+- Implement Camera
+	* CameraModule that will generate the perspective and view matrices.
+	* Draw a grid on the ground for orientation.
+	* Have all the camera controls from Unity (except orbit for now).
+	* Refer to Game Camera slide for implementation details.
+	* React to window resize, calculate Aspect Ratio and modify FOVs accordingly.
+	* Prepare the module to receive different settings through an Editor Window.
+		# FOV horizontal and vertical, near/far plane distance etc.
+		# Movement/Rotation Speed, background color etc.
+
+BETTER IF DONE:
+- FPS graph:
+	* Accumulate fps data in a vector.
+	* When the vector is full, cycle data.
+	* Use ImGui::PlotHistogram() to draw.
+- Window options window inside editor
+	* Width
+	* Height
+	* Brightness
+	* Refresh rate
+	* Screen options
+		# Fullscreen 
+		# Resizable
+		# Borderless
+		# Full Desktop
+- Add Hardware Window inside editor that shows cpu, system ram, caps etc.
+	* Either in a module or in Application.
+	* Better if GPU info and Memory is added too.
+		# Vendor
+		# Brand
+		# VRAM usage
+		# VRAM available
+		# VRAM reserved
