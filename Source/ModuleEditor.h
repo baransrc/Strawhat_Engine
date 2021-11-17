@@ -6,7 +6,7 @@ class ModuleEditor : public Module
 private:
 	bool show_demo_window = true;
 	bool show_about_window = false;
-	bool show_console_window = true;
+	bool show_console_window = false;
 	char* license_buffer = nullptr;
 
 public:
