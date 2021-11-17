@@ -46,9 +46,6 @@ update_status ModuleRender::PreUpdate()
 
 	// Clear to the selected Clear color:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Use the shader program created in ModuleShaderProgram:
-	App->shader_program->Use();
     
 	return update_status::UPDATE_CONTINUE;
 }
@@ -71,9 +68,6 @@ update_status ModuleRender::PostUpdate()
 bool ModuleRender::CleanUp()
 {
 	LOG("Destroying renderer");
-    
-	// Delete vertex_array_object:
-	glDeleteVertexArrays(1, &vertex_array_object);
 
 	//Delete OpenGL Context:
 	SDL_GL_DeleteContext(context);
@@ -109,13 +103,6 @@ void ModuleRender::InitializeOpenGL()
 		                  true);
 #endif //  DEBUG
 
-	
-	// Generate vertex array object:
-	int num_of_arrays = 1;
-	glGenVertexArrays(num_of_arrays, &vertex_array_object);
-
-	// Bind vertex_array_object:
-	glBindVertexArray(vertex_array_object);
 }
 
 void ModuleRender::InitializeGLEW()
