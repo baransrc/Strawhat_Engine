@@ -170,6 +170,11 @@ void ModuleShaderProgram::Use() const
     glUseProgram(program_id);
 }
 
+void ModuleShaderProgram::SetUniformVariable(const char* name, int value) const
+{
+    glUniform1i(glGetUniformLocation(program_id, name), value);
+}
+
 ModuleShaderProgram::~ModuleShaderProgram()
 {
 }

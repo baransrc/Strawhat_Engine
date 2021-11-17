@@ -22,6 +22,8 @@ class ModuleShaderProgram : public Module
 
 	void Use() const;
 
+	void SetUniformVariable(const char* name, int value) const;
+
 	~ModuleShaderProgram();
     
     private:
