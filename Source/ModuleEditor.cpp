@@ -136,7 +136,7 @@ void ModuleEditor::DrawConsoleWindow()
 	}
 
 	// Begin Console Window:
-	ImGui::Begin("Console");
+	ImGui::Begin("Console", &show_console_window);
 
 	console->ToImGuiText();
 
@@ -159,8 +159,6 @@ update_status ModuleEditor::PreUpdate()
 
 update_status ModuleEditor::Update()
 {
-
-
 	DrawMainMenuBar();
 
 	if (show_about_window)
