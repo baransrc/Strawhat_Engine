@@ -48,7 +48,7 @@ update_status ModuleRender::PreUpdate()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use the shader program created in ModuleShaderProgram:
-	glUseProgram(App->shader_program->GetProgramId());
+	App->shader_program->Use();
     
 	return update_status::UPDATE_CONTINUE;
 }

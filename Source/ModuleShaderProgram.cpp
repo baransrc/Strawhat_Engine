@@ -165,6 +165,11 @@ unsigned int ModuleShaderProgram::CompileShader(unsigned int type, const char* s
     return shader_id;
 }
 
+void ModuleShaderProgram::Use() const
+{
+    glUseProgram(program_id);
+}
+
 ModuleShaderProgram::~ModuleShaderProgram()
 {
 }

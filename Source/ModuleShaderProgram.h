@@ -20,6 +20,8 @@ class ModuleShaderProgram : public Module
     
 	unsigned int GetProgramId() {return program_id;};
 
+	void Use() const;
+
 	~ModuleShaderProgram();
     
     private:
