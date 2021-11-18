@@ -3,6 +3,7 @@
 #include "ModuleShaderProgram.h"
 #include "ModuleTexture.h"
 #include "Util.h"
+#include "DEAR_IMGUI/include/imgui.h"
 
 constexpr float vertices[] = {
     // positions          // colors           // texture coords
@@ -123,6 +124,9 @@ bool ModuleRenderExercise::Init()
 		false	
 	);
 
+	// Load Lena Texture Data:
+	App->texture->GetTextureInfo(lena_texture, &lena_texture_data);
+
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 	App->shader_program->SetUniformVariable("input_texture", 0);
@@ -132,7 +136,7 @@ bool ModuleRenderExercise::Init()
 
 bool ModuleRenderExercise::CleanUp()
 {   
-	App->texture->UnloadTexture(&lena_texture, 1);
+	App->texture->UnloadTexture(&lena_texture);
 
 	glDeleteBuffers(1, &element_buffer_object);
 	glDeleteBuffers(1, &vertex_buffer_object);
@@ -154,6 +158,13 @@ update_status ModuleRenderExercise::Update()
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // NOTE: Should this be in PostUpdate?
 	
     return update_status::UPDATE_CONTINUE;
+}
+
+void ModuleRenderExercise::DrawTextureInfoContent() const
+{
+	ImGui::TextWrapped("Lena");
+	ImGui::Separator();
+	ImGui::TextWrapped(lena_texture_data);
 }
 
 ModuleRenderExercise::~ModuleRenderExercise()
