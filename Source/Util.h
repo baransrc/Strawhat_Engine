@@ -82,12 +82,115 @@ namespace util
 		}
 	}
 
+	inline void AppendToFile(const char* file_name, const char* data)
+	{
+		FILE* file = nullptr;
+
+		// In unix like systems and linux, r and rb are the same since they have single
+		// character for endline, \n, but in windows there are multiple characters for
+		// endline and additional b mode maps all those into \n.
+		// r stands for read mode.
+		fopen_s(&file, file_name, "a"); 
+
+		if (file)
+		{
+			fprintf(file, "%s", data);
+
+			// Close the file:
+			fclose(file);
+		}
+	} 
+
+	inline bool DeleteFile(const char* file_name)
+	{
+		// Return true if successful:
+		return remove(file_name) == 0;
+	}
+
+	// User is responsible for deallocation.
+	inline char* GetStringBetween(char* const source, const char* start_string, const char* end_string) 
+	{
+		char* start;
+		char* end;
+
+		start = strstr(source, start_string);
+		end = strstr(source, end_string);
+
+		if (start == nullptr || end == nullptr)
+		{
+			return nullptr;
+		}
+
+		// If function is still executing, the wanted portions of the string is found.
+
+		// Find location in source by pointer substractions:
+		size_t start_pos = start - source + strlen(start_string); 
+		size_t end_pos = end - source - 1;
+
+		size_t buffer_size = end_pos - start_pos + 1;
+
+		// Allocate char array of needed size:
+		char* buffer = (char*)malloc(buffer_size + 1);
+
+		// Copy substring between start_pos and end_pos to buffer:
+		memcpy(buffer, &(source[start_pos]), buffer_size);
+
+		buffer[buffer_size] = '\0';
+
+		return buffer;
+	}
+
+	// User is responsible for deallocation.
+	inline void DeleteStringFromStartToEnd(char** source, const char* start_string, const char* end_string)
+	{
+		char* start;
+		char* end;
+
+		size_t debug_s = strlen("\r\n{start_4}\r\nsomething\r\nsomething more\r\nsomething even more\r\n{end_4}{start_7}\r\nsomething\r\nsomething more\r\nsomething even more\r\n{end_7}");
+
+		start = strstr(*source, start_string);
+		end = strstr(*source, end_string);
+
+		if (start == nullptr || end == nullptr)
+		{
+			return;
+		}
+
+		// If function is still executing, the wanted portions of the string is found.
+
+		// Find location in source by pointer substractions:
+		size_t start_pos = start - (*source);
+		size_t end_pos = end - (*source) + strlen(end_string);
+
+		// Determine sizes of 2 pieces of the source string divided by the string 
+		// starting from start_string ending at the end of the end_string:
+		size_t size_until_start_pos = start_pos;
+		size_t size_after_end_pos = strlen((*source)) - end_pos;
+		// Buffer size will be the sum of the length of two pieces:
+		size_t buffer_size = size_until_start_pos + size_after_end_pos;
+
+		char* buffer = (char*)malloc(buffer_size + 1);
+
+		// Copy the first part:
+		memcpy(buffer, (*source), size_until_start_pos);
+		// Copy the second part:
+		memcpy(&(buffer[size_until_start_pos]), &((*source)[end_pos]), size_after_end_pos);
+
+		buffer[buffer_size] = '\0';
+
+		free(*source);
+
+		*source = buffer;
+	}
+
+	// User is responsible for deallocation.
 	inline void GetWorkingDirectory(char** buffer)
 	{
 		*buffer = (char*)malloc(MAX_PATH);
 		_getcwd(*buffer, MAX_PATH);
 	}
 
+	// User is responsible for deallocation.
 	inline char* ConcatCStrings(const char* first, const char* second)
 	{
 		size_t first_size = strlen(first);
