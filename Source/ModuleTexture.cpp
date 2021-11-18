@@ -1,9 +1,12 @@
+#include "Application.h"
 #include "ModuleTexture.h"
 #include "Globals.h"
+#include "Util.h"
 #include "DEVIL/include/IL/il.h"
 #include "DEVIL/include/IL/ilu.h"
 
-#define ERROR_TEXTURE "\\Textures\\error_texture.jpg"
+constexpr const char* ERROR_TEXTURE = "\\Textures\\error_texture.jpg";
+constexpr const char* RUNTIME_TEXTURE_DATA_FILE = "\\Textures\\RUNTIME_TEXTURE.DATA";
 
 ModuleTexture::ModuleTexture()
 {
@@ -17,6 +20,9 @@ bool ModuleTexture::Init()
 {
     bool init_success = true;
 
+    // Initialize runtime texture data file path:
+    runtime_texture_data_file_path = util::ConcatCStrings(App->GetWorkingDirectory(), RUNTIME_TEXTURE_DATA_FILE);
+
     // Initialize DevIL, if initialization returns false, halt program:
     init_success = init_success && InitializeDevIL();
 
@@ -25,6 +31,10 @@ bool ModuleTexture::Init()
 
 bool ModuleTexture::CleanUp()
 {
+    util::RemoveFile(runtime_texture_data_file_path);
+
+    free(runtime_texture_data_file_path);
+
     return true;
 }
 
@@ -100,7 +110,8 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
         ilGetData()                    // Pointer to the image data in memory
     );
 
- 
+    // Write Texture Data to file:
+    WriteTextureData(texture_id, file_name);
 
     // Generate mipmap if requested:
     if (generate_mipmap)
@@ -133,7 +144,84 @@ bool ModuleTexture::InitializeDevIL() const
     return true;
 }
 
-void ModuleTexture::UnloadTexture(GLuint* texture_ptr, int count) const
+void ModuleTexture::WriteTextureData(GLuint texture_id, const char* texture_file_name) const
 {
-    glDeleteTextures(count, texture_ptr);
+    // Get Texture Data:
+    ILinfo texture_data;
+    iluGetImageInfo(&texture_data);
+    
+    char texture_data_string[512];
+
+    // TODO: Add switch statements for all possible formats defined in il.h,
+    // right now, as a clever solution this only writes extension of the file.
+
+    std::string format(texture_file_name);
+    size_t dot_index = format.find('.');
+    format = format.substr(dot_index+1);
+
+    sprintf
+    (
+        texture_data_string, 
+        "{start_%lu}\Path: %s\nFormat: %s\nWidth: %i\nHeight: %i\nDepth: %i\n{end_%lu}\n", 
+        texture_id,
+        texture_file_name, 
+        format.c_str(),
+        texture_data.Width,
+        texture_data.Height,
+        texture_data.Depth,
+        texture_id
+    );
+
+
+    util::AppendToFile(runtime_texture_data_file_path, texture_data_string);
+}
+
+void ModuleTexture::DeleteTextureData(GLuint* texture_ptr) const
+{
+    char* file_buffer;
+
+    util::ReadFile(runtime_texture_data_file_path, &file_buffer);
+
+    // Max unsigned for x64 is : 18446744073709551615, therefore 21 chars are enough.
+    // If we ever have x128 or something, this function needs to be tweaked, I guess.
+    // for {start_} we have 7, so 32 bytes are more than enough.
+    char start_string[32];
+    char end_string[32];
+
+    sprintf(start_string, "{start_%lu}", *texture_ptr);
+    sprintf(end_string, "{end_%lu}", *texture_ptr);
+
+    util::DeleteStringFromStartToEnd(&file_buffer, start_string, end_string);
+
+    util::OverwriteFile(runtime_texture_data_file_path, file_buffer);
+
+    free(file_buffer);
+}
+
+void ModuleTexture::UnloadTexture(GLuint* texture_ptr) const
+{
+    glDeleteTextures(1, texture_ptr);
+
+    DeleteTextureData(texture_ptr);
+}
+
+// User must deallocate buffer memory.
+void ModuleTexture::GetTextureInfo(GLuint texture_id, char** buffer) const
+{
+    char* file_buffer;
+
+    util::ReadFile(runtime_texture_data_file_path, &file_buffer);
+
+    // Max unsigned for x64 is: 18446744073709551615, therefore 21 chars are enough.
+    // If we ever have x128 or something, this function needs to be tweaked, I guess.
+    // for {start_} we have 7, so 32 bytes are more than enough.
+    char start_string[32];
+    char end_string[32];
+
+    sprintf(start_string, "{start_%lu}", texture_id);
+    sprintf(end_string, "{end_%lu}", texture_id);
+
+    *buffer = util::GetStringBetween(file_buffer, start_string, end_string);
+
+    free(file_buffer);
 }

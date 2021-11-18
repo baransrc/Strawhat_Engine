@@ -2,8 +2,11 @@
 #include "Module.h"
 #include "GL/glew.h"
 
+
 class ModuleTexture : public Module
 {
+private:
+	char* runtime_texture_data_file_path;
 public:
 	ModuleTexture();
 	~ModuleTexture();
@@ -23,8 +26,12 @@ public:
 					   bool is_rgba,
 					   bool generate_mipmap) const;
 
-	void UnloadTexture(GLuint* texture_ptr, int count) const;
+	void UnloadTexture(GLuint* texture_ptr) const;
+
+	void GetTextureInfo(GLuint texture_id, char** buffer) const;
 
 private:
 	bool InitializeDevIL() const;
+	void WriteTextureData(GLuint texture_id, const char* texture_file_name) const;
+	void DeleteTextureData(GLuint* texture_ptr) const;
 };
