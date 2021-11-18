@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
+#include "ModuleRenderExercise.h"
 #include "Util.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -46,6 +47,25 @@ void ModuleEditor::DrawMainMenuBar()
 	// Begin Drawing Main Menu Bar:
 	if (ImGui::BeginMainMenuBar())
 	{
+		// Begin Drawing Tools Menu:
+		if (ImGui::BeginMenu("Tools"))
+		{
+
+			if (ImGui::MenuItem("Console"))
+			{
+				// If user clicks on Console, trigger console window:
+				show_console_window = true;
+			}
+
+			if (ImGui::MenuItem("Render Exercise"))
+			{
+				show_render_exercise_texture_info_window = true;
+			}
+
+			// End Drawing Tools Menu:
+			ImGui::EndMenu();
+		}
+
 		// Begin Drawing Help Menu:
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -57,20 +77,6 @@ void ModuleEditor::DrawMainMenuBar()
 			}
 
 			// End Drawing Help Menu:
-			ImGui::EndMenu();
-		}
-
-		// Begin Drawing Tools Menu:
-		if (ImGui::BeginMenu("Tools"))
-		{
-
-			if (ImGui::MenuItem("Console"))
-			{
-				// If user clicks on Console, trigger console window:
-				show_console_window = true;
-			}
-
-			// End Drawing Tools Menu:
 			ImGui::EndMenu();
 		}
 
@@ -147,6 +153,16 @@ void ModuleEditor::DrawConsoleWindow()
 	ImGui::End();
 }
 
+void ModuleEditor::DrawRenderExerciseTextureInfoWindow()
+{
+	if (show_render_exercise_texture_info_window)
+	{
+		ImGui::Begin("Render Exercise Texture", &show_render_exercise_texture_info_window);
+		App->render_exercise->DrawTextureInfoContent();
+		ImGui::End();
+	}
+}
+
 update_status ModuleEditor::PreUpdate()
 {
 	// Start the Dear ImGui frame:
@@ -167,6 +183,8 @@ update_status ModuleEditor::Update()
 	}
 
 	DrawConsoleWindow();
+
+	DrawRenderExerciseTextureInfoWindow();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

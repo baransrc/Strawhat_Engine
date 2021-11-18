@@ -13,12 +13,12 @@ GIVEN AS HOMEWORK:
 	* Call ModuleDebugDraw::Draw method passing projection, view, and screen width & height as arguments.
 	* Note: Draw method must be called after drawing all primitives.
 - Implement texture mapping:
-	* Create a ModuleTexture to load textures
-	* Use DeviL to load textures
-	* Load Lenna texture, the classic!
-	* Modify or render triangle exercise to display a texture in a generated Quad: 2 triangles.
-	* Add a ImGui Menu to:
-		# Show the width/height size, pixel depth and format
+	* Create a ModuleTexture to load textures -- DONE
+	* Use DeviL to load textures -- DONE
+	* Load Lenna texture, the classic! -- DONE
+	* Modify or render triangle exercise to display a texture in a generated Quad: 2 triangles. -- DONE
+	* Add a ImGui Menu to: 
+		# Show the width/height size, pixel depth and format -- DONE
 		# Allow switching options: Wrap mode, Mag/Min filter, Mipmaps
 - Implement Camera
 	* CameraModule that will generate the perspective and view matrices.
