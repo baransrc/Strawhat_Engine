@@ -11,6 +11,7 @@ constexpr float vertices[] = {
 	 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 1.0f,   1.0f, 1.0f,   // bottom left
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 1.0f,   0.0f, 1.0f    // top left 
 };
+
 constexpr unsigned int indices[] = {
 		0, 1, 2, // first triangle
 		2, 3, 0  // second triangle
@@ -23,7 +24,6 @@ ModuleRenderExercise::ModuleRenderExercise()
 
 bool ModuleRenderExercise::Init()
 {
-
 	// Generate vertex array object:
 	glGenVertexArrays(1, &vertex_array_object);
 	// Generate buffer with a unique buffer ID and store it 
@@ -69,7 +69,6 @@ bool ModuleRenderExercise::Init()
 	GLboolean should_be_normalized = GL_FALSE;
 	int stride = 8 * sizeof(float);
 
-
 	// Position Attribute:
 	glVertexAttribPointer
 	(
@@ -80,8 +79,7 @@ bool ModuleRenderExercise::Init()
 		stride, 					// Length of one vertex data
 		(void*) 0					// Start position of this attribute in array
 	);	
-
-	//// Enable the vertex position attribute:
+	// Enable the vertex position attribute:
 	glEnableVertexAttribArray(0);
 
 	// Color Attribute:
@@ -92,7 +90,7 @@ bool ModuleRenderExercise::Init()
 		type_of_data, 				// Type of data
 		should_be_normalized, 		// Should OpenGL Normalize it?
 		stride, 					// Length of one vertex data
-		(void*)(3 * sizeof(float)) // Start position of this attribute in array
+		(void*)(3 * sizeof(float))  // Start position of this attribute in array
 	);
 	// Enable the vertex color attribute:
 	glEnableVertexAttribArray(1);
@@ -105,7 +103,7 @@ bool ModuleRenderExercise::Init()
 		type_of_data, 				// Type of data
 		should_be_normalized, 		// Should OpenGL Normalize it?
 		stride, 					// Length of one vertex data
-		(void*)(6 * sizeof(float)) // Start position of this attribute in array
+		(void*)(6 * sizeof(float))  // Start position of this attribute in array
 	);
 	// Enable the vertex texture attribute:
 	glEnableVertexAttribArray(2);
@@ -133,12 +131,12 @@ bool ModuleRenderExercise::Init()
 }
 
 bool ModuleRenderExercise::CleanUp()
-{
+{   
 	App->texture->UnloadTexture(&lena_texture, 1);
 
 	glDeleteBuffers(1, &element_buffer_object);
 	glDeleteBuffers(1, &vertex_buffer_object);
-	glDeleteVertexArrays(1, &vertex_array_object);
+	glDeleteVertexArrays(1, &vertex_array_object);        
 
 	return true;
 }
@@ -162,4 +160,3 @@ ModuleRenderExercise::~ModuleRenderExercise()
 {
 
 }
-
