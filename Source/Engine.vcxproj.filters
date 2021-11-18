@@ -426,6 +426,7 @@
       <Filter>MathGeoLib</Filter>
     </ClInclude>
     <ClInclude Include="Console.h" />
+    <ClInclude Include="ModuleTexture.h" />
     <ClInclude Include="DEVIL\include\IL\devil_cpp_wrapper.hpp">
       <Filter>DevIL</Filter>
     </ClInclude>
@@ -450,7 +451,6 @@
     <ClInclude Include="DEVIL\include\IL\ilut_config.h">
       <Filter>DevIL</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="DearImGui">

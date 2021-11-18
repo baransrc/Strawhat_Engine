@@ -101,12 +101,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;LOGGING_SUPPORT_DISABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\;R:\Strawhat_Engine\Source\DEVIL\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\;DEVIL\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>.\GLEW\lib\Release\x64;R:\Strawhat_Engine\Source\DEVIL\lib\x64\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.\GLEW\lib\Release\x64;.\DEVIL\lib\x64\Release</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
