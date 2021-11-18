@@ -114,14 +114,22 @@ bool ModuleRenderExercise::Init()
 	glBindVertexArray(0);
 	
 	// Load Lena Texture:
+	lena_texture_file_path = util::ConcatCStrings(App->GetWorkingDirectory(), LENA_TEXTURE_PATH);
+	
+	min_filter = GL_NEAREST;
+	mag_filter = GL_NEAREST;
+	wrap_mode_s = GL_CLAMP_TO_EDGE;
+	wrap_mode_t = GL_CLAMP_TO_EDGE;
+	mipmap_enabled = false;
+
 	lena_texture = App->texture->LoadTexture(
-		util::ConcatCStrings(App->GetWorkingDirectory(), LENA_TEXTURE_PATH), 
-		GL_NEAREST,
-		GL_NEAREST,
-		GL_CLAMP_TO_EDGE,	
-		GL_CLAMP_TO_EDGE,
+		lena_texture_file_path, 
+		min_filter,
+		mag_filter,
+		wrap_mode_s,	
+		wrap_mode_t,
 		false,
-		false	
+		mipmap_enabled	
 	);
 
 	// Load Lena Texture Data:
@@ -138,6 +146,9 @@ bool ModuleRenderExercise::CleanUp()
 {   
 	App->texture->UnloadTexture(&lena_texture);
 
+	free(lena_texture_data);
+	free(lena_texture_file_path);
+
 	glDeleteBuffers(1, &element_buffer_object);
 	glDeleteBuffers(1, &vertex_buffer_object);
 	glDeleteVertexArrays(1, &vertex_array_object);        
@@ -151,6 +162,9 @@ update_status ModuleRenderExercise::Update()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, lena_texture);
 
+	// Apply the changes to Texture if there is any:
+	ApplyTextureConfigChanges();
+
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
@@ -160,11 +174,100 @@ update_status ModuleRenderExercise::Update()
     return update_status::UPDATE_CONTINUE;
 }
 
-void ModuleRenderExercise::DrawTextureInfoContent() const
+void ModuleRenderExercise::DrawTextureInfoContent()
 {
-	ImGui::TextWrapped("Lena");
+	ImGui::TextWrapped("Texture Info");
 	ImGui::Separator();
 	ImGui::TextWrapped(lena_texture_data);
+	ImGui::TextWrapped("\n");
+	ImGui::TextWrapped("Configuration");
+	ImGui::Separator();
+	ImGui::TextWrapped("Min Filter Mode");
+
+	if (
+		ImGui::RadioButton("GL_NEAREST_MIPMAP_NEAREST", &min_filter, GL_NEAREST_MIPMAP_NEAREST) ||
+		ImGui::RadioButton("GL_LINEAR_MIPMAP_NEAREST", &min_filter, GL_LINEAR_MIPMAP_NEAREST) ||
+		ImGui::RadioButton("GL_NEAREST_MIPMAP_LINEAR", &min_filter, GL_NEAREST_MIPMAP_LINEAR) ||
+		ImGui::RadioButton("GL_LINEAR_MIPMAP_LINEAR", &min_filter, GL_LINEAR_MIPMAP_LINEAR) ||
+		ImGui::RadioButton("GL_NEAREST", &min_filter, GL_NEAREST) ||
+		ImGui::RadioButton("GL_LINEAR", &min_filter, GL_LINEAR)
+	   ) 
+	{
+		settings_changed = true;
+	}
+	
+	ImGui::TextWrapped("\n");
+	ImGui::TextWrapped("Mag Filter Mode");
+
+	if (
+		ImGui::RadioButton("GL_LINEAR", &mag_filter, GL_LINEAR) ||
+		ImGui::RadioButton("GL_NEAREST", &mag_filter, GL_NEAREST)
+	   )
+	{
+		settings_changed = true;
+	}
+
+	ImGui::TextWrapped("\n");
+	ImGui::TextWrapped("S Wrap Mode ");
+	if (
+		ImGui::RadioButton("GL_CLAMP_TO_EDGE", &wrap_mode_s, GL_CLAMP_TO_EDGE) ||
+		ImGui::RadioButton("GL_MIRRORED_REPEAT", &wrap_mode_s, GL_MIRRORED_REPEAT) ||
+		ImGui::RadioButton("GL_REPEAT", &wrap_mode_s, GL_REPEAT)
+		)
+	{
+		settings_changed = true;
+	}
+
+	ImGui::TextWrapped("\n");
+	ImGui::TextWrapped("T Wrap Mode ");
+	if (
+		ImGui::RadioButton("GL_CLAMP_TO_EDGE", &wrap_mode_t, GL_CLAMP_TO_EDGE)
+	   )
+	{
+		settings_changed = true;
+	}
+
+	if (ImGui::RadioButton("GL_REPEAT", &wrap_mode_t, GL_REPEAT))
+	{
+		settings_changed = true;
+	}
+
+	if (ImGui::RadioButton("GL_MIRRORED_REPEAT", &wrap_mode_t, GL_MIRRORED_REPEAT))
+	{
+		settings_changed = true;
+	}
+
+	ImGui::TextWrapped("\n");
+	ImGui::Checkbox("- Mipmaps Enabled", &mipmap_enabled);
+}
+
+void ModuleRenderExercise::ApplyTextureConfigChanges()
+{
+	if (!settings_changed)
+	{
+		return;
+	}
+
+	settings_changed = false;
+
+	// Since the settings we write are not added to file right now,
+	// we dont have to overwrite texture data inside runtime texture file.
+	bool overwrite_data = false;
+
+	// Reconfigure the texture:
+	App->texture->ConfigureTexture
+	(
+		lena_texture_file_path, 
+		lena_texture, 
+		overwrite_data, 
+		min_filter, 
+		mag_filter, 
+		wrap_mode_s, 
+		wrap_mode_t, 
+		true, 
+		false, 
+		mipmap_enabled
+	);
 }
 
 ModuleRenderExercise::~ModuleRenderExercise()
