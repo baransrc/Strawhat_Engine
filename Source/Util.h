@@ -6,6 +6,8 @@
 #include "string.h"
 #include <direct.h> // _getcwd
 #include <iostream>
+#include <fstream>
+#include <stdlib.h>
 
 namespace util
 {
@@ -41,6 +43,7 @@ namespace util
 		//LOG("<Source:%s> <Type:%s> <Severity:%s> <ID:%d> <Message:%s>\n", tmp_source, tmp_type, tmp_severity, id, message);
 	}
 
+	// User is responsible for deallocation.
 	// TODO: ModuleShaderProgram must use this function too.
 	inline void ReadFile(const char* file_name, char** data)
 	{
@@ -50,7 +53,7 @@ namespace util
 		// character for endline, \n, but in windows there are multiple characters for
 		// endline and additional b mode maps all those into \n.
 		// r stands for read mode.
-		fopen_s(&file, file_name, "rb"); // TODO: Get current working directory and find the shader file inside folder.
+		fopen_s(&file, file_name, "rb");
 
 		if (file)
 		{
@@ -86,10 +89,6 @@ namespace util
 	{
 		FILE* file = nullptr;
 
-		// In unix like systems and linux, r and rb are the same since they have single
-		// character for endline, \n, but in windows there are multiple characters for
-		// endline and additional b mode maps all those into \n.
-		// r stands for read mode.
 		fopen_s(&file, file_name, "a"); 
 
 		if (file)
@@ -101,10 +100,25 @@ namespace util
 		}
 	} 
 
-	inline bool DeleteFile(const char* file_name)
+	inline bool RemoveFile(const char* file_name)
 	{
 		// Return true if successful:
 		return remove(file_name) == 0;
+	}
+
+	inline void OverwriteFile(const char* file_name, const char* data)
+	{
+		FILE* file;
+
+		fopen_s(&file, file_name, "w");
+		
+		if (file)
+		{
+			fprintf(file, "%s", data);
+
+			// Close the file:
+			fclose(file);
+		}
 	}
 
 	// User is responsible for deallocation.
