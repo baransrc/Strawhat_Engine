@@ -53,6 +53,40 @@ update_status ModuleTexture::PostUpdate()
     return update_status::UPDATE_CONTINUE;
 }
 
+void ModuleTexture::ConfigureTexture(
+    const char* texture_file_name,
+    GLuint texture_id,
+    bool overwrite_data,
+    GLint min_filter,
+    GLint mag_filter,
+    GLint wrap_s,
+    GLint wrap_t,
+    bool bind_texture,
+    bool is_rgba,
+    bool generate_mipmap) const
+{
+    if (bind_texture)
+    {
+        // Bind texture id:
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+    }
+    // Configure Magnification filter:
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+    // Configure Minification filter:
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+    // Generate mipmap if requested:
+    if (generate_mipmap)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    if (overwrite_data)
+    {
+        DeleteTextureData(texture_id);
+        WriteTextureData(texture_id, texture_file_name);
+    }
+}
+
 GLuint ModuleTexture::LoadTexture(const char* file_name, 
                                   GLint min_filter, 
                                   GLint mag_filter, 
@@ -92,10 +126,19 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
     glGenTextures(1, &texture_id);
     // Bind texture id:
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    // Configure Magnification filter:
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
-    // Configure Minification filter:
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+    // Configure texture:
+    ConfigureTexture(
+        file_name,
+        texture_id,
+        false, // NOTE: Since data is just being created for the first time, no need to overwrite it in the runtime file.
+        min_filter,
+        mag_filter,
+        wrap_s,
+        wrap_t,
+        false, // NOTE: Since we already bind the texture, no need to bind it again. Texture is binded outside to see we are binded the texture explicitly. 
+        is_rgba,
+        generate_mipmap);
+
     // Specify texture parameters:
     glTexImage2D
     (
@@ -112,12 +155,6 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
 
     // Write Texture Data to file:
     WriteTextureData(texture_id, file_name);
-
-    // Generate mipmap if requested:
-    if (generate_mipmap)
-    {
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
 
     // Since image data is already copied to gpu as texture data, 
     // release the memory used by image data:
@@ -162,7 +199,7 @@ void ModuleTexture::WriteTextureData(GLuint texture_id, const char* texture_file
     sprintf
     (
         texture_data_string, 
-        "{start_%lu}\Path: %s\nFormat: %s\nWidth: %i\nHeight: %i\nDepth: %i\n{end_%lu}\n", 
+        TEXTURE_DATA_FORMAT, 
         texture_id,
         texture_file_name, 
         format.c_str(),
@@ -176,7 +213,7 @@ void ModuleTexture::WriteTextureData(GLuint texture_id, const char* texture_file
     util::AppendToFile(runtime_texture_data_file_path, texture_data_string);
 }
 
-void ModuleTexture::DeleteTextureData(GLuint* texture_ptr) const
+void ModuleTexture::DeleteTextureData(GLuint texture_ptr) const
 {
     char* file_buffer;
 
@@ -188,8 +225,8 @@ void ModuleTexture::DeleteTextureData(GLuint* texture_ptr) const
     char start_string[32];
     char end_string[32];
 
-    sprintf(start_string, "{start_%lu}", *texture_ptr);
-    sprintf(end_string, "{end_%lu}", *texture_ptr);
+    sprintf(start_string, "{start_%lu}", texture_ptr);
+    sprintf(end_string, "{end_%lu}", texture_ptr);
 
     util::DeleteStringFromStartToEnd(&file_buffer, start_string, end_string);
 
@@ -200,9 +237,9 @@ void ModuleTexture::DeleteTextureData(GLuint* texture_ptr) const
 
 void ModuleTexture::UnloadTexture(GLuint* texture_ptr) const
 {
-    glDeleteTextures(1, texture_ptr);
+    DeleteTextureData(*texture_ptr);
 
-    DeleteTextureData(texture_ptr);
+    glDeleteTextures(1, texture_ptr);
 }
 
 // User must deallocate buffer memory.
