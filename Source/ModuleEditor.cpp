@@ -22,7 +22,9 @@ bool ModuleEditor::Init()
 	LOG("Initializing Editor");
 
 	// Initialize License:
-	util::ReadFile(util::ConcatCStrings(App->GetWorkingDirectory(), "\\..\\LICENSE"), &license_buffer);
+	char* license_file_path = util::ConcatCStrings(App->GetWorkingDirectory(), "\\..\\LICENSE");
+	util::ReadFile(license_file_path, &license_buffer);
+	free(license_file_path);
 
 	InitializeDearImGui();
     
