@@ -21,8 +21,16 @@ GIVEN AS HOMEWORK:
 	* Prepare the module to receive different settings through an Editor Window.
 		# FOV horizontal and vertical, near/far plane distance etc.
 		# Movement/Rotation Speed, background color etc.
+- Load model from file
+	* Integrate and use assimp library.
+	* Load Bakerhouse Modal and texture.
+	* Our mesh is stagtic so, create interleaved arrays for VBO.
+	* Add an imgui menu showing mesh related info.
+		# Num vertices
+		# Num triangles
+		# Diffuse texture
 
-BETTER IF DONE:
+OTHERS:
 - FPS graph:
 	* Accumulate fps data in a vector.
 	* When the vector is full, cycle data.
