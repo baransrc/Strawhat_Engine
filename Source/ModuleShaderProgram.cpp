@@ -14,8 +14,14 @@ bool ModuleShaderProgram::Init()
     bool return_flag = true;
 
     // Load shaders from files and compile them:
-    unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, LoadProgramSource(VERTEX_SHADER_PATH));
-    unsigned int fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, LoadProgramSource(FRAGMENT_SHADER_PATH));
+    char* vertex_shader_buffer = LoadProgramSource(VERTEX_SHADER_PATH);
+    char* fragment_shader_buffer = LoadProgramSource(FRAGMENT_SHADER_PATH);
+    
+    unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader_buffer);
+    unsigned int fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader_buffer);
+
+    free(vertex_shader_buffer);
+    free(fragment_shader_buffer);
 
     // Link shaders and create program:
     program_id = CreateProgram(vertex_shader_id, fragment_shader_id);
