@@ -1,10 +1,11 @@
-#include <algorithm>
+#include "Application.h"
 #include "ModuleShaderProgram.h"
+#include <algorithm>
 #include "GL/glew.h"
 #include "Util.h"
 
-constexpr const char* VERTEX_SHADER_PATH = "vertex.glsl";
-constexpr const char* FRAGMENT_SHADER_PATH = "fragment.glsl";
+constexpr const char* VERTEX_SHADER_PATH = "\\Shaders\\vertex.glsl";
+constexpr const char* FRAGMENT_SHADER_PATH = "\\Shaders\\fragment.glsl";
 
 ModuleShaderProgram::ModuleShaderProgram()
 {
@@ -14,15 +15,23 @@ bool ModuleShaderProgram::Init()
 {
     bool return_flag = true;
 
+    // Get Shader file paths:
+    char* vertex_shader_path = util::ConcatCStrings(App->GetWorkingDirectory(), VERTEX_SHADER_PATH);
+    char* fragment_shader_path = util::ConcatCStrings(App->GetWorkingDirectory(), FRAGMENT_SHADER_PATH);
+
     // Load shaders from files:
     char* vertex_shader_buffer = nullptr;
-    util::ReadFile(VERTEX_SHADER_PATH, &vertex_shader_buffer);
+    util::ReadFile(vertex_shader_path, &vertex_shader_buffer);
     char* fragment_shader_buffer = nullptr;
-    util::ReadFile(FRAGMENT_SHADER_PATH, &fragment_shader_buffer);
+    util::ReadFile(fragment_shader_path, &fragment_shader_buffer);
 
-    // Log loaded source codes to the console:
-    LOG("\nLoaded Vertex Shader:\n------\n%s\n------\n", vertex_shader_buffer);
-    LOG("\nLoaded Fragment Shader:\n------\n%s\n------\n", fragment_shader_buffer);
+    // Log loaded source codes and file paths to the console:
+    LOG("\nLoaded Vertex Shader (%s):\n------\n%s\n------\n", vertex_shader_path, vertex_shader_buffer);
+    LOG("\nLoaded Fragment Shader (%s):\n------\n%s\n------\n", fragment_shader_path, fragment_shader_buffer);
+
+    // Release memory occupied by file path buffers as they are not needed anymore:
+    free(vertex_shader_path);
+    free(fragment_shader_path);
     
     // Compile the loaded source codes and get their ids:
     unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader_buffer);
