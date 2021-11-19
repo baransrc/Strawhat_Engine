@@ -1,6 +1,7 @@
 #include <algorithm>
 #include "ModuleShaderProgram.h"
 #include "GL/glew.h"
+#include "Util.h"
 
 constexpr const char* VERTEX_SHADER_PATH = "vertex.glsl";
 constexpr const char* FRAGMENT_SHADER_PATH = "fragment.glsl";
@@ -13,13 +14,21 @@ bool ModuleShaderProgram::Init()
 {
     bool return_flag = true;
 
-    // Load shaders from files and compile them:
-    char* vertex_shader_buffer = LoadProgramSource(VERTEX_SHADER_PATH);
-    char* fragment_shader_buffer = LoadProgramSource(FRAGMENT_SHADER_PATH);
+    // Load shaders from files:
+    char* vertex_shader_buffer = nullptr;
+    util::ReadFile(VERTEX_SHADER_PATH, &vertex_shader_buffer);
+    char* fragment_shader_buffer = nullptr;
+    util::ReadFile(FRAGMENT_SHADER_PATH, &fragment_shader_buffer);
+
+    // Log loaded source codes to the console:
+    LOG("\nLoaded Vertex Shader:\n------\n%s\n------\n", vertex_shader_buffer);
+    LOG("\nLoaded Fragment Shader:\n------\n%s\n------\n", fragment_shader_buffer);
     
+    // Compile the loaded source codes and get their ids:
     unsigned int vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader_buffer);
     unsigned int fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader_buffer);
 
+    // Free the source code strings as they are not needed anymore:
     free(vertex_shader_buffer);
     free(fragment_shader_buffer);
 
@@ -85,50 +94,6 @@ unsigned int ModuleShaderProgram::CreateProgram(unsigned int vtx_shader_id, unsi
     return shader_program_id;
 }
 
-char* ModuleShaderProgram::LoadProgramSource(const char* file_name) const
-{
-    char* data = nullptr;
-    FILE* file = nullptr;
-
-    // In unix like systems and linux, r and rb are the same since they have single
-    // character for endline, \n, but in windows there are multiple characters for
-    // endline and additional b mode maps all those into \n.
-    // r stands for read mode.
-    fopen_s(&file, file_name, "rb"); // TODO: Get current working directory and find the shader file inside folder.
-
-    if (file)
-    {
-        // Number of bytes to offset from origin:
-        static long file_offset = 0;
-        // Size in bytes, of each element to be read (since a char is one byte):
-        size_t element_size_bytes = 1;
-
-        // To the end of the file:
-        fseek(file, file_offset, SEEK_END);
-
-        // Set size to location of the end of the file:
-        int size = ftell(file);
-
-        // Allocate needed amont of memory for file:
-        data = (char*) malloc(size+1);
-
-        // Go to the start of the file:
-        fseek(file, 0, SEEK_SET);
-
-        // Read file and write to data:
-        fread(data, element_size_bytes, size, file);
-
-        // Set end of data to null-character:
-        data[size] = 0;
-
-        // Close the file:
-        fclose(file);
-    }
-
-    LOG("\nLoaded Program:\n------\n%s\n------\n", data);
-
-    return data;
-}
 
 unsigned int ModuleShaderProgram::CompileShader(unsigned int type, const char* source) const
 {
