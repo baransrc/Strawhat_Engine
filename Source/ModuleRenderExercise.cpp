@@ -157,13 +157,18 @@ bool ModuleRenderExercise::CleanUp()
 }
 
 
+update_status ModuleRenderExercise::PreUpdate()
+{
+	// Apply the changes to Texture if there is any:
+	ApplyTextureConfigChanges();
+
+	return update_status::UPDATE_CONTINUE;
+}
+
 update_status ModuleRenderExercise::Update()
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, lena_texture);
-
-	// Apply the changes to Texture if there is any:
-	ApplyTextureConfigChanges();
 
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
@@ -176,6 +181,11 @@ update_status ModuleRenderExercise::Update()
 
 void ModuleRenderExercise::DrawTextureInfoContent()
 {
+	// NOTE: Use of PushID and PopID here is extremely vital since ImGui,
+	// by default, takes button name as its id. Since below we have buttons
+	// with same name, if we don't use PushID and PopID, for example the radio
+	// buttons of T Wrap Mode won't work.
+
 	ImGui::TextWrapped("Texture Info");
 	ImGui::Separator();
 	ImGui::TextWrapped(lena_texture_data);
@@ -184,6 +194,7 @@ void ModuleRenderExercise::DrawTextureInfoContent()
 	ImGui::Separator();
 	ImGui::TextWrapped("Min Filter Mode");
 
+	ImGui::PushID("min_filter_modes");
 	if (
 		ImGui::RadioButton("GL_NEAREST_MIPMAP_NEAREST", &min_filter, GL_NEAREST_MIPMAP_NEAREST) ||
 		ImGui::RadioButton("GL_LINEAR_MIPMAP_NEAREST", &min_filter, GL_LINEAR_MIPMAP_NEAREST) ||
@@ -195,10 +206,11 @@ void ModuleRenderExercise::DrawTextureInfoContent()
 	{
 		settings_changed = true;
 	}
+	ImGui::PopID();
 	
 	ImGui::TextWrapped("\n");
 	ImGui::TextWrapped("Mag Filter Mode");
-
+	ImGui::PushID("mag_filter_modes");
 	if (
 		ImGui::RadioButton("GL_LINEAR", &mag_filter, GL_LINEAR) ||
 		ImGui::RadioButton("GL_NEAREST", &mag_filter, GL_NEAREST)
@@ -206,39 +218,58 @@ void ModuleRenderExercise::DrawTextureInfoContent()
 	{
 		settings_changed = true;
 	}
+	ImGui::PopID();
 
 	ImGui::TextWrapped("\n");
 	ImGui::TextWrapped("S Wrap Mode ");
-	if (
-		ImGui::RadioButton("GL_CLAMP_TO_EDGE", &wrap_mode_s, GL_CLAMP_TO_EDGE) ||
-		ImGui::RadioButton("GL_MIRRORED_REPEAT", &wrap_mode_s, GL_MIRRORED_REPEAT) ||
-		ImGui::RadioButton("GL_REPEAT", &wrap_mode_s, GL_REPEAT)
-		)
+	ImGui::PushID("s_wrap_modes");
+	if (ImGui::RadioButton("GL_CLAMP_TO_EDGE", wrap_mode_s == GL_CLAMP_TO_EDGE))
 	{
+		wrap_mode_s = GL_CLAMP_TO_EDGE;
 		settings_changed = true;
 	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("GL_MIRRORED_REPEAT", wrap_mode_s == GL_MIRRORED_REPEAT))
+	{
+		wrap_mode_s = GL_MIRRORED_REPEAT;
+		settings_changed = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("GL_REPEAT", wrap_mode_s == GL_REPEAT))
+	{
+		wrap_mode_s = GL_REPEAT;
+		settings_changed = true;
+	}
+	ImGui::PopID();
 
 	ImGui::TextWrapped("\n");
-	ImGui::TextWrapped("T Wrap Mode ");
-	if (
-		ImGui::RadioButton("GL_CLAMP_TO_EDGE", &wrap_mode_t, GL_CLAMP_TO_EDGE)
-	   )
+	ImGui::TextWrapped("T Wrap Mode");
+	ImGui::PushID("t_wrap_modes");
+	if (ImGui::RadioButton("GL_CLAMP_TO_EDGE", wrap_mode_t == GL_CLAMP_TO_EDGE))
 	{
+		wrap_mode_t = GL_CLAMP_TO_EDGE;
 		settings_changed = true;
 	}
-
-	if (ImGui::RadioButton("GL_REPEAT", &wrap_mode_t, GL_REPEAT))
+	ImGui::SameLine();
+	if (ImGui::RadioButton("GL_MIRRORED_REPEAT", wrap_mode_t == GL_MIRRORED_REPEAT))
 	{
+		wrap_mode_t = GL_MIRRORED_REPEAT;
 		settings_changed = true;
 	}
-
-	if (ImGui::RadioButton("GL_MIRRORED_REPEAT", &wrap_mode_t, GL_MIRRORED_REPEAT))
+	ImGui::SameLine();
+	if (ImGui::RadioButton("GL_REPEAT", wrap_mode_t == GL_REPEAT))
 	{
+		wrap_mode_t = GL_REPEAT;
 		settings_changed = true;
 	}
+	ImGui::PopID();
 
 	ImGui::TextWrapped("\n");
-	ImGui::Checkbox("- Mipmaps Enabled", &mipmap_enabled);
+	ImGui::TextWrapped("Mipmaps Enabled");
+	ImGui::SameLine();
+	ImGui::PushID("mip_map_mode");
+	ImGui::Checkbox("", &mipmap_enabled);
+	ImGui::PopID();
 }
 
 void ModuleRenderExercise::ApplyTextureConfigChanges()

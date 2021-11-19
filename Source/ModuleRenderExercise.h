@@ -26,6 +26,7 @@ public:
     bool Init();
     bool CleanUp();
 	
+    update_status PreUpdate();
     update_status Update();
     
     void DrawTextureInfoContent();
