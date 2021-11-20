@@ -1,9 +1,4 @@
 GIVEN AS HOMEWORK:
-- Implement model, view and projection matrices to the engine using MathGeoLib.
-	* Modify our triangle rendering example so we can multiply each vertex by model.
-	* Use Frustum class in MathGeoLib to get projection matrix.
-	* Use float4x4 class in MathGeoLib to get model and view matrix.
-	* Note: For view matrix you can create your own LookAt function or use MathGeoLib LookAt.
 - Integrate the library in debug_draw.zip
 	* Add source and header files to project.
 	* Create ModuleDebugDraw in Application class
