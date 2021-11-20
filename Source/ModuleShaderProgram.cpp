@@ -155,6 +155,11 @@ void ModuleShaderProgram::SetUniformVariable(const char* name, int value) const
     glUniform1i(glGetUniformLocation(program_id, name), value);
 }
 
+void ModuleShaderProgram::SetUniformVariable(const char* name, const float4x4& value, const bool transpose) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(program_id, name), 1, transpose ? GL_TRUE : GL_FALSE, value.ptr());
+}
+
 ModuleShaderProgram::~ModuleShaderProgram()
 {
 }

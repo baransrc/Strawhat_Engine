@@ -1,5 +1,6 @@
 #pragma once
 #include "Module.h"
+#include "MATH_GEO_LIB/Math/float4x4.h"
 
 class Application;
 
@@ -21,6 +22,7 @@ class ModuleShaderProgram : public Module
 	void Use() const;
 
 	void SetUniformVariable(const char* name, int value) const;
+	void SetUniformVariable(const char* name, const float4x4& value, const bool transpose) const;
 
 	~ModuleShaderProgram();
     
