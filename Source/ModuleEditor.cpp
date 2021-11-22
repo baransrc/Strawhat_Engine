@@ -148,9 +148,6 @@ void ModuleEditor::DrawConsoleWindow()
 
 	console->ToImGuiText();
 
-	//static int i = 0;
-	//LOG("i:%i", ++i);
-
 	// End Console Window:
 	ImGui::End();
 }
