@@ -1,12 +1,4 @@
 GIVEN AS HOMEWORK:
-- Integrate the library in debug_draw.zip
-	* Add source and header files to project.
-	* Create ModuleDebugDraw in Application class
-	* Call drawing primitives each render.
-		# dd::axisTriad(float4x4::identity, 0.1f, 1.0f);
-		# dd::xzSquareGrid(-10, 10, 0.0f, 1.0f, dd::colors::Gray);
-	* Call ModuleDebugDraw::Draw method passing projection, view, and screen width & height as arguments.
-	* Note: Draw method must be called after drawing all primitives.
 - Implement Camera
 	* CameraModule that will generate the perspective and view matrices.
 	* Draw a grid on the ground for orientation.
