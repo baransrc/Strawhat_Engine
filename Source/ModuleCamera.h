@@ -30,6 +30,11 @@ public:
 	
 	bool Init();
 	bool CleanUp();
+
+	float4x4 GetModelMatrix() const { return model_matrix; };
+	float4x4 GetViewMatrix() const { return view_matrix; };
+	float4x4 GetProjectionMatrix() const { return projection_matrix; };
+
 	
 	update_status PreUpdate();
 	update_status Update();

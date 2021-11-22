@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;LOGGING_SUPPORT_DISABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\;DEVIL\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\;DEVIL\include\;DEBUG_DRAW\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -197,6 +197,7 @@
     <ClCompile Include="MATH_GEO_LIB\Math\TransformOps.cpp" />
     <ClCompile Include="MATH_GEO_LIB\Time\Clock.cpp" />
     <ClCompile Include="ModuleCamera.cpp" />
+    <ClCompile Include="ModuleDebugDraw.cpp" />
     <ClCompile Include="ModuleEditor.cpp" />
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
@@ -217,6 +218,8 @@
     <ClInclude Include="DEAR_IMGUI\include\imstb_rectpack.h" />
     <ClInclude Include="DEAR_IMGUI\include\imstb_textedit.h" />
     <ClInclude Include="DEAR_IMGUI\include\imstb_truetype.h" />
+    <ClInclude Include="DEBUG_DRAW\debugdraw.h" />
+    <ClInclude Include="DEBUG_DRAW\debug_draw.hpp" />
     <ClInclude Include="DEVIL\include\IL\devil_cpp_wrapper.hpp" />
     <ClInclude Include="DEVIL\include\IL\devil_internal_exports.h" />
     <ClInclude Include="DEVIL\include\IL\il.h" />
@@ -304,6 +307,7 @@
     <ClInclude Include="MATH_GEO_LIB\Time\Clock.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleCamera.h" />
+    <ClInclude Include="ModuleDebugDraw.h" />
     <ClInclude Include="ModuleEditor.h" />
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
