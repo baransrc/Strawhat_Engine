@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "ModuleWindow.h"
 #include "Globals.h"
 #include "ModuleCamera.h"
 #include "MathGeoLib.h"
@@ -17,16 +18,17 @@ bool ModuleCamera::Init()
 	// TODO: Inside the editor window make this changeable too:
 	SetPosition(float3(2.0f, 3.0f, 10.0f));
 
-	// TODO: Calculate this dynamically when the screen is resized:
-	SetAspectRatio((float)SCREEN_HEIGHT / (float)SCREEN_WIDTH);
-
 	// Initialize the frustum:
 	frustum.SetKind(FrustumSpaceGL, FrustumRightHanded);
 
 	// TODO: Make this switchable inside the editor:
 	if (is_perspective)
 	{
-		SetAsPerspective(math::DegToRad(90.0f));
+		SetAsPerspective
+		(
+			math::DegToRad(45.0f), // Horizontal field of view
+			(float)App->window->window_width / (float)App->window->window_height // Aspect ratio
+		);
 	}
 	else
 	{
@@ -65,8 +67,7 @@ void ModuleCamera::SetHorizontalFOV(float new_horizontal_fov)
 
 void ModuleCamera::SetAspectRatio(float new_aspect_ratio)
 {
-	float vertical_fov = 2 * math::Atan(math::Tan(frustum.HorizontalFov() * 0.5f) * new_aspect_ratio);
-	frustum.SetVerticalFovAndAspectRatio(vertical_fov, new_aspect_ratio);
+	frustum.SetHorizontalFovAndAspectRatio(frustum.HorizontalFov(), new_aspect_ratio);
 	should_recalculate_projection_matrix = true;
 }
 
@@ -98,9 +99,10 @@ void ModuleCamera::SetOrientation(float3 new_orientation)
 	// TODO: Implement this.
 }
 
-void ModuleCamera::SetAsPerspective(float new_horizontal_fov)
+void ModuleCamera::SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio)
 {
-	frustum.SetPerspective(new_horizontal_fov, 2 * math::Atan(math::Tan(new_horizontal_fov * 0.5f) * GetAspectRatio()));
+	frustum.SetPerspective(new_horizontal_fov, 2 * math::Atan(math::Tan(new_horizontal_fov * 0.5f) * new_aspect_ratio));
+	SetAspectRatio(new_aspect_ratio);
 	should_recalculate_projection_matrix = true;
 }
 
@@ -121,6 +123,11 @@ void ModuleCamera::LookAt(float3 look_at_position)
 	// Set front and up accordingly:
 	frustum.SetFront(rotation_matrix.MulDir(frustum.Front().Normalized()));
 	frustum.SetUp(rotation_matrix.MulDir(frustum.Up().Normalized()));
+}
+
+void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
+{
+	SetAspectRatio((float)width / (float)height);
 }
 
 update_status ModuleCamera::PreUpdate()

@@ -40,10 +40,12 @@ public:
 	void SetPlaneDistances(float new_near_plane_distance, float new_far_plane_distance);
 	void SetPosition(float3 new_position);
 	void SetOrientation(float3 new_orientation);
-	void SetAsPerspective(float new_horizontal_fov);
+	void SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio);
 	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
 
 	void LookAt(float3 look_at_position);
+
+	void WindowResized(unsigned int width, unsigned int height);
 
 	update_status PreUpdate();
 	update_status Update();

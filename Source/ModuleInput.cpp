@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "ModuleInput.h"
 #include "ModuleRender.h"
+#include "ModuleCamera.h"
 #include "SDL/include/SDL.h"
 #include "imgui_impl_sdl.h"
 
@@ -44,8 +45,11 @@ update_status ModuleInput::Update()
             return update_status::UPDATE_STOP;
 
             case SDL_WINDOWEVENT:
-            if (sdlEvent.window.event == SDL_WINDOWEVENT_RESIZED || sdlEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                App->renderer->WindowResized(sdlEvent.window.data1, sdlEvent.window.data2);
+                if (sdlEvent.window.event == SDL_WINDOWEVENT_RESIZED || sdlEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                {
+                    App->renderer->WindowResized(sdlEvent.window.data1, sdlEvent.window.data2);
+                    App->camera->WindowResized(sdlEvent.window.data1, sdlEvent.window.data2);
+                }
             break;
         }
     }
