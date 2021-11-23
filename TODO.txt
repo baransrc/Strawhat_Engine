@@ -1,13 +1,13 @@
 GIVEN AS HOMEWORK:
 - Implement Camera
-	* CameraModule that will generate the perspective and view matrices.
-	* Draw a grid on the ground for orientation.
 	* Have all the camera controls from Unity (except orbit for now).
 	* Refer to Game Camera slide for implementation details.
-	* React to window resize, calculate Aspect Ratio and modify FOVs accordingly.
 	* Prepare the module to receive different settings through an Editor Window.
 		# FOV horizontal and vertical, near/far plane distance etc.
 		# Movement/Rotation Speed, background color etc.
+	* CameraModule that will generate the perspective and view matrices. -- DONE
+	* Draw a grid on the ground for orientation. -- DONE
+	* React to window resize, calculate Aspect Ratio and modify FOVs accordingly. -- DONE
 - Load model from file
 	* Integrate and use assimp library.
 	* Load Bakerhouse Modal and texture.
