@@ -20,12 +20,12 @@ Application::Application()
 
 	// Order matters: they will Init/start/update in this order
 	modules.push_back(window = new ModuleWindow());
+	modules.push_back(input = new ModuleInput());
+    modules.push_back(camera = new ModuleCamera());
     modules.push_back(texture = new ModuleTexture());
 	modules.push_back(renderer = new ModuleRender());
     modules.push_back(render_exercise = new ModuleRenderExercise());
-	modules.push_back(input = new ModuleInput());
     modules.push_back(shader_program = new ModuleShaderProgram());
-    modules.push_back(camera = new ModuleCamera());
     modules.push_back(debug_draw = new ModuleDebugDraw());
     modules.push_back(editor = new ModuleEditor());
 }
