@@ -129,8 +129,7 @@ update_status ModuleCamera::PreUpdate()
 	if (should_recalculate_projection_matrix)
 	{
 		should_recalculate_projection_matrix = false;
-		frustum.ComputeProjectionMatrix();
-		projection_matrix = frustum.ProjectionMatrix();
+		CalculateProjectionMatrix();
 	}
 
 	// Make sure we are using the true shader before passing the arguments:
@@ -159,4 +158,6 @@ update_status ModuleCamera::PostUpdate()
 
 void ModuleCamera::CalculateProjectionMatrix()
 {
+	frustum.ComputeProjectionMatrix();
+	projection_matrix = frustum.ProjectionMatrix();
 }
