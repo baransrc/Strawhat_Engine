@@ -16,14 +16,10 @@ private:
 
 	// Properties:
 	bool is_perspective = true;
-	float3 position;
-	float aspect_ratio;
-	float fov_horizontal;
-	float fov_vertical;
-	float orthographic_width;
-	float orthographic_height;
-	float near_plane;
-	float far_plane;
+
+	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
+	bool should_recalculate_projection_matrix = false;
+
 public:
 	ModuleCamera();
 	~ModuleCamera();
@@ -34,10 +30,26 @@ public:
 	float4x4 GetModelMatrix() const { return model_matrix; };
 	float4x4 GetViewMatrix() const { return view_matrix; };
 	float4x4 GetProjectionMatrix() const { return projection_matrix; };
-
+	float3 GetPosition() const { return frustum.Pos(); };
+	float GetAspectRatio() const { return frustum.AspectRatio(); };
 	
+	void SetHorizontalFOV(float new_horizontal_fov);
+	void SetAspectRatio(float new_aspect_ratio);
+	void SetFarPlaneDistance(float new_far_plane_distance);
+	void SetNearPlaneDistance(float new_near_plane_distance);
+	void SetPlaneDistances(float new_near_plane_distance, float new_far_plane_distance);
+	void SetPosition(float3 new_position);
+	void SetOrientation(float3 new_orientation);
+	void SetAsPerspective(float new_horizontal_fov);
+	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
+
+	void LookAt(float3 look_at_position);
+
 	update_status PreUpdate();
 	update_status Update();
 	update_status PostUpdate();
+
+private:
+	void CalculateProjectionMatrix();
 };
 
