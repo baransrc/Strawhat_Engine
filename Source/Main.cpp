@@ -9,17 +9,15 @@
 
 #ifdef _DEBUG
 #define MYDEBUG_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__)
-#endif // _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
 #include <crtdbg.h>
-#ifdef _DEBUG
 #define new MYDEBUG_NEW
 #endif
 
 void DumpLeaks(void)
 {
-	_CrtDumpMemoryLeaks(); // show leaks with file and line where allocation was made
+	_CrtDumpMemoryLeaks(); // Show leaks with file and line where allocation was made
 }
 
 enum class main_states
@@ -32,29 +30,32 @@ enum class main_states
 };
 
 Console* console = NULL;
+TimeManager* Time = NULL;
 Application* App = NULL;
 
 int main(int argc, char ** argv)
 {
 	atexit(DumpLeaks);
-
+	
 	int main_return = EXIT_FAILURE;
+
 	main_states state = main_states::MAIN_CREATION;
 
 	console = new Console();
-    
+	Time = new TimeManager();
+
 	while (state != main_states::MAIN_EXIT)
 	{
 		switch (state)
 		{
-            case main_states::MAIN_CREATION:
+		case main_states::MAIN_CREATION:
 			LOG("Application Creation --------------");
 			App = new Application();
 			state = main_states::MAIN_START;
 			break;
-            
-            case main_states::MAIN_START:
-            
+
+		case main_states::MAIN_START:
+
 			LOG("Application Init --------------");
 			if (App->Init() == false)
 			{
@@ -66,26 +67,30 @@ int main(int argc, char ** argv)
 				state = main_states::MAIN_UPDATE;
 				LOG("Application Update --------------");
 			}
-            
+
 			break;
-            
-            case main_states::MAIN_UPDATE:
-            {
-                update_status update_return = App->Update();
-                
-                if (update_return == update_status::UPDATE_ERROR)
-                {
-                    LOG("Application Update exits with error -----");
-                    state = main_states::MAIN_EXIT;
-                }
-                
-                if (update_return == update_status::UPDATE_STOP)
-                    state = main_states::MAIN_FINISH;
-            }
-			break;
-            
-            case main_states::MAIN_FINISH:
-            
+
+		case main_states::MAIN_UPDATE:
+		{
+			Time->Start();
+
+			update_status update_return = App->Update();
+
+			Time->End();
+
+			if (update_return == update_status::UPDATE_ERROR)
+			{
+				LOG("Application Update exits with error -----");
+				state = main_states::MAIN_EXIT;
+			}
+
+			if (update_return == update_status::UPDATE_STOP)
+				state = main_states::MAIN_FINISH;
+		}
+		break;
+
+		case main_states::MAIN_FINISH:
+
 			LOG("Application CleanUp --------------");
 			if (App->CleanUp() == false)
 			{
@@ -93,17 +98,19 @@ int main(int argc, char ** argv)
 			}
 			else
 				main_return = EXIT_SUCCESS;
-            
+
 			state = main_states::MAIN_EXIT;
-            
+
 			break;
-            
+
 		}
-        
+
 	}
-    
+
 	LOG("Bye :)\n");
 	delete App;
+	delete Time;
 	delete console;
+	
 	return main_return;
 }
