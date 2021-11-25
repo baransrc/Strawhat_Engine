@@ -7,6 +7,7 @@
 constexpr int TIMER_BUFFER_LENGTH = 60;
 constexpr float TIMER_BUFFER_LENGTH_INVERSE = (1.0f / (float)TIMER_BUFFER_LENGTH);
 constexpr float DIVIDE_BY_THOUSAND = (1.0f / 1000.0f);
+constexpr float FPS_CAP_60 = 16.66666666666667f;
 
 class NormalTimer
 {
@@ -97,10 +98,19 @@ public:
 		timer.Start();
 	};
 
-	void End()
+	void End(bool cap_to_60_fps = true)
 	{
 		delta_time_ms = timer.Read();
 
+		if (cap_to_60_fps)
+		{
+			float delay_amount = max(0.0f, (FPS_CAP_60 - delta_time_ms));
+
+			delta_time_ms += delay_amount;
+
+			SDL_Delay(delay_amount);
+		}
+		
 		current_index = (current_index + 1) % TIMER_BUFFER_LENGTH;
 
 		frame_times_ms[current_index] = delta_time_ms;
