@@ -153,8 +153,6 @@ update_status ModuleCamera::PreUpdate()
 
 update_status ModuleCamera::Update()
 {
-
-
 	return update_status::UPDATE_CONTINUE;
 }
 

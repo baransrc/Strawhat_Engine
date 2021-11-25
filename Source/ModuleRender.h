@@ -17,7 +17,7 @@ private:
 
 public:
 	ModuleRender();
-	~ModuleRender();
+	~ModuleRender() override;
 
 	bool Init();
 	update_status PreUpdate();

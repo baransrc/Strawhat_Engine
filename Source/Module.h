@@ -7,10 +7,12 @@ class Application;
 class Module
 {
     public:
-    
+
 	Module()
 	{
 	}
+
+	virtual ~Module() = default;
     
 	virtual bool Init() 
 	{

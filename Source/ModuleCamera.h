@@ -22,7 +22,7 @@ private:
 
 public:
 	ModuleCamera();
-	~ModuleCamera();
+	~ModuleCamera() override;
 	
 	bool Init();
 	bool CleanUp();
@@ -54,4 +54,3 @@ public:
 private:
 	void CalculateProjectionMatrix();
 };
-

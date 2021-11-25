@@ -12,7 +12,7 @@ private:
 
 public:
 	ModuleEditor();
-	~ModuleEditor();
+	~ModuleEditor() override;
 
 	bool Init();
 	bool CleanUp();

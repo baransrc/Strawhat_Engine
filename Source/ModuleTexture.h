@@ -9,7 +9,7 @@ private:
 	char* runtime_texture_data_file_path;
 public:
 	ModuleTexture();
-	~ModuleTexture();
+	~ModuleTexture() override;
 
 	bool Init();
 	bool CleanUp();

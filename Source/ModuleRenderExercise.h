@@ -21,7 +21,7 @@ private:
     bool settings_changed = false;
 public:
     ModuleRenderExercise();
-    ~ModuleRenderExercise();
+    ~ModuleRenderExercise() override;
     
     bool Init();
     bool CleanUp();

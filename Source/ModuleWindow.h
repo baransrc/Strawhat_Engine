@@ -13,7 +13,7 @@ public:
 	ModuleWindow();
 
 	// Destructor
-	virtual ~ModuleWindow();
+	~ModuleWindow() override;
 
 	// Called before quitting
 	bool Init();
