@@ -459,7 +459,7 @@
       <Filter>DebugDraw</Filter>
     </ClInclude>
     <ClInclude Include="ModuleDebugDraw.h" />
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Time.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="DearImGui">

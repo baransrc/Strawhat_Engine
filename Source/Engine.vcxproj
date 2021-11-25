@@ -315,7 +315,7 @@
     <ClInclude Include="ModuleShaderProgram.h" />
     <ClInclude Include="ModuleTexture.h" />
     <ClInclude Include="ModuleWindow.h" />
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Time.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
