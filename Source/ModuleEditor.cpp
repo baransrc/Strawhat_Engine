@@ -17,6 +17,7 @@ ModuleEditor::~ModuleEditor()
 {
 }
 
+
 bool ModuleEditor::Init()
 {
 	LOG("Initializing Editor");
@@ -27,6 +28,10 @@ bool ModuleEditor::Init()
 	free(license_file_path);
 
 	InitializeDearImGui();
+
+	// Reserve space for fps and ms graphs:
+	ms_data.reserve(TIMER_BUFFER_LENGTH);
+	fps_data.reserve(TIMER_BUFFER_LENGTH);
     
 	show_demo_window = true;
     
@@ -40,7 +45,7 @@ bool ModuleEditor::CleanUp()
 	UninitializeDearImGui();
 
 	free(license_buffer);
-    
+
 	return true;
 }
 
@@ -62,6 +67,11 @@ void ModuleEditor::DrawMainMenuBar()
 			if (ImGui::MenuItem("Render Exercise"))
 			{
 				show_render_exercise_texture_info_window = true;
+			}
+
+			if (ImGui::MenuItem("Performance"))
+			{
+				show_performance_window = true;
 			}
 
 			// End Drawing Tools Menu:
@@ -162,6 +172,48 @@ void ModuleEditor::DrawRenderExerciseTextureInfoWindow()
 	}
 }
 
+void ModuleEditor::DrawPerformanceWindow()
+{
+	if (!show_performance_window)
+	{
+		if (!fps_data.empty())
+		{
+			ms_data.clear();
+		}
+
+		if (!ms_data.empty())
+		{
+			ms_data.clear();
+		}
+
+		return;
+	}
+
+	if (fps_data.size() == TIMER_BUFFER_LENGTH)
+	{
+		fps_data.erase(fps_data.begin());
+	}
+	fps_data.push_back(Time->FPS());
+
+	if (ms_data.size() == TIMER_BUFFER_LENGTH)
+	{
+		ms_data.erase(ms_data.begin());
+	}
+	ms_data.push_back(Time->DeltaTimeMs());
+	
+	ImGui::Begin("Performance", &show_performance_window);
+	
+	char title[25];
+	
+	sprintf_s(title, 25, "Framerate %.1f", fps_data.back());
+	ImGui::PlotHistogram("##framerate", &fps_data.front(), fps_data.size(), 0, title, 0.0f, 100.0f, ImVec2(310, 100));
+	
+	sprintf_s(title, 25, "Milliseconds %.1f", ms_data.back());
+	ImGui::PlotHistogram("##milliseconds", &ms_data.front(), ms_data.size(), 0, title, 0.0f, 40.0f, ImVec2(310, 100));
+
+	ImGui::End();
+}
+
 update_status ModuleEditor::PreUpdate()
 {
 	// Start the Dear ImGui frame:
@@ -184,6 +236,8 @@ update_status ModuleEditor::Update()
 	DrawConsoleWindow();
 
 	DrawRenderExerciseTextureInfoWindow();
+
+	DrawPerformanceWindow();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
