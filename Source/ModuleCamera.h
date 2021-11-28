@@ -14,11 +14,17 @@ private:
 	float4x4 view_matrix;
 	float4x4 projection_matrix;
 
+	float3 direction = float3::zero;
+	// Euler Angles:
+	float yaw = -90.0f;
+	float pitch = 0.0f;
+
 	// Properties:
 	bool is_perspective = true;
 	bool should_auto_rotate_around_target = false;
 	float3 target_position;
 	float3 movement_speed;
+	float sensitivity = 10.f;
 	float orbit_speed;
 
 
@@ -60,4 +66,5 @@ public:
 private:
 	void CalculateProjectionMatrix();
 	void Move();
+	void Rotate();
 };

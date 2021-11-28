@@ -164,6 +164,10 @@ update_status ModuleCamera::PreUpdate()
 		CalculateProjectionMatrix();
 	}
 
+	Rotate();
+
+	view_matrix = frustum.ViewMatrix();
+
 	Move();
 
 	LookAt(frustum.Front() + GetPosition());
@@ -172,7 +176,7 @@ update_status ModuleCamera::PreUpdate()
 	{
 		AutoRotateAround(target_position);
 	}
-
+	
 	// Make sure we are using the true shader before passing the arguments:
 	App->shader_program->Use();
 
@@ -187,7 +191,14 @@ update_status ModuleCamera::PreUpdate()
 
 update_status ModuleCamera::Update()
 {
-	
+	LOG
+	(
+		"Mouse Position: %f, %f -- Mouse Delta: %f, %f", 
+		App->input->GetMousePosition().x, 
+		App->input->GetMousePosition().y, 
+		App->input->GetMouseDisplacement().x, 
+		App->input->GetMouseDisplacement().y
+	);
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -232,5 +243,29 @@ void ModuleCamera::Move()
 	// Apply position changes:
 	SetPosition(new_position);
 
-	LOG("Position: %f,%f,%f", GetPosition().x, GetPosition().y, GetPosition().z);
+	//LOG("Position: %f,%f,%f", GetPosition().x, GetPosition().y, GetPosition().z);
+}
+
+void ModuleCamera::Rotate()
+{
+	float2 mouse_delta = App->input->GetMouseDisplacement();
+	float x_offset = mouse_delta.x * sensitivity * Time->DeltaTime();
+	float y_offset = -mouse_delta.y * sensitivity * Time->DeltaTime();
+
+	yaw += x_offset;
+	pitch += y_offset;
+
+	// Clamp pitch between -89.0 and 89.0 to avoid gimbal lock.
+	pitch = pitch > 89.0f ? 89.0f : (pitch < -89.0f ? -89.0f : pitch);
+
+	float yaw_radians = math::DegToRad(yaw);
+	float pitch_radians = math::DegToRad(pitch);
+
+	direction.x = cos(yaw_radians) * cos(pitch_radians);
+	direction.y = sin(pitch_radians);
+	direction.z = sin(yaw_radians) * cos(pitch_radians);
+
+	frustum.SetFront(direction.Normalized());
+	float3 right = (frustum.Front().Cross(float3::unitY)).Normalized();
+	frustum.SetUp((right.Cross(frustum.Front())).Normalized());
 }
