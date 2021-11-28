@@ -2,7 +2,13 @@
 #include "Module.h"
 #include "Globals.h"
 
-typedef unsigned __int8 Uint8;
+enum class key_state
+{
+	IDLE = 0,
+	DOWN = 1,
+	REPEAT = 2,
+	UP = 3,
+};
 
 class ModuleInput : public Module
 {
@@ -12,9 +18,13 @@ public:
 	~ModuleInput() override;
 
 	bool Init();
-	update_status Update();
 	bool CleanUp();
+	
+	update_status PreUpdate();
+	
+	bool GetKey(size_t key_code, key_state state);
 
 private:
-	const Uint8 *keyboard = NULL;
+	const uint8_t* keyboard = NULL;
+	key_state* keyboard_state;
 };
