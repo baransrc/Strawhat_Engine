@@ -16,6 +16,11 @@ private:
 
 	// Properties:
 	bool is_perspective = true;
+	bool should_auto_rotate_around_target = false;
+	float3 target_position;
+	float3 movement_speed;
+	float orbit_speed;
+
 
 	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
 	bool should_recalculate_projection_matrix = false;
@@ -44,6 +49,7 @@ public:
 	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
 
 	void LookAt(float3 look_at_position);
+	void AutoRotateAround(float3 position);
 
 	void WindowResized(unsigned int width, unsigned int height);
 
@@ -53,4 +59,5 @@ public:
 
 private:
 	void CalculateProjectionMatrix();
+	void Move();
 };

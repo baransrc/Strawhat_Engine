@@ -1,9 +1,10 @@
 #include "Application.h"
-#include "ModuleWindow.h"
-#include "Globals.h"
 #include "ModuleCamera.h"
-#include "MathGeoLib.h"
+#include "ModuleInput.h"
+#include "ModuleWindow.h"
 #include "ModuleShaderProgram.h"
+#include "MathGeoLib.h"
+#include "Globals.h"
 
 ModuleCamera::ModuleCamera()
 {
@@ -17,6 +18,10 @@ bool ModuleCamera::Init()
 {
 	// TODO: Inside the editor window make this changeable too:
 	SetPosition(float3(2.0f, 3.0f, 10.0f));
+
+	target_position = float3::zero;
+	movement_speed = float3::one * 0.5f;
+	orbit_speed = 1.0f;
 
 	// Initialize the frustum:
 	frustum.SetKind(FrustumSpaceGL, FrustumRightHanded);
@@ -115,7 +120,7 @@ void ModuleCamera::SetAsOrthographic(float new_orthographic_width, float new_ort
 void ModuleCamera::LookAt(float3 look_at_position)
 {
 	// Calculate direction to the origin:
-	float3 direction = (look_at_position - frustum.Pos()).Normalized();
+	float3 direction = (look_at_position - GetPosition()).Normalized();
 
 	// Calculate the delta rotation when looking at origin position:
 	float4x4 rotation_matrix = float4x4::LookAt(frustum.Front(), direction, frustum.Up(), float3::unitY);
@@ -123,6 +128,26 @@ void ModuleCamera::LookAt(float3 look_at_position)
 	// Set front and up accordingly:
 	frustum.SetFront(rotation_matrix.MulDir(frustum.Front().Normalized()));
 	frustum.SetUp(rotation_matrix.MulDir(frustum.Up().Normalized()));
+
+	view_matrix = frustum.ViewMatrix();
+}
+
+void ModuleCamera::AutoRotateAround(float3 position)
+{
+	const float radius = 10.0f;
+	static float angle = 0.0f;
+
+	angle += Time->DeltaTime() * orbit_speed;
+
+	float cam_x = sin(angle) * radius;
+	float cam_z = cos(angle) * radius;
+	float cam_y = GetPosition().y;
+
+	SetPosition(float3(cam_x, cam_y, cam_z));
+
+	LookAt(position);
+
+	view_matrix = frustum.ViewMatrix();
 }
 
 void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
@@ -139,6 +164,15 @@ update_status ModuleCamera::PreUpdate()
 		CalculateProjectionMatrix();
 	}
 
+	Move();
+
+	LookAt(frustum.Front() + GetPosition());
+
+	if (should_auto_rotate_around_target)
+	{
+		AutoRotateAround(target_position);
+	}
+
 	// Make sure we are using the true shader before passing the arguments:
 	App->shader_program->Use();
 
@@ -153,6 +187,8 @@ update_status ModuleCamera::PreUpdate()
 
 update_status ModuleCamera::Update()
 {
+	
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -165,4 +201,36 @@ void ModuleCamera::CalculateProjectionMatrix()
 {
 	frustum.ComputeProjectionMatrix();
 	projection_matrix = frustum.ProjectionMatrix();
+}
+
+void ModuleCamera::Move()
+{
+	const float3 velocity = Time->DeltaTime() * movement_speed;
+
+	// Store and Cache Position:
+	float3 new_position = GetPosition();
+
+	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
+	{
+		new_position += frustum.Front() * movement_speed.z;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_S, key_state::REPEAT))
+	{
+		new_position -= frustum.Front() * movement_speed.z;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
+	{
+		// Camera's right * movement_speed.x
+		new_position += (frustum.Front().Cross(frustum.Up())).Normalized() * movement_speed.x;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
+	{
+		// -Camera's right * movement_speed.x
+		new_position -= (frustum.Front().Cross(frustum.Up())).Normalized() * movement_speed.x;
+	}
+
+	// Apply position changes:
+	SetPosition(new_position);
+
+	LOG("Position: %f,%f,%f", GetPosition().x, GetPosition().y, GetPosition().z);
 }
