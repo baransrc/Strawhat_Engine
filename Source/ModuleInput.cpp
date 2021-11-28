@@ -70,6 +70,9 @@ update_status ModuleInput::PreUpdate()
         }
     }
 
+    // Reset Mouse Displacement:
+    mouse_displacement = float2::zero;
+
     while (SDL_PollEvent(&sdl_event) != 0)
     {
         // Send input events to Dear ImGui:
@@ -86,9 +89,24 @@ update_status ModuleInput::PreUpdate()
             {
                 if (sdl_event.window.event == SDL_WINDOWEVENT_RESIZED || sdl_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
-                    App->renderer->WindowResized(sdl_event.window.data1, sdl_event.window.data2);
-                    App->camera->WindowResized(sdl_event.window.data1, sdl_event.window.data2);
+                    window_width = sdl_event.window.data1;
+                    window_height = sdl_event.window.data2;
+                    window_width_inverse = 1.0f / (float)max(1, window_width);
+                    window_height_inverse = 1.0f / (float)max(1, window_height);
+
+                    App->renderer->WindowResized(window_width, window_height);
+                    App->camera->WindowResized(window_width, window_height);
                 }
+            }
+            break;
+
+            case SDL_MOUSEMOTION:
+            {
+                mouse_displacement.x = sdl_event.motion.xrel;
+                mouse_displacement.y = sdl_event.motion.yrel;
+
+                mouse_position.x = sdl_event.motion.x * window_width_inverse;
+                mouse_position.y = sdl_event.motion.y * window_height_inverse;
             }
             break;
         }
