@@ -17,7 +17,7 @@ ModuleCamera::~ModuleCamera()
 bool ModuleCamera::Init()
 {
 	// TODO: Inside the editor window make this changeable too:
-	SetPosition(float3(2.0f, 3.0f, 10.0f));
+	SetPosition(float3(0.0f, 1.0f, 10.0f));
 
 	target_position = float3::zero;
 	movement_speed = float3::one * 0.5f;
@@ -40,9 +40,6 @@ bool ModuleCamera::Init()
 		SetAsOrthographic(5.f, 5.f);
 	}
 
-	frustum.SetFront(-float3::unitZ);
-	frustum.SetUp(float3::unitY);
-	
 	SetPlaneDistances(0.1f, 200.0f);
 
 	// Set model matrix to identity as we are staying still:
@@ -52,7 +49,7 @@ bool ModuleCamera::Init()
 	LookAt(float3(0.f, 0.f, 0.f));
 
 	// Get view matrix after new calculations:
-	view_matrix = frustum.ViewMatrix();
+	ComputeViewMatrix();
 
 	// No need to calculate projection matrix as it will be calculated in the PreUpdate method.
 	
@@ -117,19 +114,55 @@ void ModuleCamera::SetAsOrthographic(float new_orthographic_width, float new_ort
 	should_recalculate_projection_matrix = true;
 }
 
-void ModuleCamera::LookAt(float3 look_at_position)
+/// <summary>
+/// This method only computes direction, front, right and up according to specified position/direction.
+/// Actual Computation of view matrix according to those properties are done in ComputeViewMatrix method.
+/// </summary>
+/// <param name="look_at">: Position/Direction to look at.</param>
+/// <param name="interpret_as">: Interpret look_at as either DIRECTION or POSITION</param>
+void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as)
 {
-	// Calculate direction to the origin:
-	float3 direction = (look_at_position - GetPosition()).Normalized();
+	if (interpret_as == vector_mode::POSITION)
+	{
+		direction = (GetPosition() - look_at).Normalized();
+	}
+	else if (interpret_as == vector_mode::DIRECTION)
+	{
+		direction = look_at.Normalized();
+	}
 
-	// Calculate the delta rotation when looking at origin position:
-	float4x4 rotation_matrix = float4x4::LookAt(frustum.Front(), direction, frustum.Up(), float3::unitY);
+	front = -1.0f * direction;
 
-	// Set front and up accordingly:
-	frustum.SetFront(rotation_matrix.MulDir(frustum.Front().Normalized()));
-	frustum.SetUp(rotation_matrix.MulDir(frustum.Up().Normalized()));
+	right = (float3::unitY.Cross(direction)).Normalized();
+	
+	up = (direction.Cross(right)).Normalized();
+}
 
-	view_matrix = frustum.ViewMatrix();
+/// <summary>
+/// Computes view matrix using current position, right, up and direction.
+/// </summary>
+void ModuleCamera::ComputeViewMatrix()
+{
+	float3 current_position = GetPosition();
+
+	float4x4 position_matrix = float4x4
+	(
+		1.0f, 0.0f, 0.0f, -1.0f * current_position.x,
+		0.0f, 1.0f, 0.0f, -1.0f * current_position.y,
+		0.0f, 0.0f, 1.0f, -1.0f * current_position.z,
+		0.0f, 0.0f, 0.0f,  1.0f
+	);
+
+	float4x4 right_up_direction_matrix = float4x4
+	(
+		right.x,		right.y,		right.z,		0.0f,
+		up.x,			up.y,			up.z,			0.0f,
+		direction.x,	direction.y,	direction.z,	0.0f,
+		0.0f,			0.0f,			0.0f,			1.0f
+	);
+
+	// TODO: Maybe combine these two matrices offline, to optimize this multiplication:
+	view_matrix = right_up_direction_matrix * position_matrix;
 }
 
 void ModuleCamera::AutoRotateAround(float3 position)
@@ -146,8 +179,6 @@ void ModuleCamera::AutoRotateAround(float3 position)
 	SetPosition(float3(cam_x, cam_y, cam_z));
 
 	LookAt(position);
-
-	view_matrix = frustum.ViewMatrix();
 }
 
 void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
@@ -164,19 +195,19 @@ update_status ModuleCamera::PreUpdate()
 		CalculateProjectionMatrix();
 	}
 
-	Rotate();
-
-	view_matrix = frustum.ViewMatrix();
-
-	Move();
-
-	LookAt(frustum.Front() + GetPosition());
-
 	if (should_auto_rotate_around_target)
 	{
 		AutoRotateAround(target_position);
 	}
-	
+
+	ToggleLock();
+	if (!locked)
+	{
+		Move();
+		Rotate();
+		ComputeViewMatrix();
+	}
+
 	// Make sure we are using the true shader before passing the arguments:
 	App->shader_program->Use();
 
@@ -191,15 +222,6 @@ update_status ModuleCamera::PreUpdate()
 
 update_status ModuleCamera::Update()
 {
-	LOG
-	(
-		"Mouse Position: %f, %f -- Mouse Delta: %f, %f", 
-		App->input->GetMousePosition().x, 
-		App->input->GetMousePosition().y, 
-		App->input->GetMouseDisplacement().x, 
-		App->input->GetMouseDisplacement().y
-	);
-
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -223,34 +245,42 @@ void ModuleCamera::Move()
 
 	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
 	{
-		new_position += frustum.Front() * movement_speed.z;
+		new_position += front * movement_speed.z;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_S, key_state::REPEAT))
 	{
-		new_position -= frustum.Front() * movement_speed.z;
+		new_position -= front * movement_speed.z;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
 	{
 		// Camera's right * movement_speed.x
-		new_position += (frustum.Front().Cross(frustum.Up())).Normalized() * movement_speed.x;
+		new_position += (front.Cross(up)).Normalized() * movement_speed.x;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
 	{
 		// -Camera's right * movement_speed.x
-		new_position -= (frustum.Front().Cross(frustum.Up())).Normalized() * movement_speed.x;
+		new_position -= (front.Cross(up)).Normalized() * movement_speed.x;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_UP, key_state::REPEAT))
+	{
+		new_position += up * movement_speed.y;
+	}
+	if (App->input->GetKey(SDL_SCANCODE_DOWN, key_state::REPEAT))
+	{
+		new_position -= up * movement_speed.y;
 	}
 
 	// Apply position changes:
 	SetPosition(new_position);
 
-	//LOG("Position: %f,%f,%f", GetPosition().x, GetPosition().y, GetPosition().z);
+	LookAt(new_position + direction);
 }
 
 void ModuleCamera::Rotate()
 {
 	float2 mouse_delta = App->input->GetMouseDisplacement();
 	float x_offset = mouse_delta.x * sensitivity * Time->DeltaTime();
-	float y_offset = -mouse_delta.y * sensitivity * Time->DeltaTime();
+	float y_offset = mouse_delta.y * sensitivity * Time->DeltaTime();
 
 	yaw += x_offset;
 	pitch += y_offset;
@@ -261,11 +291,28 @@ void ModuleCamera::Rotate()
 	float yaw_radians = math::DegToRad(yaw);
 	float pitch_radians = math::DegToRad(pitch);
 
-	direction.x = cos(yaw_radians) * cos(pitch_radians);
-	direction.y = sin(pitch_radians);
-	direction.z = sin(yaw_radians) * cos(pitch_radians);
+	float3 new_direction = float3::zero;
 
-	frustum.SetFront(direction.Normalized());
-	float3 right = (frustum.Front().Cross(float3::unitY)).Normalized();
-	frustum.SetUp((right.Cross(frustum.Front())).Normalized());
+	new_direction.x = cos(yaw_radians) * cos(pitch_radians);
+	new_direction.y = sin(pitch_radians);
+	new_direction.z = sin(yaw_radians) * cos(pitch_radians);
+
+	if (first_time_rotate)
+	{
+		direction += new_direction;
+		first_time_rotate = false;
+	}
+
+	direction = new_direction;
+
+	LookAt(direction, vector_mode::DIRECTION);
+}
+
+void ModuleCamera::ToggleLock()
+{
+	if (App->input->GetKey(SDL_SCANCODE_F10, key_state::DOWN))
+	{
+		locked = !locked;
+		LookAt(target_position);
+	}
 }

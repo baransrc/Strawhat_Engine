@@ -4,6 +4,12 @@
 #include "MATH_GEO_LIB/Math/float4x4.h"
 #include "MATH_GEO_LIB/Math/float3.h"
 
+enum class vector_mode
+{
+	DIRECTION,
+	POSITION
+};
+
 class ModuleCamera : public Module
 {
 private:
@@ -14,12 +20,18 @@ private:
 	float4x4 view_matrix;
 	float4x4 projection_matrix;
 
-	float3 direction = float3::zero;
 	// Euler Angles:
-	float yaw = -90.0f;
+	float yaw = 0.0f;
 	float pitch = 0.0f;
 
+	// Vectors:
+	float3 direction;
+	float3 front;
+	float3 up;
+	float3 right;
+
 	// Properties:
+	bool locked = true;
 	bool is_perspective = true;
 	bool should_auto_rotate_around_target = false;
 	float3 target_position;
@@ -27,6 +39,8 @@ private:
 	float sensitivity = 10.f;
 	float orbit_speed;
 
+	// Flags:
+	bool first_time_rotate = true;
 
 	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
 	bool should_recalculate_projection_matrix = false;
@@ -54,7 +68,8 @@ public:
 	void SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio);
 	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
 
-	void LookAt(float3 look_at_position);
+	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION);
+	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
 
 	void WindowResized(unsigned int width, unsigned int height);
@@ -67,4 +82,5 @@ private:
 	void CalculateProjectionMatrix();
 	void Move();
 	void Rotate();
+	void ToggleLock();
 };
