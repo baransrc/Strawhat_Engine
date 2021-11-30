@@ -20,6 +20,10 @@ private:
 	float4x4 view_matrix;
 	float4x4 projection_matrix;
 
+	// Matrices that construct view_matrix:
+	float4x4 rotation_matrix;
+	float4x4 translate_matrix;
+
 	// Euler Angles:
 	float yaw = 0.0f;
 	float pitch = 0.0f;

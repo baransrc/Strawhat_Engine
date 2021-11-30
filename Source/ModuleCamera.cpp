@@ -48,6 +48,11 @@ bool ModuleCamera::Init()
 	// Look at position 0,0,0 from our position:
 	LookAt(float3(0.f, 0.f, 0.f));
 
+	float3 angles = view_matrix.ToEulerXYZ();
+
+	pitch = angles.x;
+	yaw = angles.y;
+
 	// Get view matrix after new calculations:
 	ComputeViewMatrix();
 
@@ -145,7 +150,7 @@ void ModuleCamera::ComputeViewMatrix()
 {
 	float3 current_position = GetPosition();
 
-	float4x4 position_matrix = float4x4
+	translate_matrix = float4x4
 	(
 		1.0f, 0.0f, 0.0f, -1.0f * current_position.x,
 		0.0f, 1.0f, 0.0f, -1.0f * current_position.y,
@@ -153,7 +158,7 @@ void ModuleCamera::ComputeViewMatrix()
 		0.0f, 0.0f, 0.0f,  1.0f
 	);
 
-	float4x4 right_up_direction_matrix = float4x4
+	rotation_matrix = float4x4
 	(
 		right.x,		right.y,		right.z,		0.0f,
 		up.x,			up.y,			up.z,			0.0f,
@@ -162,7 +167,7 @@ void ModuleCamera::ComputeViewMatrix()
 	);
 
 	// TODO: Maybe combine these two matrices offline, to optimize this multiplication:
-	view_matrix = right_up_direction_matrix * position_matrix;
+	view_matrix = translate_matrix * rotation_matrix;
 }
 
 void ModuleCamera::AutoRotateAround(float3 position)
@@ -205,8 +210,9 @@ update_status ModuleCamera::PreUpdate()
 	{
 		Move();
 		Rotate();
-		ComputeViewMatrix();
 	}
+	
+	ComputeViewMatrix();
 
 	// Make sure we are using the true shader before passing the arguments:
 	App->shader_program->Use();
@@ -285,25 +291,27 @@ void ModuleCamera::Rotate()
 	yaw += x_offset;
 	pitch += y_offset;
 
-	// Clamp pitch between -89.0 and 89.0 to avoid gimbal lock.
-	pitch = pitch > 89.0f ? 89.0f : (pitch < -89.0f ? -89.0f : pitch);
+	//// Clamp pitch between -89.0 and 89.0 to avoid gimbal lock.
+	//pitch = pitch > 89.0f ? 89.0f : (pitch < -89.0f ? -89.0f : pitch);
+
+	float x_delta = math::DegToRad(x_offset);
+	float y_delta = math::DegToRad(y_offset);
 
 	float yaw_radians = math::DegToRad(yaw);
 	float pitch_radians = math::DegToRad(pitch);
 
 	float3 new_direction = float3::zero;
 
-	new_direction.x = cos(yaw_radians) * cos(pitch_radians);
-	new_direction.y = sin(pitch_radians);
-	new_direction.z = sin(yaw_radians) * cos(pitch_radians);
+	Quat quat = Quat(float3::unitX, pitch_radians);
+	quat = quat * Quat(float3::unitY, yaw_radians);
 
-	if (first_time_rotate)
-	{
-		direction += new_direction;
-		first_time_rotate = false;
-	}
+	//new_direction.x = cos(yaw_radians) * cos(pitch_radians);
+	//new_direction.y = sin(pitch_radians);
+	//new_direction.z = sin(yaw_radians) * cos(pitch_radians);
 
-	direction = new_direction;
+	new_direction = quat * float3(0.f, -1.f, 0.f);
+	
+	direction = new_direction.Normalized();
 
 	LookAt(direction, vector_mode::DIRECTION);
 }
