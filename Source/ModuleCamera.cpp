@@ -16,8 +16,6 @@ ModuleCamera::~ModuleCamera()
 
 bool ModuleCamera::Init()
 {
-	
-
 	// Initialize the frustum:
 	frustum.SetKind(FrustumSpaceGL, FrustumRightHanded);
 
@@ -48,9 +46,6 @@ bool ModuleCamera::Init()
 	target_position = float3::zero;
 	movement_speed = float3::one * 0.5f;
 	orbit_speed = 1.0f;
-
-	pitch = 0.0f;
-	yaw = 0.0f;
 
 	// Look at position 0,0,0 from our position:
 	LookAt(target_position, vector_mode::POSITION);
@@ -102,9 +97,9 @@ void ModuleCamera::SetPosition(float3 new_position)
 {
 	frustum.SetPos(new_position);
 
-	translation_matrix[0][3] = -frustum.Pos().x;
-	translation_matrix[1][3] = -frustum.Pos().y;
-	translation_matrix[2][3] = -frustum.Pos().z;
+	translation_matrix[0][3] = -new_position.x;
+	translation_matrix[1][3] = -new_position.y;
+	translation_matrix[2][3] = -new_position.z;
 }
 
 void ModuleCamera::SetOrientation(float3 new_orientation)
@@ -318,42 +313,27 @@ void ModuleCamera::Move()
 
 	// Apply position changes:
 	SetPosition(new_position);
-
-	//LookAt(new_position - GetFront());
 }
 
 void ModuleCamera::Rotate()
 {
+	// Get mouse displacement from ModuleInput:
 	float2 mouse_delta = App->input->GetMouseDisplacement();
-	float x_offset = mouse_delta.x * sensitivity * Time->DeltaTime();
-	float y_offset = mouse_delta.y * sensitivity * Time->DeltaTime();
 
-	yaw += x_offset;
-	pitch += y_offset;
+	// Store smoothened and adjusted displacements of mouse as radians:
+	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
+	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
 
-	// Clamp pitch between -89.0 and 89.0 to avoid gimbal lock.
-	pitch = pitch > 89.0f ? 89.0f : (pitch < -89.0f ? -89.0f : pitch);
+	// Rotate around x axis:
+	Quat rotation_quaternion = Quat(float3::unitX, y_delta);
+	// Rotate around y axis and combine with the previous rotation around x axis:
+	rotation_quaternion = rotation_quaternion * Quat(float3::unitY, x_delta);
 
-	//float x_delta = math::DegToRad(x_offset);
-	//float y_delta = math::DegToRad(y_offset);
+	// Apply rotation to rotation_matrix:
+	rotation_matrix = rotation_quaternion * rotation_matrix;
 
-	float yaw_radians = math::DegToRad(yaw);
-	float pitch_radians = math::DegToRad(pitch);
-
-	float3 new_direction = float3::zero;
-
-	//Quat quat = Quat(float3::unitX, pitch_radians);
-	//quat = quat * Quat(float3::unitY, yaw_radians);
-
-	new_direction.x = cos(yaw_radians) * cos(pitch_radians);
-	new_direction.y = sin(pitch_radians);
-	new_direction.z = sin(yaw_radians) * cos(pitch_radians);
-
-	//new_direction = quat * float3(0.f, -1.f, 0.f);
-	
-	//direction = new_direction.Normalized();
-
-	LookAt(new_direction.Normalized(), vector_mode::DIRECTION);
+	// Recalculate up and right of camera according to new direction:
+	LookAt(GetDirection(), vector_mode::DIRECTION);
 }
 
 void ModuleCamera::ToggleLock()
@@ -361,6 +341,5 @@ void ModuleCamera::ToggleLock()
 	if (App->input->GetKey(SDL_SCANCODE_F10, key_state::DOWN))
 	{
 		locked = !locked;
-		LookAt(target_position);
 	}
 }

@@ -24,10 +24,6 @@ private:
 	float4x4 rotation_matrix;
 	float4x4 translation_matrix;
 
-	// Euler Angles:
-	float yaw = 0.0f;
-	float pitch = 0.0f;
-
 	// Properties:
 	bool locked = true;
 	bool is_perspective = true;
