@@ -73,6 +73,9 @@ update_status ModuleInput::PreUpdate()
     // Reset Mouse Displacement:
     mouse_displacement = float2::zero;
 
+    // Reset Mouse Scroll Wheel Displacement:
+    mouse_wheel_displacement = float2::zero;
+
     while (SDL_PollEvent(&sdl_event) != 0)
     {
         // Send input events to Dear ImGui:
@@ -109,6 +112,13 @@ update_status ModuleInput::PreUpdate()
                 mouse_position.y = sdl_event.motion.y * window_height_inverse;
             }
             break;
+
+            case SDL_MOUSEWHEEL:
+            {
+                mouse_wheel_displacement.x = sdl_event.wheel.x;
+                mouse_wheel_displacement.y = sdl_event.wheel.y;
+            }
+            break;
         }
     }
     
@@ -128,7 +138,7 @@ bool ModuleInput::CleanUp()
 	return true;
 }
 
-bool ModuleInput::GetKey(size_t key_code, key_state state)
+bool ModuleInput::GetKey(size_t key_code, key_state state) const
 {
     return keyboard_state[key_code] == state;
 }
