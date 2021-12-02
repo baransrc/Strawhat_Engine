@@ -20,15 +20,9 @@ private:
 	float4x4 view_matrix;
 	float4x4 projection_matrix;
 
-	// Euler Angles:
-	float yaw = 0.0f;
-	float pitch = 0.0f;
-
-	// Vectors:
-	float3 direction;
-	float3 front;
-	float3 up;
-	float3 right;
+	// Matrices that construct view_matrix:
+	float4x4 rotation_matrix;
+	float4x4 translation_matrix;
 
 	// Properties:
 	bool locked = true;
@@ -52,12 +46,20 @@ public:
 	bool Init();
 	bool CleanUp();
 
+	float GetAspectRatio() const { return frustum.AspectRatio(); };
 	float4x4 GetModelMatrix() const { return model_matrix; };
 	float4x4 GetViewMatrix() const { return view_matrix; };
 	float4x4 GetProjectionMatrix() const { return projection_matrix; };
-	float3 GetPosition() const { return frustum.Pos(); };
-	float GetAspectRatio() const { return frustum.AspectRatio(); };
-	
+	float3 GetPosition() const;
+	float3 GetUp() const;
+	float3 GetFront() const;
+	float3 GetDirection() const;
+	float3 GetRight() const;
+
+	void SetUp(float3 new_up);
+	void SetFront(float3 new_front);
+	void SetDirection(float3 new_direction);
+	void SetRight(float3 new_right);
 	void SetHorizontalFOV(float new_horizontal_fov);
 	void SetAspectRatio(float new_aspect_ratio);
 	void SetFarPlaneDistance(float new_far_plane_distance);
