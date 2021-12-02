@@ -612,7 +612,7 @@ bool ModuleDebugDraw::CleanUp()
 update_status  ModuleDebugDraw::Update()
 {
     dd::axisTriad(float4x4::identity, 0.1f, 1.0f);
-    dd::xzSquareGrid(-1000, 1000, 0.0f, 1.0f, dd::colors::Gray);
+    dd::xzSquareGrid(-32, 32, 0.0f, 1.0f, dd::colors::DimGray);
 
     Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); // TODO: Get screen width and height, or camera render width and height?
 
