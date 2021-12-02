@@ -15,7 +15,7 @@ class ModuleCamera : public Module
 private:
 	Frustum frustum;
 
-	// Matrices:
+	// Main Matrices:
 	float4x4 model_matrix;
 	float4x4 view_matrix;
 	float4x4 projection_matrix;
@@ -28,13 +28,12 @@ private:
 	bool locked = true;
 	bool is_perspective = true;
 	bool should_auto_rotate_around_target = false;
-	float3 target_position;
-	float3 movement_speed;
 	float sensitivity = 10.f;
 	float orbit_speed;
+	float3 movement_speed;
+	float3 target_position;
+	float3 rotation_euler;
 
-	// Flags:
-	bool first_time_rotate = true;
 
 	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
 	bool should_recalculate_projection_matrix = false;
@@ -51,6 +50,7 @@ public:
 	float4x4 GetViewMatrix() const { return view_matrix; };
 	float4x4 GetProjectionMatrix() const { return projection_matrix; };
 	float3 GetPosition() const;
+	float3 GetRotation() const;
 	float3 GetUp() const;
 	float3 GetFront() const;
 	float3 GetDirection() const;
@@ -66,11 +66,11 @@ public:
 	void SetNearPlaneDistance(float new_near_plane_distance);
 	void SetPlaneDistances(float new_near_plane_distance, float new_far_plane_distance);
 	void SetPosition(float3 new_position);
-	void SetOrientation(float3 new_orientation);
+	void SetRotation(float3 new_orientation);
 	void SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio);
 	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
 
-	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION);
+	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION, bool calculate_rotation = true);
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
 
@@ -81,6 +81,7 @@ public:
 	update_status PostUpdate();
 
 private:
+	void CalculateRotationFromDirection();
 	void CalculateProjectionMatrix();
 	void Move();
 	void Rotate();

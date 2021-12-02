@@ -48,7 +48,7 @@ bool ModuleCamera::Init()
 	orbit_speed = 1.0f;
 
 	// Look at position 0,0,0 from our position:
-	LookAt(target_position, vector_mode::POSITION);
+	LookAt(target_position, vector_mode::POSITION, true);
 
 	// Get view matrix after new calculations:
 	ComputeViewMatrix();
@@ -102,9 +102,11 @@ void ModuleCamera::SetPosition(float3 new_position)
 	translation_matrix[2][3] = -new_position.z;
 }
 
-void ModuleCamera::SetOrientation(float3 new_orientation)
+void ModuleCamera::SetRotation(float3 new_orientation)
 {
-	// TODO: Implement this.
+	Quat rotation = Quat::FromEulerXYZ(new_orientation.x, new_orientation.y, new_orientation.z);
+
+	rotation_matrix = rotation * float4x4::identity;
 }
 
 void ModuleCamera::SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio)
@@ -137,6 +139,11 @@ float3 ModuleCamera::GetRight() const
 float3 ModuleCamera::GetPosition() const
 {
 	return float3(-translation_matrix[0][3], -translation_matrix[1][3], -translation_matrix[2][3]);
+}
+
+float3 ModuleCamera::GetRotation() const
+{
+	return rotation_euler;
 }
 
 void ModuleCamera::SetUp(float3 new_up)
@@ -177,7 +184,8 @@ void ModuleCamera::SetAsOrthographic(float new_orthographic_width, float new_ort
 /// </summary>
 /// <param name="look_at">: Position/Direction to look at.</param>
 /// <param name="interpret_as">: Interpret look_at as either DIRECTION or POSITION</param>
-void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as)
+/// <param name="calculate_rotation">: Should camera recalculate it's stored rotation angles according to the calculated direction vector?</param>
+void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as, bool calculate_rotation)
 {
 	float3 new_direction = float3::zero;
 
@@ -195,6 +203,11 @@ void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as)
 	SetRight((float3::unitY.Cross(GetDirection())).Normalized());
 	
 	SetUp(((GetDirection()).Cross(GetRight())).Normalized());
+
+	if (calculate_rotation)
+	{
+		CalculateRotationFromDirection();
+	}
 }
 
 /// <summary>
@@ -271,6 +284,15 @@ update_status ModuleCamera::PostUpdate()
 	return update_status::UPDATE_CONTINUE;
 }
 
+void ModuleCamera::CalculateRotationFromDirection()
+{
+	float3 direction = GetDirection().Normalized();
+
+	rotation_euler.x = acos(direction.x);
+	rotation_euler.y = acos(direction.y);
+	rotation_euler.z = acos(direction.z);
+}
+
 void ModuleCamera::CalculateProjectionMatrix()
 {
 	frustum.ComputeProjectionMatrix();
@@ -294,12 +316,10 @@ void ModuleCamera::Move()
 	}
 	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
 	{
-		// Camera's right * movement_speed.x
 		new_position += GetRight() * movement_speed.x;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
 	{
-		// -Camera's right * movement_speed.x
 		new_position -= GetRight() * movement_speed.x;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_UP, key_state::REPEAT))
@@ -324,6 +344,15 @@ void ModuleCamera::Rotate()
 	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
 	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
 
+	// Store rotations in rotation_euler:
+	rotation_euler.x += x_delta;
+	rotation_euler.y += y_delta;
+
+	// NOTE: The following calculations may be done by rotating an identity matrix
+	// with current rotations of camera, and then assigning the formed matrix to 
+	// rotation_matrix. Current solution seems a lot more smoother, and it basically
+	// ignores roll a.k.a rotation around z-axis.
+
 	// Rotate around x axis:
 	Quat rotation_quaternion = Quat(float3::unitX, y_delta);
 	// Rotate around y axis and combine with the previous rotation around x axis:
@@ -332,8 +361,9 @@ void ModuleCamera::Rotate()
 	// Apply rotation to rotation_matrix:
 	rotation_matrix = rotation_quaternion * rotation_matrix;
 
-	// Recalculate up and right of camera according to new direction:
-	LookAt(GetDirection(), vector_mode::DIRECTION);
+	// Recalculate up and right of camera according to new direction, but no need 
+	// to recalculate stored rotation angles:
+	LookAt(GetDirection(), vector_mode::DIRECTION, false);
 }
 
 void ModuleCamera::ToggleLock()
