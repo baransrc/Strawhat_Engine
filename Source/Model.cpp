@@ -1,11 +1,11 @@
 #include "Model.h"
 #include "Mesh.h"
-#include "Globals.h" // For LOG
-#include "Util.h" // For String functions
-#include "Application.h" // For Access to App
-#include "ModuleTexture.h" // For Access to Texture::Load and Texture::Unload
-#include "assimp/postprocess.h"  // For aiProcess_Triangulate, aiProcess_FlipUVs
-#include "assimp/Importer.hpp" // For Assimp::Importer
+#include "Globals.h"			// For LOG
+#include "Util.h"				// For String functions
+#include "Application.h"		// For Access to App
+#include "ModuleTexture.h"		// For Access to Texture::Load and Texture::Unload
+#include "assimp/postprocess.h"	// For aiProcess_Triangulate, aiProcess_FlipUVs
+#include "assimp/Importer.hpp"	// For Assimp::Importer
 
 Model::Model()
 {
