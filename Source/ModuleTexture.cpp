@@ -93,11 +93,15 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
                                   GLint wrap_s, 
                                   GLint wrap_t,
                                   bool is_rgba,
-                                  bool generate_mipmap) const
+                                  bool generate_mipmap, 
+                                  bool& loading_successful) const
 {
     ILuint image_id;
     ILboolean load_success;
     GLuint texture_id;
+
+    // Assume loading successful until something goes wrong:
+    loading_successful = true;
 
     // Generate one image:
     ilGenImages(1, &image_id);
@@ -110,6 +114,9 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
     // If image could not be loaded, load error texture image instead:
     if (load_success == IL_FALSE)
     {
+        // Return unsuccessful:
+        loading_successful = false;
+
         LOG("Texture with filename \"%s\" could not be loaded, loading error texture instead.", file_name);
         // Load error texture:
         ilLoadImage(ERROR_TEXTURE);

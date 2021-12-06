@@ -122,6 +122,8 @@ bool ModuleRenderExercise::Init()
 	wrap_mode_t = GL_CLAMP_TO_EDGE;
 	mipmap_enabled = false;
 
+	bool successfully_loaded = false;
+
 	lena_texture = App->texture->LoadTexture(
 		lena_texture_file_path, 
 		min_filter,
@@ -129,7 +131,8 @@ bool ModuleRenderExercise::Init()
 		wrap_mode_s,	
 		wrap_mode_t,
 		false,
-		mipmap_enabled	
+		mipmap_enabled,
+		successfully_loaded
 	);
 
 	// Load Lena Texture Data:

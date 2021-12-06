@@ -24,7 +24,8 @@ public:
 					   GLint wrap_s, 
 					   GLint wrap_t,
 					   bool is_rgba,
-					   bool generate_mipmap) const;
+					   bool generate_mipmap,
+				       bool& loading_successful) const;
 
 	void ConfigureTexture(
 		const char* texture_file_name,
