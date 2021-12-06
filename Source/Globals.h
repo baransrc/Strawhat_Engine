@@ -18,7 +18,9 @@ enum class update_status
 #define GLSL_VERSION "#version 330"
 #define LIBRARIES_USED "SDL 2.0.16\nGLEW 2.1.0\nDear ImGui 1.86\nDevIL 1.8.0"
 #define LINK_TO_REPOSITORY "https://github.com/baransrc/Strawhat_Engine"
+#define TEXTURES_FOLDER "\\Textures\\"
 #define LENA_TEXTURE_PATH "\\Textures\\Lena.png"
+#define BAKER_HOUSE_MODEL_PATH "\\Models\\BakerHouse.fbx"
 #define TEXTURE_DATA_FORMAT "{start_%lu}\Path: %s\nFormat: %s\nWidth: %i\nHeight: %i\nDepth: %i\n{end_%lu}\n"
 
 // Configuration -----------
