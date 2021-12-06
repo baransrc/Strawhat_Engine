@@ -30,6 +30,9 @@ private:
 	bool should_auto_rotate_around_target = false;
 	float sensitivity = 10.f;
 	float orbit_speed;
+	float zoom_speed;
+	float zoom_velocity;
+	float zoom_drag;
 	float3 movement_speed;
 	float3 target_position;
 	float3 rotation_euler;
@@ -85,5 +88,6 @@ private:
 	void CalculateProjectionMatrix();
 	void Move();
 	void Rotate();
+	void Zoom();
 	void ToggleLock();
 };

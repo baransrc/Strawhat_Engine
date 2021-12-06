@@ -46,6 +46,11 @@ bool ModuleCamera::Init()
 	target_position = float3::zero;
 	movement_speed = float3::one * 0.5f;
 	orbit_speed = 1.0f;
+	
+	// Set zoom related variables:
+	zoom_velocity = 0.0f;
+	zoom_drag = 0.05;
+	zoom_speed = 1.5f;
 
 	// Look at position 0,0,0 from our position:
 	LookAt(target_position, vector_mode::POSITION, true);
@@ -241,13 +246,6 @@ void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
 
 update_status ModuleCamera::PreUpdate()
 {
-	// Recalculate projection matrix if necessary:
-	if (should_recalculate_projection_matrix)
-	{
-		should_recalculate_projection_matrix = false;
-		CalculateProjectionMatrix();
-	}
-
 	if (should_auto_rotate_around_target)
 	{
 		AutoRotateAround(target_position);
@@ -258,6 +256,14 @@ update_status ModuleCamera::PreUpdate()
 	{
 		Move();
 		Rotate();
+		Zoom();
+	}
+
+	// Recalculate projection matrix if necessary:
+	if (should_recalculate_projection_matrix)
+	{
+		should_recalculate_projection_matrix = false;
+		CalculateProjectionMatrix();
 	}
 	
 	ComputeViewMatrix();
@@ -364,6 +370,73 @@ void ModuleCamera::Rotate()
 	// Recalculate up and right of camera according to new direction, but no need 
 	// to recalculate stored rotation angles:
 	LookAt(GetDirection(), vector_mode::DIRECTION, false);
+}
+
+void ModuleCamera::Zoom()
+{
+	// Calculate new speed by mouse wheel input:
+	float input_velocity = App->input->GetMouseWheelDisplacement().y * zoom_speed * Time->DeltaTime();
+	
+	// If there is no mouse wheel input, dont touch the current zoom_velocity,
+	// if there is a mouse input, override the zoom_velocity if the input_velocity
+	// is bigger in size at the same direction, or input_velocity is to the opposite
+	// direction of zoom_velocity:
+	if (input_velocity != 0.0f)
+	{
+		if (math::Sign(input_velocity) == math::Sign(zoom_velocity))
+		{
+			input_velocity = math::Abs(zoom_velocity) > math::Abs(input_velocity) ? zoom_velocity : input_velocity;
+		}
+
+		zoom_velocity = input_velocity;
+	}
+
+	// If zoom velocity is 0, return:
+	if (zoom_velocity == 0.0f)
+	{
+		return;
+	}
+
+	// Get current zoom drag:
+	float current_zoom_drag = zoom_drag * Time->DeltaTime();
+
+	// Set sign flipped to the sign of zoom_velocity:
+	bool sign_flipped = (zoom_velocity > 0.0f);
+
+	// Apply current_zoom_drag from the opposite direction of
+	// zoom_velocity:
+	if (zoom_velocity > 0.0f)
+	{
+		zoom_velocity -= current_zoom_drag;
+	}
+	else if (zoom_velocity < 0.0f)
+	{
+		zoom_velocity += current_zoom_drag;
+	}
+
+	// Set sign_flipped to true if the sign of the zoom_velocity
+	// is different after the applied drag:
+	sign_flipped = sign_flipped != (zoom_velocity > 0.0f);
+
+	// If sign of the velocity is changed in the same function call,
+	// halt the zooming, and set the zoom_velocity to zero:
+	if (sign_flipped)
+	{
+		zoom_velocity = 0.0f;
+		return;
+	}
+
+	// Set new_horizontal_fov to the current horizontal fov + zoom_velocity:
+	float new_horizontal_fov = frustum.HorizontalFov() + zoom_velocity;
+
+	static const float DEGREE_120_RADIANS = math::DegToRad(120.0f);
+	static const float DEGREE_1_RADIANS = math::DegToRad(1.0f);
+
+	// Clamp new_horizontal_fow between 1.0 degrees and 120.0 degrees:
+	new_horizontal_fov = math::Clamp(new_horizontal_fov, DEGREE_1_RADIANS, DEGREE_120_RADIANS);
+
+	// Set new horizontal fov value:
+	SetHorizontalFOV(new_horizontal_fov);
 }
 
 void ModuleCamera::ToggleLock()
