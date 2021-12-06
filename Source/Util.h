@@ -122,6 +122,89 @@ namespace util
 	}
 
 	// User is responsible for deallocation.
+	inline void SubstrBeforeCharFromEnd(char** source, char before)
+	{
+		size_t position = 0;
+		size_t size = strlen(*source);
+		size_t buffer_start = 0;
+		bool start_counting = false;
+
+		for (size_t i = size - 1; i > 0; --i)
+		{
+			if (start_counting == false && (*source)[i] == before)
+			{
+				start_counting = true;
+			}
+
+			if (!start_counting)
+			{
+				continue;
+			}
+
+			++buffer_start;
+		}
+
+		buffer_start = min(buffer_start + 1, size-1);
+
+		if (!start_counting)
+		{
+			buffer_start = 0;
+		}
+
+		size_t buffer_size = size - buffer_start;
+		char* buffer = (char*)malloc(buffer_size + 1);
+
+		memcpy(buffer, &((*source)[buffer_start]), buffer_size);
+
+		buffer[buffer_size] = '\0';
+
+		free(*source);
+
+		*source = buffer;
+	}
+
+	// User is responsible for deallocation.
+	inline void SubstrAfterCharFromEnd(char** source, char after)
+	{
+		size_t position = 0;
+		size_t size = strlen(*source);
+		size_t buffer_size = 0;
+		bool start_counting = false;
+
+		for (size_t i = size - 1; i > 0; --i)
+		{
+			if (start_counting == false && (*source)[i] == after)
+			{
+				start_counting = true;
+			}
+
+			if (!start_counting)
+			{
+				continue;
+			}
+
+			++buffer_size;
+		}
+
+		++buffer_size;
+
+		if (!start_counting)
+		{
+			buffer_size = size;
+		}
+
+		char* buffer = (char*)malloc(buffer_size + 1);
+
+		memcpy(buffer, &((*source)[0]), buffer_size);
+
+		buffer[buffer_size] = '\0';
+		
+		free(*source);
+
+		*source = buffer;
+	}
+
+	// User is responsible for deallocation.
 	inline char* GetStringBetween(char* const source, const char* start_string, const char* end_string) 
 	{
 		char* start;
@@ -159,9 +242,6 @@ namespace util
 	{
 		char* start;
 		char* end;
-
-		size_t debug_s = strlen("\r\n{start_4}\r\nsomething\r\nsomething more\r\nsomething even more\r\n{end_4}{start_7}\r\nsomething\r\nsomething more\r\nsomething even more\r\n{end_7}");
-
 		start = strstr(*source, start_string);
 		end = strstr(*source, end_string);
 
