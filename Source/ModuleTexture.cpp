@@ -120,7 +120,7 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
     // Convert every color component into unsigned byte:
     ilConvertImage(is_rgba ? IL_RGBA : IL_RGB, IL_UNSIGNED_BYTE);
 
-    iluRotate(180.0f);
+    //iluRotate(180.0f);
 
     // Generate texture id:
     glGenTextures(1, &texture_id);
