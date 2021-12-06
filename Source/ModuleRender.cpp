@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
 #include "Util.h"
+#include "Model.h"
 
 ModuleRender::ModuleRender()
 {
@@ -33,6 +34,17 @@ bool ModuleRender::Init()
 	// Initialize OpenGL debug features and vao.
 	InitializeOpenGL();
 
+	// Get Model File Name:
+	char* model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), BAKER_HOUSE_MODEL_PATH);
+
+	// Load Model:
+	model = new Model();
+	model->Load(model_file_name);
+
+	// Delete model_file_name:
+	free(model_file_name);
+
+
 	return true;
 }
 
@@ -53,6 +65,11 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
+	// Use the shader program created in ModuleShaderProgram:
+	App->shader_program->Use();
+
+	model->Draw();
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -71,6 +88,9 @@ bool ModuleRender::CleanUp()
 
 	//Delete OpenGL Context:
 	SDL_GL_DeleteContext(context);
+
+	//Delete Model:
+	delete model;
 	    
 	return true;
 }

@@ -5,6 +5,7 @@
 struct SDL_Texture;
 struct SDL_Renderer;
 struct SDL_Rect;
+class Model;
 
 class ModuleRender : public Module
 {
@@ -14,6 +15,7 @@ public:
 private:
 	unsigned int viewport_width = SCREEN_WIDTH;
 	unsigned int viewport_height = SCREEN_HEIGHT;
+	Model* model;
 
 public:
 	ModuleRender();
