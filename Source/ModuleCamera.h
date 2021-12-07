@@ -10,6 +10,13 @@ enum class vector_mode
 	POSITION
 };
 
+enum class camera_state
+{
+	FOCUSED,
+	FOCUSING,
+	UNFOCUSED,
+};
+
 class ModuleCamera : public Module
 {
 private:
@@ -24,6 +31,9 @@ private:
 	float4x4 rotation_matrix;
 	float4x4 translation_matrix;
 
+	// Current state of camera:
+	camera_state state;
+	
 	// Properties:
 	bool locked = true;
 	bool is_perspective = true;
@@ -34,9 +44,13 @@ private:
 	float zoom_velocity;
 	float zoom_drag;
 	float3 movement_speed;
-	float3 target_position;
 	float3 rotation_euler;
 
+	float3 focus_target_position;
+	float3 focus_target_direction;
+	float focus_duration;
+	float focus_lerp_position;
+	float focus_target_radius;
 
 	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
 	bool should_recalculate_projection_matrix = false;
@@ -77,6 +91,7 @@ public:
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
 	void Focus(float3 position, float3 size);
+	void Focus(float3 position, float bounding_sphere_radius);
 
 	void WindowResized(unsigned int width, unsigned int height);
 
@@ -91,4 +106,5 @@ private:
 	void Rotate();
 	void Zoom();
 	void ToggleLock();
+	void ExecuteFocus();
 };

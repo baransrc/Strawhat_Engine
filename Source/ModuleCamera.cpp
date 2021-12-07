@@ -5,6 +5,7 @@
 #include "ModuleShaderProgram.h"
 #include "MathGeoLib.h"
 #include "Globals.h"
+#include "MATH_GEO_LIB/Geometry/Sphere.h"
 
 ModuleCamera::ModuleCamera()
 {
@@ -43,7 +44,14 @@ bool ModuleCamera::Init()
 
 	SetPosition(float3(0.0f, 1.0f, 10.0f));
 
-	target_position = float3::zero;
+	state = camera_state::UNFOCUSED;
+	
+	focus_target_position = float3::zero;
+	focus_duration = 0.5f;
+	focus_lerp_position = 1.0f;
+	focus_target_direction = float3::zero;
+	focus_target_radius = 0.0f;
+
 	movement_speed = float3::one * 0.5f;
 	orbit_speed = 1.0f;
 	
@@ -53,7 +61,7 @@ bool ModuleCamera::Init()
 	zoom_speed = 1.5f;
 
 	// Look at position 0,0,0 from our position:
-	LookAt(target_position, vector_mode::POSITION, true);
+	LookAt(focus_target_position, vector_mode::POSITION, true);
 
 	// Get view matrix after new calculations:
 	ComputeViewMatrix();
@@ -241,12 +249,49 @@ void ModuleCamera::AutoRotateAround(float3 position)
 
 void ModuleCamera::Focus(float3 position, float3 size)
 {
-	LookAt(position, vector_mode::POSITION, true);
+	// Calculate a radius from max extent of given size:
+	float bounding_sphere_radius = math::Max(size.x, math::Max(size.y, size.z)) * 0.5f;
+	
+	// Calculate camera positions from bounding_sphere_radius:
+	Focus(position, bounding_sphere_radius);
+}
 
-	float max_size = math::Max(size.x, math::Max(size.y, size.z));
-	float distance = math::Abs(max_size / math::Sin(frustum.HorizontalFov() * 0.5f));
+void ModuleCamera::Focus(float3 position, float bounding_sphere_radius)
+{
+	if ((state == camera_state::FOCUSING || state == camera_state::FOCUSED) && position.Equals(focus_target_position) && focus_target_radius == bounding_sphere_radius)
+	{
+		return;
+	}
 
-	SetPosition(position + distance * GetDirection());
+	// Get minimum of horizontal fov and vertical fov and divide it to half:
+	float fov_min = math::Min(frustum.HorizontalFov(), frustum.VerticalFov());
+	float fov_min_half = fov_min * 0.5f;
+
+	// Calculate desired distance from center of the sphere to the camera:
+	// This can be visualized as drawing a straight line from camera to the center of the sphere and a
+	// tangent from the camera to the sphere. Resulting tangent will have angle of fov_min_half between 
+	// that straigth line. Then drawing a line from center of the sphere to that tangent's intersection 
+	// point, that will form a right angle to the tangent. The resulting right-angled triangle will have
+	// hypotenuse as desired_distance, and bounding_sphere_radius as the side of the triangle
+	// that is in front of the fov_min_half angle.
+	// So we have sin(fov_min_half) = bounding_sphere_radius / desired_distance, which by simple
+	// algebra, will be desired_distance = bounding_sphere_radius / sin(fov_min_half).
+	float desired_distance = math::Abs(bounding_sphere_radius / math::Sin(fov_min_half));
+
+	// Set state of camera to FOCUSING:
+	state = camera_state::FOCUSING;
+
+	// Set focus_target_radius to given bounding_sphere_radius:
+	focus_target_radius = bounding_sphere_radius;
+
+	// Get target direction (Actually it's direction from target to camera):
+	focus_target_direction = (GetPosition() - position).Normalized();
+
+	// Set Focus target position to the position away from target's position by desired_distance:
+	focus_target_position = position + desired_distance * focus_target_direction;
+
+	// Set focus_lerp_position to 0:
+	focus_lerp_position = 0.0f;
 }
 
 void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
@@ -258,7 +303,7 @@ update_status ModuleCamera::PreUpdate()
 {
 	if (should_auto_rotate_around_target)
 	{
-		AutoRotateAround(target_position);
+		AutoRotateAround(focus_target_position);
 	}
 
 	ToggleLock();
@@ -275,6 +320,8 @@ update_status ModuleCamera::PreUpdate()
 		should_recalculate_projection_matrix = false;
 		CalculateProjectionMatrix();
 	}
+
+	ExecuteFocus();
 	
 	ComputeViewMatrix();
 
@@ -317,42 +364,66 @@ void ModuleCamera::CalculateProjectionMatrix()
 
 void ModuleCamera::Move()
 {
+	if (state == camera_state::FOCUSING)
+	{
+		return;
+	}
+
 	const float3 velocity = Time->DeltaTime() * movement_speed;
 
 	// Store and Cache Position:
 	float3 new_position = GetPosition();
 
+	bool moved_this_frame = false;
+
 	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
 	{
 		new_position += GetFront() * movement_speed.z;
+		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_S, key_state::REPEAT))
 	{
 		new_position -= GetFront() * movement_speed.z;
+		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
 	{
 		new_position += GetRight() * movement_speed.x;
+		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
 	{
 		new_position -= GetRight() * movement_speed.x;
+		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_UP, key_state::REPEAT))
 	{
 		new_position += GetUp() * movement_speed.y;
+		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_DOWN, key_state::REPEAT))
 	{
 		new_position -= GetUp() * movement_speed.y;
+		moved_this_frame = true;
 	}
+	
+	if (moved_this_frame)
+	{
+		// Apply position changes:
+		SetPosition(new_position);
 
-	// Apply position changes:
-	SetPosition(new_position);
+		// Override state since move was made:
+		state = camera_state::UNFOCUSED;
+	}
 }
 
 void ModuleCamera::Rotate()
 {
+	if (state == camera_state::FOCUSING)
+	{
+		return;
+	}
+
 	// Get mouse displacement from ModuleInput:
 	float2 mouse_delta = App->input->GetMouseDisplacement();
 
@@ -455,4 +526,32 @@ void ModuleCamera::ToggleLock()
 	{
 		locked = !locked;
 	}
+}
+
+void ModuleCamera::ExecuteFocus()
+{
+	if (state == camera_state::FOCUSED || state == camera_state::UNFOCUSED)
+	{
+		return;
+	}
+
+	focus_lerp_position += Time->DeltaTime() / focus_duration; // TODO: Create setter for focus_duration and cache 1/focus_duration.
+
+	// Stop Executing focus next frame if the lerp ended 
+	// and clamp focus_lerp_position to be 1.0f at max:
+	if (focus_lerp_position >= 1.0f)
+	{
+		focus_lerp_position = 1.0f;
+		state = camera_state::FOCUSED;
+	}
+
+	// Lerp to target direction:
+	float3 direction = float3::Lerp(GetDirection(), focus_target_direction, focus_lerp_position).Normalized();
+	// Look at the lerped direction:
+	LookAt(direction, vector_mode::DIRECTION);
+
+	// Lerp to target position:
+	float3 position = float3::Lerp(GetPosition(), focus_target_position, focus_lerp_position);
+	// Set position to lerped position:
+	SetPosition(position);
 }
