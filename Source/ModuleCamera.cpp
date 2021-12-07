@@ -262,14 +262,9 @@ update_status ModuleCamera::PreUpdate()
 		AutoRotateAround(focus_target_position);
 	}
 
-	ToggleLock();
-	
-	if (!locked)
-	{
-		Move();
-		Rotate();
-		Zoom();
-	}
+	Move();
+	Rotate();
+	Zoom();
 
 	Focus();
 
@@ -321,7 +316,14 @@ void ModuleCamera::CalculateProjectionMatrix()
 
 void ModuleCamera::Move()
 {
+	// If the camera is focusing on a target right now, ignore movement through key inputs:
 	if (state == camera_state::FOCUSING)
+	{
+		return;
+	}
+
+	// If user is not clicking on right mouse button, ignore movement through key inputs:
+	if (!App->input->GetMouseKey(SDL_BUTTON_RIGHT, key_state::REPEAT))
 	{
 		return;
 	}
@@ -376,7 +378,14 @@ void ModuleCamera::Move()
 
 void ModuleCamera::Rotate()
 {
+	// If the camera is focusing on a target right now, ignore rotation through mouse movement:
 	if (state == camera_state::FOCUSING)
+	{
+		return;
+	}
+
+	// If user is not clicking on right mouse button, ignore rotation through mouse movement:
+	if (!App->input->GetMouseKey(SDL_BUTTON_RIGHT, key_state::REPEAT))
 	{
 		return;
 	}
@@ -475,14 +484,6 @@ void ModuleCamera::Zoom()
 
 	// Set new horizontal fov value:
 	SetHorizontalFOV(new_horizontal_fov);
-}
-
-void ModuleCamera::ToggleLock()
-{
-	if (App->input->GetKey(SDL_SCANCODE_F10, key_state::DOWN))
-	{
-		locked = !locked;
-	}
 }
 
 void ModuleCamera::Focus()

@@ -35,7 +35,6 @@ private:
 	camera_state state;
 	
 	// Properties:
-	bool locked = true;
 	bool is_perspective = true;
 	bool should_auto_rotate_around_target = false;
 	float sensitivity = 10.f;
@@ -99,11 +98,12 @@ public:
 private:
 	void CalculateRotationFromDirection();
 	void CalculateProjectionMatrix();
+
 	void Move();
 	void Rotate();
 	void Zoom();
-	void ToggleLock();
 	void Focus();
+	
 	void DetectFocus();
 	void ExecuteFocus();
 	void SetupFocus(float3 position, float3 size);
