@@ -102,6 +102,11 @@ void ModuleRender::WindowResized(unsigned width, unsigned height)
 	viewport_height = height;
 }
 
+float ModuleRender::GetRequiredAxisTriadLength() const
+{
+	return model->GetMinimalEnclosingSphereRadius() + 1.0f;
+}
+
 void ModuleRender::InitializeOpenGL()
 {
 #ifdef _DEBUG

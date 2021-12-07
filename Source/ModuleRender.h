@@ -29,6 +29,8 @@ public:
 	void WindowResized(unsigned width, unsigned height);
 
 	const Model* GetLoadedModel() const { return model; };
+
+	float GetRequiredAxisTriadLength() const;
 	
 	const void* GetContext() const { return context; };
 
