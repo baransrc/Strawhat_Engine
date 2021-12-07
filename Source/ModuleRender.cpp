@@ -69,7 +69,7 @@ update_status ModuleRender::Update()
 {
 	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN))
 	{
-		App->camera->Focus(model->GetOBB()->CenterPoint(), model->GetOBB()->Size());
+		App->camera->Focus(model->GetOBB()->CenterPoint(), model->GetMinimalEnclosingSphereRadius());
 	}
 
 	// Use the shader program created in ModuleShaderProgram:
