@@ -2,13 +2,11 @@
 #include "Application.h"
 #include "ModuleRender.h"
 #include "ModuleWindow.h"
-#include "ModuleCamera.h"
-#include "ModuleInput.h"
 #include "ModuleShaderProgram.h"
-#include "SDL.h"
-#include "GLEW/include/GL/glew.h"
 #include "Util.h"
 #include "Model.h"
+#include "SDL.h"
+#include "GLEW/include/GL/glew.h"
 
 ModuleRender::ModuleRender()
 {
@@ -40,12 +38,13 @@ bool ModuleRender::Init()
 	char* model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), BAKER_HOUSE_MODEL_PATH);
 
 	// Load Model:
+	// For now, this model is loaded inside ModuleRenderer, but it makes more sense to have a scene
+	// Loading all these model's ad renderer calls the current loaded scene's draw method:
 	model = new Model();
 	model->Load(model_file_name);
 
 	// Delete model_file_name:
 	free(model_file_name);
-
 
 	return true;
 }
@@ -67,11 +66,6 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
-	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN))
-	{
-		App->camera->Focus(model->GetOBB()->CenterPoint(), model->GetMinimalEnclosingSphereRadius());
-	}
-
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
@@ -208,6 +202,3 @@ void ModuleRender::InitializeRenderPipelineOptions()
     // Set counter clockwise triangles as front facing:
     glFrontFace(GL_CCW);
 }
-
-
-

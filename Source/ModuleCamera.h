@@ -90,9 +90,6 @@ public:
 	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION, bool calculate_rotation = true);
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
-	void Focus(float3 position, float3 size);
-	void Focus(float3 position, float bounding_sphere_radius);
-
 	void WindowResized(unsigned int width, unsigned int height);
 
 	update_status PreUpdate();
@@ -106,5 +103,9 @@ private:
 	void Rotate();
 	void Zoom();
 	void ToggleLock();
+	void Focus();
+	void DetectFocus();
 	void ExecuteFocus();
+	void SetupFocus(float3 position, float3 size);
+	void SetupFocus(float3 position, float bounding_sphere_radius);
 };

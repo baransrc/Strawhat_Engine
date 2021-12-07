@@ -28,6 +28,8 @@ public:
 	bool CleanUp();
 	void WindowResized(unsigned width, unsigned height);
 
+	const Model* GetLoadedModel() const { return model; };
+	
 	const void* GetContext() const { return context; };
 
 private:
