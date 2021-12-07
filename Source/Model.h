@@ -29,6 +29,7 @@ public:
 	void Draw() const;
 
 	const math::OBB* GetOBB() const { return &obb; };
+	math::float3 GetCenterPosition() const { return obb.CenterPoint(); };
 	float GetMinimalEnclosingSphereRadius() const { return minimal_enclosing_sphere_radius; };
 
 private:
