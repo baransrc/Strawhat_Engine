@@ -43,8 +43,10 @@ private:
 	float zoom_velocity;
 	float zoom_drag;
 	float3 movement_speed;
+	float3 fast_movement_speed;
 	float3 rotation_euler;
 
+	bool focus_on_start;
 	float3 focus_target_position;
 	float3 focus_target_direction;
 	float focus_duration;
@@ -103,7 +105,7 @@ private:
 	void Rotate();
 	void Zoom();
 	void Focus();
-	
+
 	void DetectFocus();
 	void ExecuteFocus();
 	void SetupFocus(float3 position, float3 size);

@@ -44,17 +44,19 @@ bool ModuleCamera::Init()
 	translation_matrix = float4x4::identity;
 	rotation_matrix = float4x4::identity;
 
-	SetPosition(float3(0.0f, 1.0f, 10.0f));
+	SetPosition(float3(10.0f, 10.0f, 10.0f));
 
 	state = camera_state::UNFOCUSED;
 	
+	focus_on_start = true;
 	focus_target_position = float3::zero;
-	focus_duration = 0.5f;
+	focus_duration = 0.65f;
 	focus_lerp_position = 1.0f;
 	focus_target_direction = float3::zero;
 	focus_target_radius = 0.0f;
 
-	movement_speed = float3::one * 0.5f;
+	movement_speed = float3::one * 20.f;
+	fast_movement_speed = float3::one * 40.f;
 	orbit_speed = 1.0f;
 	
 	// Set zoom related variables:
@@ -328,7 +330,12 @@ void ModuleCamera::Move()
 		return;
 	}
 
-	const float3 velocity = Time->DeltaTime() * movement_speed;
+	const float3 current_movement_speed =
+		App->input->GetKey(SDL_SCANCODE_LSHIFT, key_state::REPEAT) ?
+		fast_movement_speed :
+		movement_speed;
+
+	const float3 velocity = Time->DeltaTime() * current_movement_speed;
 
 	// Store and Cache Position:
 	float3 new_position = GetPosition();
@@ -337,32 +344,32 @@ void ModuleCamera::Move()
 
 	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
 	{
-		new_position += GetFront() * movement_speed.z;
+		new_position += GetFront() * velocity.z;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_S, key_state::REPEAT))
 	{
-		new_position -= GetFront() * movement_speed.z;
+		new_position -= GetFront() * velocity.z;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
 	{
-		new_position += GetRight() * movement_speed.x;
+		new_position += GetRight() * velocity.x;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
 	{
-		new_position -= GetRight() * movement_speed.x;
+		new_position -= GetRight() * velocity.x;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_UP, key_state::REPEAT))
 	{
-		new_position += GetUp() * movement_speed.y;
+		new_position += GetUp() * velocity.y;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_DOWN, key_state::REPEAT))
 	{
-		new_position -= GetUp() * movement_speed.y;
+		new_position -= GetUp() * velocity.y;
 		moved_this_frame = true;
 	}
 	
@@ -494,8 +501,9 @@ void ModuleCamera::Focus()
 
 void ModuleCamera::DetectFocus()
 {
-	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN))
+	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN) || focus_on_start)
 	{
+		focus_on_start = false;
 		SetupFocus(App->renderer->GetLoadedModel()->GetCenterPosition(), App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius());
 	}
 }
