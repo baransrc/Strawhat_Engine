@@ -1,9 +1,7 @@
 #include "Globals.h"
 #include "Application.h"
 #include "ModuleDebugDraw.h"
-#include "ModuleRender.h"
 #include "ModuleCamera.h"
-#include "Model.h"
 
 #define DEBUG_DRAW_IMPLEMENTATION
 #include "DebugDraw.h"     // Debug Draw API. Notice that we need the DEBUG_DRAW_IMPLEMENTATION macro here!
@@ -600,6 +598,7 @@ bool ModuleDebugDraw::Init()
     return true;
 }
 
+
 bool ModuleDebugDraw::CleanUp()
 {
     dd::shutdown();
@@ -612,7 +611,7 @@ bool ModuleDebugDraw::CleanUp()
 
 update_status  ModuleDebugDraw::Update()
 {
-    dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
+    dd::axisTriad(float4x4::identity, 0.1f, 1.0f);
     dd::xzSquareGrid(-32, 32, 0.0f, 1.0f, dd::colors::DimGray);
 
     Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); // TODO: Get screen width and height, or camera render width and height?
@@ -640,3 +639,5 @@ void ModuleDebugDraw::DrawCuboid(vec* points)
 
     Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); // TODO: Get screen width and height, or camera render width and height?
 }
+
+
