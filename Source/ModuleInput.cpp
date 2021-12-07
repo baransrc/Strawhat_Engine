@@ -36,6 +36,9 @@ bool ModuleInput::Init()
     keyboard_state = new key_state[NUM_MAX_KEYS];
     memset(keyboard_state, static_cast<int>(key_state::IDLE), sizeof(key_state) * NUM_MAX_KEYS);
 
+    // Initialize Mouse State array with each element as IDLE;
+    memset(mouse_buttons_state, static_cast<int>(key_state::IDLE), sizeof(key_state) * NUM_MOUSE_BUTTONS);
+
 	return ret;
 }
 
@@ -44,6 +47,7 @@ update_status ModuleInput::PreUpdate()
 {
     SDL_Event sdl_event;
     
+    // Organize states of keyboard buttons with respect to last frame:
     for (size_t i = 0; i < NUM_MAX_KEYS; ++i)
     {
         if (keyboard[i] == 1)
@@ -67,6 +71,20 @@ update_status ModuleInput::PreUpdate()
             {
                 keyboard_state[i] = key_state::IDLE;
             }
+        }
+    }
+
+    // Organize states of mouse buttons with respect to last frame:
+    for (size_t i = 0; i < NUM_MOUSE_BUTTONS; ++i)
+    {
+        if (mouse_buttons_state[i] == key_state::DOWN)
+        {
+            mouse_buttons_state[i] = key_state::REPEAT;
+        }
+
+        if (mouse_buttons_state[i] == key_state::UP)
+        {
+            mouse_buttons_state[i] = key_state::IDLE;
         }
     }
 
@@ -113,6 +131,18 @@ update_status ModuleInput::PreUpdate()
             }
             break;
 
+            case SDL_MOUSEBUTTONDOWN:
+            {
+                mouse_buttons_state[sdl_event.button.button] = key_state::DOWN;
+            }
+            break;
+
+            case SDL_MOUSEBUTTONUP:
+            {
+                mouse_buttons_state[sdl_event.button.button] = key_state::UP;
+            }
+            break;
+
             case SDL_MOUSEWHEEL:
             {
                 mouse_wheel_displacement.x = sdl_event.wheel.x;
@@ -127,13 +157,12 @@ update_status ModuleInput::PreUpdate()
     return update_status::UPDATE_CONTINUE;
 }
 
-// Called before quitting
 bool ModuleInput::CleanUp()
 {
 	LOG("Quitting SDL input event subsystem");
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
-    free(keyboard_state);
+    delete[] keyboard_state;
 
 	return true;
 }
@@ -141,4 +170,9 @@ bool ModuleInput::CleanUp()
 bool ModuleInput::GetKey(size_t key_code, key_state state) const
 {
     return keyboard_state[key_code] == state;
+}
+
+bool ModuleInput::GetMouseKey(size_t mouse_key_code, key_state state) const
+{
+    return mouse_buttons_state[mouse_key_code] == state;
 }

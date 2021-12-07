@@ -3,6 +3,8 @@
 #include "Globals.h"
 #include "Math/float2.h"
 
+constexpr size_t NUM_MOUSE_BUTTONS = 5;
+
 enum class key_state
 {
 	IDLE = 0,
@@ -24,6 +26,7 @@ public:
 	update_status PreUpdate();
 	
 	bool GetKey(size_t key_code, key_state state) const;
+	bool GetMouseKey(size_t mouse_key_code, key_state state) const;
 	float2 GetMousePosition() const { return mouse_position; }
 	float2 GetMouseDisplacement() const { return mouse_displacement; }
 	float2 GetMouseWheelDisplacement() const { return mouse_wheel_displacement; }
@@ -35,6 +38,7 @@ private:
 	float window_height_inverse = 1.0f / (float)window_height;
 	const uint8_t* keyboard = NULL;
 	key_state* keyboard_state;
+	key_state mouse_buttons_state[NUM_MOUSE_BUTTONS];
 	float2 mouse_position = float2::zero;
 	float2 mouse_displacement = float2::zero;
 	float2 mouse_wheel_displacement = float2::zero;
