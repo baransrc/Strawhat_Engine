@@ -14,11 +14,12 @@ private:
 	Mesh** meshes;
 
 	math::OBB obb;
+	float minimal_enclosing_sphere_radius;
 
-	size_t number_of_textures; // Stores the number of textures provided by Assimp.
-	size_t number_of_loaded_textures; // Stores the number of textures loaded successfully and added to texture_ids.
-	size_t number_of_meshes; // Stores the number of meshes provided by Assimp.
-	size_t number_of_loaded_meshes; // Stores the number of meshes could be parsed and added to meshes.
+	size_t number_of_textures;			// Stores the number of textures provided by Assimp.
+	size_t number_of_loaded_textures;	// Stores the number of textures loaded successfully and added to texture_ids.
+	size_t number_of_meshes;			// Stores the number of meshes provided by Assimp.
+	size_t number_of_loaded_meshes;		// Stores the number of meshes could be parsed and added to meshes.
 
 public:
 	Model();
@@ -26,7 +27,9 @@ public:
 
 	void Load(const char* new_path_to_file);
 	void Draw() const;
+
 	const math::OBB* GetOBB() const { return &obb; };
+	float GetMinimalEnclosingSphereRadius() const { return minimal_enclosing_sphere_radius; };
 
 private:
 	void LoadPathVariables(const char* new_path_to_file);

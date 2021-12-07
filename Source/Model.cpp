@@ -6,6 +6,7 @@
 #include "ModuleTexture.h"						// For Access to Texture::Load and Texture::Unload
 #include "ModuleDebugDraw.h"					// For ModuleDebugDraw::DrawCuboid
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"	// For OBB::ToPolyhedron
+#include "MATH_GEO_LIB/Geometry/Sphere.h"		// For OBB::ToMinimumEnclosingSphere
 #include "assimp/postprocess.h"					// For aiProcess_Triangulate, aiProcess_FlipUVs
 #include "assimp/Importer.hpp"					// For Assimp::Importer
 
@@ -263,6 +264,9 @@ void Model::LoadOBB()
 
 	// Form OBB from temp aabb:
 	obb.SetFrom(aabb);
+
+	// Get Minimal enclosing sphere radius:
+	minimal_enclosing_sphere_radius = obb.MinimalEnclosingSphere().r;
 }
 
 void Model::DrawOBB() const
