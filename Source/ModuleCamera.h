@@ -76,6 +76,7 @@ public:
 	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION, bool calculate_rotation = true);
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
+	void Focus(float3 position, float3 size);
 
 	void WindowResized(unsigned int width, unsigned int height);
 

@@ -239,6 +239,16 @@ void ModuleCamera::AutoRotateAround(float3 position)
 	LookAt(position);
 }
 
+void ModuleCamera::Focus(float3 position, float3 size)
+{
+	LookAt(position, vector_mode::POSITION, true);
+
+	float max_size = math::Max(size.x, math::Max(size.y, size.z));
+	float distance = math::Abs(max_size / math::Sin(frustum.HorizontalFov() * 0.5f));
+
+	SetPosition(position + distance * GetDirection());
+}
+
 void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
 {
 	SetAspectRatio((float)width / (float)height);

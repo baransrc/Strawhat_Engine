@@ -2,6 +2,8 @@
 #include "Application.h"
 #include "ModuleRender.h"
 #include "ModuleWindow.h"
+#include "ModuleCamera.h"
+#include "ModuleInput.h"
 #include "ModuleShaderProgram.h"
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
@@ -65,6 +67,11 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
+	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN))
+	{
+		App->camera->Focus(model->GetOBB()->CenterPoint(), model->GetOBB()->Size());
+	}
+
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
