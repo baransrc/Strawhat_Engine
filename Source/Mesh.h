@@ -2,6 +2,7 @@
 #include <vector>
 #include "MATH_GEO_LIB/Math/float3.h"
 #include "ASSIMP/mesh.h"
+#include "MATH_GEO_LIB/Geometry/AABB.h"
 
 class Mesh
 {
@@ -12,6 +13,8 @@ private:
 	unsigned int vertex_array_object;
 	unsigned int vertex_buffer_object;
 	unsigned int element_buffer_object;	
+	
+	math::AABB bounding_box;
 
 	size_t number_of_vertices;
 	size_t number_of_indices;
@@ -23,6 +26,9 @@ public:
 	void Load(const aiMesh* mesh_data);
 	void Draw(const unsigned int* model_textures) const;
 
+	const math::AABB* GetAABB() const { return &bounding_box; };
+
 private:
 	void LoadMeshData(const aiMesh* mesh_data);
+	void LoadAABB(const aiMesh* mesh_data);
 };

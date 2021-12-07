@@ -1,11 +1,13 @@
 #include "Model.h"
 #include "Mesh.h"
-#include "Globals.h"			// For LOG
-#include "Util.h"				// For String functions
-#include "Application.h"		// For Access to App
-#include "ModuleTexture.h"		// For Access to Texture::Load and Texture::Unload
-#include "assimp/postprocess.h"	// For aiProcess_Triangulate, aiProcess_FlipUVs
-#include "assimp/Importer.hpp"	// For Assimp::Importer
+#include "Globals.h"							// For LOG
+#include "Util.h"								// For String functions
+#include "Application.h"						// For Access to App
+#include "ModuleTexture.h"						// For Access to Texture::Load and Texture::Unload
+#include "ModuleDebugDraw.h"					// For ModuleDebugDraw::DrawCuboid
+#include "MATH_GEO_LIB/Geometry/Polyhedron.h"	// For OBB::ToPolyhedron
+#include "assimp/postprocess.h"					// For aiProcess_Triangulate, aiProcess_FlipUVs
+#include "assimp/Importer.hpp"					// For Assimp::Importer
 
 Model::Model()
 {
@@ -47,6 +49,8 @@ void Model::Draw() const
 	{
 		meshes[i]->Draw(texture_ids);
 	}
+
+	DrawOBB();
 }
 
 /// <summary>
@@ -74,9 +78,12 @@ void Model::Load(const char* new_path_to_file)
 		return;
 	}
 
-	// Load data related to mesh:
+	// Load data related to model:
 	LoadTextures(scene);
 	LoadMeshes(scene);
+
+	// Load OBB of the model:
+	LoadOBB();
 }
 
 /// <summary>
@@ -237,4 +244,29 @@ void Model::LoadMeshes(const aiScene* scene)
 
 		++number_of_loaded_meshes;
 	}
+}
+
+void Model::LoadOBB()
+{
+	// Initialize OBB:
+	obb.SetNegativeInfinity(); 
+
+	// Initialize a temp AABB:
+	math::AABB aabb;
+	aabb.SetNegativeInfinity();
+
+	// Make temp AABB enclose all the AABBs of meshes:
+	for (size_t i = 0; i < number_of_loaded_meshes; ++i)
+	{
+		aabb.Enclose(*(meshes[i]->GetAABB()));
+	}
+
+	// Form OBB from temp aabb:
+	obb.SetFrom(aabb);
+}
+
+void Model::DrawOBB() const
+{
+	// NOTE: Right now, draws a weird cube:
+	App->debug_draw->DrawCuboid((obb.ToPolyhedron()).VertexArrayPtr());
 }

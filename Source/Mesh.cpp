@@ -81,7 +81,9 @@ void Mesh::Load(const aiMesh* mesh_data)
 
 	// Unbind VAO with id vertex_array_object_id:
 	glBindVertexArray(0);
-	
+
+	// Load AABB:
+	LoadAABB(mesh_data);
 }
 
 /// <summary>
@@ -163,4 +165,14 @@ void Mesh::LoadMeshData(const aiMesh* mesh_data)
 		indices[i * 3 + 1] = mesh_data->mFaces[i].mIndices[1];
 		indices[i * 3 + 2] = mesh_data->mFaces[i].mIndices[2];
 	}
+}
+
+/// <summary>
+/// Creates AABB from mesh_data->mVertices.
+/// </summary>
+/// <param name="mesh_data"></param>
+void Mesh::LoadAABB(const aiMesh* mesh_data)
+{
+	// Since the memory layouts of float3 and aiVector3D this works.
+	bounding_box = AABB::MinimalEnclosingAABB((float3*)(&(mesh_data->mVertices[0])), mesh_data->mNumVertices);
 }
