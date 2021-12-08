@@ -178,6 +178,26 @@ void ModuleRender::OnEditor()
 	stencil_test ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
 }
 
+void ModuleRender::OnPerformanceWindow() const
+{
+	int total_vram = 0;
+	int free_vram = 0;
+
+	glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &total_vram);
+	glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &free_vram);
+
+	static const float total_vram_gib = (total_vram / 1024.f) / 1024.f;
+	float free_vram_gib = (free_vram / 1024.f) / 1024.f;
+	
+	ImGui::Text("Vendor: %s", glGetString(GL_VENDOR));
+	ImGui::Text("Renderer: %s", glGetString(GL_RENDERER));
+	ImGui::Text("OpenGL version supported %s", glGetString(GL_VERSION));
+	ImGui::Text("GLSL: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	ImGui::Text("VRAM: %fMb", total_vram_gib);
+	ImGui::Text("VRAM Usage: %fGiB", (total_vram_gib - free_vram_gib));
+	ImGui::Text("Free VRAM: %fGiB", free_vram_gib);
+}
+
 void ModuleRender::InitializeModel(char* file_directory)
 {
 	if (model != nullptr)

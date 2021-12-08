@@ -253,6 +253,9 @@ void ModuleEditor::DrawPerformanceWindow()
 	
 	sprintf_s(title, 25, "Milliseconds %.1f", ms_data.back());
 	ImGui::PlotHistogram("##milliseconds", &ms_data.front(), ms_data.size(), 0, title, 0.0f, 40.0f, ImVec2(310, 100));
+	ImGui::Text("\n");
+	ImGui::Text("Hardware");
+	App->renderer->OnPerformanceWindow();
 
 	ImGui::End();
 }

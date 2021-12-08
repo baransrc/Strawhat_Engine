@@ -38,7 +38,7 @@ public:
 	const void* GetContext() const { return context; };
 
 	void OnEditor();
-
+	void OnPerformanceWindow() const;
 private:
 	void InitializeModel(char* file_directory);
 	void InitializeOpenGL();
