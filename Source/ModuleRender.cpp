@@ -22,13 +22,13 @@ ModuleRender::~ModuleRender()
 bool ModuleRender::Init()
 {
 	LOG("Creating Renderer context");
-    
+
 	// Initialize GLEW and OpenGL:
 	InitializeGLEW();
-    
+
 	// Log Hardware Details:
 	LogHardware();
-    
+
 	// Initialize Render Pipline Options According to the Settings in Globals.h:
 	InitializeRenderPipelineOptions();
 
@@ -55,12 +55,12 @@ update_status ModuleRender::PreUpdate()
 	// Resize the viewport to the newly resized window:
 	glViewport(0, 0, viewport_width, viewport_height);
 
-	// Clear to black:
-	glClearColor(0.0f , 0.0f, 0.0f, 1.0f);
+	// Clear to clear color:
+	glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
 
 	// Clear to the selected Clear color:
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -79,7 +79,7 @@ update_status ModuleRender::PostUpdate()
 {
 	// Swap frame buffer:
 	SDL_GL_SwapWindow(App->window->window);
-    
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -96,7 +96,7 @@ bool ModuleRender::CleanUp()
 
 	//Delete Default Model;
 	delete default_model;
-	    
+
 	return true;
 }
 
@@ -116,6 +116,66 @@ void ModuleRender::OnDropFile(char* file_directory)
 float ModuleRender::GetRequiredAxisTriadLength() const
 {
 	return GetLoadedModel()->GetMinimalEnclosingSphereRadius() + 1.0f;
+}
+
+void ModuleRender::OnEditor()
+{
+	// Define Settings:
+	static bool smooth_lines = false;
+	static bool cull_face = RENDERER_CULL_FACE;
+	static bool depth_test = RENDERER_DEPTH_TEST;
+	static bool scissor_test = RENDERER_SCISSOR_TEST;
+	static bool stencil_test = RENDERER_STENCIL_TEST;
+
+	// Set counter clockwise triangles as front facing:
+	glFrontFace(GL_CCW);
+
+	if (ImGui::CollapsingHeader("Renderer"))
+	{
+		ImGui::Text("Clear Color");
+		ImGui::Separator();
+		ImGui::PushItemWidth(200.0f);
+		ImGui::ColorPicker3("Clear Color", &clear_color[0], ImGuiColorEditFlags_DisplayRGB);
+
+		ImGui::Text("\n");
+		ImGui::Text("Viewport Dimensions");
+		ImGui::Separator();
+		ImGui::Text("Width: %u", viewport_width);
+		ImGui::Text("Height: %u", viewport_height);
+
+		ImGui::Text("\n");
+		ImGui::Text("Settings");
+		ImGui::Separator();
+
+		ImGui::PushID("smooth_lines");
+		ImGui::Checkbox("Smooth Lines", &smooth_lines);
+		ImGui::PopID();
+
+		ImGui::PushID("cull_face");
+		ImGui::Checkbox("Face Culling", &cull_face);
+		ImGui::PopID();
+
+		ImGui::PushID("depth_test");
+		ImGui::Checkbox("Depth Test", &depth_test);
+		ImGui::PopID();
+
+		ImGui::PushID("scissor_test");
+		ImGui::Checkbox("Scissor Test", &scissor_test);
+		ImGui::PopID();
+
+		ImGui::PushID("stencil_test");
+		ImGui::Checkbox("Stencil Test", &stencil_test);
+		ImGui::PopID();
+	}
+
+	GetLoadedModel()->OnEditor();
+
+	// Apply Settings:
+	smooth_lines ? glEnable(GL_LINE_SMOOTH) : glDisable(GL_LINE_SMOOTH);
+	cull_face ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+	depth_test ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+	scissor_test ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
+	stencil_test ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
 }
 
 void ModuleRender::InitializeModel(char* file_directory)
@@ -150,12 +210,12 @@ void ModuleRender::InitializeOpenGL()
 	glDebugMessageCallback(&util::OpenGLDebugCallback, nullptr);
 
 	// Filter Notifications:
-	glDebugMessageControl(GL_DONT_CARE, 
-					      GL_DONT_CARE, 
-		                  GL_DONT_CARE,
-		                  0, 
-		                  nullptr,
-		                  true);
+	glDebugMessageControl(GL_DONT_CARE,
+		GL_DONT_CARE,
+		GL_DONT_CARE,
+		0,
+		nullptr,
+		true);
 #endif //  DEBUG
 
 }
@@ -169,11 +229,11 @@ void ModuleRender::InitializeGLEW()
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);    // we want a double buffer
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24); // we want to have a depth buffer with 24 bits
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);    // we want to have a stencil buffer with 8 bits
-    
+
 	// Create OpenGL Context:
 	// Using the window provided by ModuleWindow in App.
 	context = SDL_GL_CreateContext(App->window->window);
-    
+
 	// Load GLEW:
 	GLenum err = glewInit();
 	// Check for errors:
@@ -192,7 +252,7 @@ void ModuleRender::LogHardware()
 void ModuleRender::InitializeRenderPipelineOptions()
 {
 	// Read Settings from Globals.h and Initialize Render Pipeline Options Accordingly:
-	
+
 	// Face Culling:
 	if (RENDERER_CULL_FACE == true)
 	{
@@ -202,7 +262,7 @@ void ModuleRender::InitializeRenderPipelineOptions()
 	{
 		glDisable(GL_CULL_FACE);
 	}
-    
+
 	// Depth Test:
 	if (RENDERER_DEPTH_TEST == true)
 	{
@@ -212,7 +272,7 @@ void ModuleRender::InitializeRenderPipelineOptions()
 	{
 		glDisable(GL_DEPTH_TEST);
 	}
-    
+
 	// Scissor Test:
 	if (RENDERER_SCISSOR_TEST == true)
 	{
@@ -222,7 +282,7 @@ void ModuleRender::InitializeRenderPipelineOptions()
 	{
 		glDisable(GL_SCISSOR_TEST);
 	}
-    
+
 	// Stencil Test:
 	if (RENDERER_STENCIL_TEST == true)
 	{
@@ -232,7 +292,7 @@ void ModuleRender::InitializeRenderPipelineOptions()
 	{
 		glDisable(GL_STENCIL_TEST);
 	}
-    
-    // Set counter clockwise triangles as front facing:
-    glFrontFace(GL_CCW);
+
+	// Set counter clockwise triangles as front facing:
+	glFrontFace(GL_CCW);
 }

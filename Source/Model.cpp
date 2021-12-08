@@ -20,6 +20,8 @@ Model::~Model()
 	free(path_to_file);
 	// Delete path_to_parent_directory:
 	free(path_to_parent_directory);
+	// Delete Texture info:
+	free(texture_info);
 
 	// Unload loaded textures:
 	for (size_t i = 0; i < number_of_loaded_textures; ++i)
@@ -54,6 +56,41 @@ void Model::Draw() const
 	DrawOBB();
 }
 
+void Model::OnEditor() const
+{
+	if (ImGui::CollapsingHeader("Model"))
+	{
+		ImGui::Text("Transform");
+		ImGui::Separator();
+		ImGui::Text("Transform Matrix:");
+		ImGui::Text("\t1 0 0 0\n\t0 1 0 0\n\t0 0 1 0\n\t0 0 0 1"); // Since we don't alter transform yet.
+		ImGui::Text("Minimal Enclosing Sphere Radius: %f", GetMinimalEnclosingSphereRadius());
+		ImGui::Text("OBB Dimensions:");
+		ImGui::Text("\tX: %f\n\tY: %f\n\tZ: %f", obb.Size().x, obb.Size().y, obb.Size().z);
+		ImGui::Text("OBB Center Position:");
+		ImGui::Text("\tX: %f\n\tY: %f\n\tZ: %f", GetCenterPosition().x, GetCenterPosition().y, GetCenterPosition().z);
+		ImGui::Text("\n");
+		ImGui::Text("Texture");
+		ImGui::Separator();
+		ImGui::Text("%s", texture_info);
+		ImGui::Image((void*)(intptr_t)texture_ids[0], ImVec2(200, 200));
+		ImGui::Text("Geometry");
+		ImGui::Separator();
+		ImGui::Text("Number of Vertices: %i", number_of_vertices);
+		ImGui::Text("Number of Indices: %i", number_of_indices);
+		ImGui::Text("Number of Triangles: %i", number_of_triangles);
+		ImGui::Text("Meshes:");
+		ImGui::Text("\tNumber of Meshes: %i", number_of_meshes);
+		for (size_t i = 0; i < number_of_meshes; ++i)
+		{
+			ImGui::Text("\tMesh %i", i);
+			ImGui::Text("\tVertices %i", meshes[i]->GetNumberOfVertices());
+			ImGui::Text("\tIndices %i", meshes[i]->GetNumberOfIndices());
+			ImGui::Text("\tTriangles %i", meshes[i]->GetNumberOfTriangles());
+		}
+	}
+}
+
 /// <summary>
 /// Loads the model with path 'new_path_to_file'.
 /// </summary>
@@ -85,6 +122,9 @@ bool Model::Load(const char* new_path_to_file)
 
 	// Load OBB of the model:
 	LoadOBB();
+
+	// Load texture info (Just first texture since we are interested in that only for now):
+	App->texture->GetTextureInfo(texture_ids[0], &texture_info);
 
 	return true;
 }
@@ -253,6 +293,10 @@ void Model::LoadMeshes(const aiScene* scene)
 
 	meshes = (Mesh**)calloc(number_of_meshes, sizeof(Mesh*));
 
+	number_of_triangles = 0;
+	number_of_indices = 0;
+	number_of_vertices = 0;
+
 	aiMesh* current_mesh_data;
 
 	for (size_t i = 0; i < number_of_meshes; ++i)
@@ -262,6 +306,10 @@ void Model::LoadMeshes(const aiScene* scene)
 		Mesh* current_mesh = new Mesh();
 
 		current_mesh->Load(current_mesh_data);
+
+		number_of_triangles += current_mesh->GetNumberOfTriangles();
+		number_of_indices += current_mesh->GetNumberOfIndices();
+		number_of_vertices += current_mesh->GetNumberOfVertices();
 
 		meshes[number_of_loaded_meshes] = current_mesh;
 

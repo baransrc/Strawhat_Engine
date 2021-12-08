@@ -54,6 +54,30 @@ void ModuleEditor::DrawMainMenuBar()
 	// Begin Drawing Main Menu Bar:
 	if (ImGui::BeginMainMenuBar())
 	{
+		// Begin Drawing File:
+		if (ImGui::BeginMenu("File"))
+		{
+			// NOTE: Don't forget to add show flags here:
+			if (ImGui::MenuItem("Close all windows"))
+			{
+				show_demo_window = false;
+				show_about_window = false;
+				show_console_window = false;
+				show_render_exercise_texture_info_window = false;
+				show_performance_window = false;
+				show_module_settings_window = false;
+				show_exit_popup = false;
+			}
+
+			if (ImGui::MenuItem("Exit"))
+			{
+				show_exit_popup = true;
+			}
+
+			// End Drawing Tools Menu:
+			ImGui::EndMenu();
+		}
+
 		// Begin Drawing Tools Menu:
 		if (ImGui::BeginMenu("Tools"))
 		{
@@ -64,9 +88,9 @@ void ModuleEditor::DrawMainMenuBar()
 				show_console_window = true;
 			}
 
-			if (ImGui::MenuItem("Render Exercise"))
+			if (ImGui::MenuItem("Modules"))
 			{
-				show_render_exercise_texture_info_window = true;
+				show_module_settings_window = true;
 			}
 
 			if (ImGui::MenuItem("Performance"))
@@ -94,6 +118,25 @@ void ModuleEditor::DrawMainMenuBar()
 
 		// End Drawing Main Menu Bar:
 		ImGui::EndMainMenuBar();
+	}
+}
+
+void ModuleEditor::DrawExitPopup()
+{
+	if (show_exit_popup)
+	{
+		ImGui::Begin("Exit", &show_exit_popup);
+		ImGui::Text("Are you sure you want to close Strawhat Engine?");
+		if (ImGui::Button("Yes, exit", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			show_exit_popup = false;
+			should_exit_application = true;
+		}
+		if(ImGui::Button("Cancel", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		{
+			show_exit_popup = false;
+		}
+		ImGui::End();
 	}
 }
 
@@ -214,6 +257,20 @@ void ModuleEditor::DrawPerformanceWindow()
 	ImGui::End();
 }
 
+void ModuleEditor::DrawModuleSettings()
+{
+	if (!show_module_settings_window)
+	{
+		return;
+	}
+
+	ImGui::Begin("Module Settings", &show_module_settings_window);
+	
+	App->renderer->OnEditor();
+	
+	ImGui::End();
+}
+
 update_status ModuleEditor::PreUpdate()
 {
 	// Start the Dear ImGui frame:
@@ -233,11 +290,15 @@ update_status ModuleEditor::Update()
 		DrawAboutWindow();
 	}
 
+	DrawExitPopup();
+
 	DrawConsoleWindow();
 
 	DrawRenderExerciseTextureInfoWindow();
 
 	DrawPerformanceWindow();
+
+	DrawModuleSettings();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -247,6 +308,11 @@ update_status ModuleEditor::Update()
 
 update_status ModuleEditor::PostUpdate()
 {
+	if (should_exit_application)
+	{
+		return update_status::UPDATE_STOP;
+	}
+
 	return update_status::UPDATE_CONTINUE;
 }
 

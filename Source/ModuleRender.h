@@ -17,6 +17,7 @@ private:
 	unsigned int viewport_height = SCREEN_HEIGHT;
 	Model* default_model;
 	Model* model = nullptr;
+	float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 public:
 	ModuleRender();
@@ -30,12 +31,13 @@ public:
 	void WindowResized(unsigned width, unsigned height);
 	void OnDropFile(char* file_directory);
 
-
 	const Model* GetLoadedModel() const { return model == nullptr ? default_model : model; };
 
 	float GetRequiredAxisTriadLength() const;
 	
 	const void* GetContext() const { return context; };
+
+	void OnEditor();
 
 private:
 	void InitializeModel(char* file_directory);

@@ -9,7 +9,8 @@ class Model
 private:
 	char* path_to_parent_directory;
 	char* path_to_file;
-	
+	char* texture_info;
+
 	unsigned int* texture_ids;
 	Mesh** meshes;
 
@@ -20,6 +21,9 @@ private:
 	size_t number_of_loaded_textures;	// Stores the number of textures loaded successfully and added to texture_ids.
 	size_t number_of_meshes;			// Stores the number of meshes provided by Assimp.
 	size_t number_of_loaded_meshes;		// Stores the number of meshes could be parsed and added to meshes.
+	size_t number_of_triangles;
+	size_t number_of_indices;
+	size_t number_of_vertices;
 
 public:
 	Model();
@@ -27,6 +31,7 @@ public:
 
 	bool Load(const char* new_path_to_file);
 	void Draw() const;
+	void OnEditor() const;
 
 	const math::OBB* GetOBB() const { return &obb; };
 	math::float3 GetCenterPosition() const { return obb.CenterPoint(); };

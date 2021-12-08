@@ -121,6 +121,7 @@ void Mesh::LoadMeshData(const aiMesh* mesh_data)
 	// again?
 
 	number_of_vertices = mesh_data->mNumVertices;
+	number_of_triangles = mesh_data->mNumFaces;
 	
 	vertices = (float*)calloc(number_of_vertices * 8, sizeof(float)); // Initializes to 0 by default.
 

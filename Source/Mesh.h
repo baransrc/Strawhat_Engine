@@ -18,6 +18,7 @@ private:
 
 	size_t number_of_vertices;
 	size_t number_of_indices;
+	size_t number_of_triangles;
 
 public:
 	Mesh();
@@ -26,6 +27,9 @@ public:
 	void Load(const aiMesh* mesh_data);
 	void Draw(const unsigned int* model_textures) const;
 
+	size_t GetNumberOfVertices() const { return number_of_vertices; };
+	size_t GetNumberOfIndices() const { return number_of_indices; };
+	size_t GetNumberOfTriangles() const { return number_of_triangles; };
 	const math::AABB* GetAABB() const { return &bounding_box; };
 
 private:
