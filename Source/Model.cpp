@@ -58,7 +58,7 @@ void Model::Draw() const
 /// Loads the model with path 'new_path_to_file'.
 /// </summary>
 /// <param name="new_path_to_file"></param>
-void Model::Load(const char* new_path_to_file)
+bool Model::Load(const char* new_path_to_file)
 {
 	Assimp::Importer importer;
 
@@ -76,7 +76,7 @@ void Model::Load(const char* new_path_to_file)
 	if (!scene)
 	{
 		LOG("Error Loading Model File \"%s\": %s", path_to_file, importer.GetErrorString());
-		return;
+		return false;
 	}
 
 	// Load data related to model:
@@ -85,6 +85,8 @@ void Model::Load(const char* new_path_to_file)
 
 	// Load OBB of the model:
 	LoadOBB();
+
+	return true;
 }
 
 /// <summary>

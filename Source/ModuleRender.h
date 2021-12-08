@@ -15,7 +15,8 @@ public:
 private:
 	unsigned int viewport_width = SCREEN_WIDTH;
 	unsigned int viewport_height = SCREEN_HEIGHT;
-	Model* model;
+	Model* default_model;
+	Model* model = nullptr;
 
 public:
 	ModuleRender();
@@ -27,14 +28,17 @@ public:
 	update_status PostUpdate();
 	bool CleanUp();
 	void WindowResized(unsigned width, unsigned height);
+	void OnDropFile(char* file_directory);
 
-	const Model* GetLoadedModel() const { return model; };
+
+	const Model* GetLoadedModel() const { return model == nullptr ? default_model : model; };
 
 	float GetRequiredAxisTriadLength() const;
 	
 	const void* GetContext() const { return context; };
 
 private:
+	void InitializeModel(char* file_directory);
 	void InitializeOpenGL();
 	void InitializeGLEW();
 	void LogHardware();

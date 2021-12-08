@@ -25,7 +25,7 @@ public:
 	Model();
 	~Model();
 
-	void Load(const char* new_path_to_file);
+	bool Load(const char* new_path_to_file);
 	void Draw() const;
 
 	const math::OBB* GetOBB() const { return &obb; };

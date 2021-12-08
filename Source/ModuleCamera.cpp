@@ -48,7 +48,7 @@ bool ModuleCamera::Init()
 
 	state = camera_state::UNFOCUSED;
 	
-	focus_on_start = true;
+	focus_on_model_changed = true;
 	focus_target_position = -float3::unitX;
 	focus_destination_position = float3::zero;
 	focus_duration = 0.65f;
@@ -252,10 +252,22 @@ void ModuleCamera::AutoRotateAround(float3 position)
 	LookAt(position);
 }
 
-
 void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
 {
 	SetAspectRatio((float)width / (float)height);
+}
+
+void ModuleCamera::OnModelChanged()
+{
+	float size =  App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius();
+
+	float new_far_plane_distance = frustum.FarPlaneDistance();
+
+	new_far_plane_distance = math::Max(size * 10, new_far_plane_distance);
+
+	SetFarPlaneDistance(new_far_plane_distance);
+
+	focus_on_model_changed = true;
 }
 
 update_status ModuleCamera::PreUpdate()
@@ -338,7 +350,7 @@ void ModuleCamera::Move()
 		fast_movement_speed :
 		movement_speed;
 
-	const float3 velocity = Time->DeltaTime() * current_movement_speed;
+	const float3 velocity = Time->DeltaTime() * current_movement_speed * App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius()*0.1f;
 
 	// Store and Cache Position:
 	float3 new_position = GetPosition();
@@ -610,9 +622,9 @@ void ModuleCamera::ExecuteUnfocus()
 
 void ModuleCamera::DetectFocus()
 {
-	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN) || focus_on_start)
+	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN) ||  focus_on_model_changed)
 	{
-		focus_on_start = false;
+		focus_on_model_changed = false;
 		SetupFocus(App->renderer->GetLoadedModel()->GetCenterPosition(), App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius());
 	}
 }
@@ -633,6 +645,8 @@ void ModuleCamera::ExecuteFocus()
 		focus_lerp_position = 1.0f;
 		state = camera_state::FOCUSED;
 	}
+
+	LOG("Executing Focus: %f%%", 100.f * focus_lerp_position);
 
 	// Lerp to target direction:
 	float3 direction = float3::Lerp(GetDirection(), focus_target_direction, focus_lerp_position).Normalized();

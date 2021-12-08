@@ -1,6 +1,7 @@
 #include "Globals.h"
 #include "Application.h"
 #include "ModuleRender.h"
+#include "ModuleCamera.h"
 #include "ModuleWindow.h"
 #include "ModuleShaderProgram.h"
 #include "Util.h"
@@ -35,16 +36,16 @@ bool ModuleRender::Init()
 	InitializeOpenGL();
 
 	// Get Model File Name:
-	char* model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), BAKER_HOUSE_MODEL_PATH);
+	char* default_model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), BAKER_HOUSE_MODEL_PATH);
 
-	// Load Model:
+	// Load Default Model:
 	// For now, this model is loaded inside ModuleRenderer, but it makes more sense to have a scene
 	// Loading all these model's ad renderer calls the current loaded scene's draw method:
-	model = new Model();
-	model->Load(model_file_name);
+	default_model = new Model();
+	default_model->Load(default_model_file_name);
 
 	// Delete model_file_name:
-	free(model_file_name);
+	free(default_model_file_name);
 
 	return true;
 }
@@ -69,7 +70,7 @@ update_status ModuleRender::Update()
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
-	model->Draw();
+	GetLoadedModel()->Draw();
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -92,6 +93,9 @@ bool ModuleRender::CleanUp()
 
 	//Delete Model:
 	delete model;
+
+	//Delete Default Model;
+	delete default_model;
 	    
 	return true;
 }
@@ -102,9 +106,34 @@ void ModuleRender::WindowResized(unsigned width, unsigned height)
 	viewport_height = height;
 }
 
+void ModuleRender::OnDropFile(char* file_directory)
+{
+	InitializeModel(file_directory);
+
+	App->camera->OnModelChanged();
+}
+
 float ModuleRender::GetRequiredAxisTriadLength() const
 {
-	return model->GetMinimalEnclosingSphereRadius() + 1.0f;
+	return GetLoadedModel()->GetMinimalEnclosingSphereRadius() + 1.0f;
+}
+
+void ModuleRender::InitializeModel(char* file_directory)
+{
+	if (model != nullptr)
+	{
+		delete model;
+		model = nullptr;
+	}
+
+	model = new Model();
+	bool successful = model->Load(file_directory);
+
+	if (!successful)
+	{
+		delete model;
+		model = nullptr;
+	}
 }
 
 void ModuleRender::InitializeOpenGL()

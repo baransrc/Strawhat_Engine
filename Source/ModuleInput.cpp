@@ -149,6 +149,17 @@ update_status ModuleInput::PreUpdate()
                 mouse_wheel_displacement.y = sdl_event.wheel.y;
             }
             break;
+
+            case SDL_DROPFILE:
+            {
+                char* dropped_file_directory = sdl_event.drop.file;
+
+                LOG("Dropped File: %s", dropped_file_directory);
+
+                App->renderer->OnDropFile(dropped_file_directory);
+
+                SDL_free(dropped_file_directory);
+            }
         }
     }
     

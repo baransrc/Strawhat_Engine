@@ -54,7 +54,7 @@ private:
 	float3 fast_movement_speed;
 	float3 rotation_euler;
 
-	bool focus_on_start;
+	bool focus_on_model_changed;
 	float3 focus_target_position;
 	float3 focus_destination_position;
 	float3 focus_target_direction;
@@ -101,6 +101,8 @@ public:
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
 	void WindowResized(unsigned int width, unsigned int height);
+
+	void OnModelChanged();
 
 	update_status PreUpdate();
 	update_status Update();
