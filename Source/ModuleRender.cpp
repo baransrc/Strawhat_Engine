@@ -44,6 +44,9 @@ bool ModuleRender::Init()
 	default_model = new Model();
 	default_model->Load(default_model_file_name);
 
+	viewport_height = App->window->window_height;
+	viewport_width = App->window->window_width;
+
 	// Delete model_file_name:
 	free(default_model_file_name);
 
