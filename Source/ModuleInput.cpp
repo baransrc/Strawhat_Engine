@@ -99,6 +99,8 @@ update_status ModuleInput::PreUpdate()
         // Send input events to Dear ImGui:
         ImGui_ImplSDL2_ProcessEvent(&sdl_event);
 
+        ImGuiIO& io = ImGui::GetIO();
+
         switch (sdl_event.type)
         {
             case SDL_QUIT:
@@ -123,6 +125,12 @@ update_status ModuleInput::PreUpdate()
 
             case SDL_MOUSEMOTION:
             {
+                // Ignore the event if the cursor is on a ImGui widget:
+                if (io.WantCaptureMouse)
+                {
+                    break;
+                }
+
                 mouse_displacement.x = sdl_event.motion.xrel;
                 mouse_displacement.y = sdl_event.motion.yrel;
 
@@ -133,18 +141,35 @@ update_status ModuleInput::PreUpdate()
 
             case SDL_MOUSEBUTTONDOWN:
             {
+                // Ignore the event if the cursor is on a ImGui widget:
+                if (io.WantCaptureMouse)
+                {
+                    break;
+                }
                 mouse_buttons_state[sdl_event.button.button] = key_state::DOWN;
             }
             break;
 
             case SDL_MOUSEBUTTONUP:
             {
+                // Ignore the event if the cursor is on a ImGui widget:
+                if (io.WantCaptureMouse)
+                {
+                    break;
+                }
+
                 mouse_buttons_state[sdl_event.button.button] = key_state::UP;
             }
             break;
 
             case SDL_MOUSEWHEEL:
             {
+                // Ignore the event if the cursor is on a ImGui widget:
+                if (io.WantCaptureMouse)
+                {
+                    break;
+                }
+
                 mouse_wheel_displacement.x = sdl_event.wheel.x;
                 mouse_wheel_displacement.y = sdl_event.wheel.y;
             }
