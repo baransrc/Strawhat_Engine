@@ -117,7 +117,8 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
         // Return unsuccessful:
         loading_successful = false;
 
-        LOG("Texture with filename \"%s\" could not be loaded, loading error texture instead.", file_name);
+        //LOG("Texture with filename \"%s\" could not be loaded, loading error texture instead.", file_name);
+        
         // Load error texture:
         ilLoadImage(ERROR_TEXTURE);
         // Interpret error texture as rgb:
@@ -215,7 +216,6 @@ void ModuleTexture::WriteTextureData(GLuint texture_id, const char* texture_file
         texture_data.Depth,
         texture_id
     );
-
 
     util::AppendToFile(runtime_texture_data_file_path, texture_data_string);
 }

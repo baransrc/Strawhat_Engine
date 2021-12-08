@@ -135,6 +135,10 @@ void Model::LoadTextures(const aiScene* scene)
 
 		bool succesfully_loaded = true;
 
+		LOG("Loading texture for material number %i", i);
+
+		LOG("Searching for texture file specified in \"%s\"", texture_file_path.C_Str());
+
 		// Try loading from the path given in model file:
 		texture_ids[number_of_loaded_textures] = App->texture->LoadTexture
 		(
@@ -148,13 +152,17 @@ void Model::LoadTextures(const aiScene* scene)
 			succesfully_loaded
 		);
 
+		if (succesfully_loaded)
+		{
+			LOG("Successfully loaded texture in file\"%s\"", texture_file_path.C_Str());
+		}
 		// In case of failure in finding the texture file in the path given in the model file,
 		// Take the name of the texture file and search for it inside the directory of the 
 		// model file:
-		if (!succesfully_loaded)
+		else
 		{
-			// TODO: LOG.
-			
+			LOG("Could not find the texture file specified in \"%s\"", texture_file_path.C_Str());
+
 			// Store texture file path as char*:
 			char* temp_texture_file_name = util::ConcatCStrings("", texture_file_path.C_Str());
 
@@ -163,6 +171,8 @@ void Model::LoadTextures(const aiScene* scene)
 			// Form path of texture next to model file:
 			aiString file_in_model_directory(path_to_parent_directory);
 			file_in_model_directory.Append(temp_texture_file_name);
+
+			LOG("Searching for texture file specified in \"%s\"", file_in_model_directory.C_Str());
 
 			// Unload previously loaded error texture:
 			App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
@@ -179,14 +189,19 @@ void Model::LoadTextures(const aiScene* scene)
 				succesfully_loaded
 			);
 
-			// If texture still remains unable to be loaded, try to find it inside the texture folder.
-			if (!succesfully_loaded)
+			if (succesfully_loaded)
 			{
-				// TODO: LOG.
+				LOG("Successfully loaded texture in file\"%s\"", file_in_model_directory.C_Str());
+			}
+			else // If texture still remains unable to be loaded, try to find it inside the texture folder.
+			{
+				LOG("Could not find the texture file specified in \"%s\"", file_in_model_directory.C_Str());
 
 				aiString file_in_working_directory(App->GetWorkingDirectory());
 				file_in_working_directory.Append(TEXTURES_FOLDER);
 				file_in_working_directory.Append(temp_texture_file_name);
+
+				LOG("Searching for texture file specified in \"%s\"", file_in_working_directory.C_Str());
 
 				// Unload previously loaded error texture:
 				App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
@@ -202,16 +217,21 @@ void Model::LoadTextures(const aiScene* scene)
 					true,
 					succesfully_loaded
 				);
+
+				if (succesfully_loaded)
+				{
+					LOG("Successfully loaded texture in file\"%s\"", file_in_working_directory.C_Str());
+				} 
+				else
+				{
+					// Unload previously loaded error texture:
+					App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
+
+					LOG("Could not find the texture file specified in \"%s\"", file_in_working_directory.C_Str());
+					LOG("Aborting texture file lookup, model will be loaded without textures");
+				}
 			}
 
-			if (!succesfully_loaded)
-			{
-				// Unload previously loaded error texture:
-				App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
-
-				// TODO: LOG.
-			}
-			
 			// Delete temp_texture_file_name as it's not needed anymore:
 			free(temp_texture_file_name);
 		}

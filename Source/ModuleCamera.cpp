@@ -646,8 +646,6 @@ void ModuleCamera::ExecuteFocus()
 		state = camera_state::FOCUSED;
 	}
 
-	LOG("Executing Focus: %f%%", 100.f * focus_lerp_position);
-
 	// Lerp to target direction:
 	float3 direction = float3::Lerp(GetDirection(), focus_target_direction, focus_lerp_position).Normalized();
 	// Look at the lerped direction:
