@@ -49,7 +49,8 @@ bool ModuleCamera::Init()
 	state = camera_state::UNFOCUSED;
 	
 	focus_on_start = true;
-	focus_target_position = float3::zero;
+	focus_target_position = -float3::unitX;
+	focus_destination_position = float3::zero;
 	focus_duration = 0.65f;
 	focus_lerp_position = 1.0f;
 	focus_target_direction = float3::zero;
@@ -64,7 +65,7 @@ bool ModuleCamera::Init()
 	zoom_drag = 0.05;
 	zoom_speed = 1.5f;
 
-	// Look at position 0,0,0 from our position:
+	// Look at focus_target_position from our position:
 	LookAt(focus_target_position, vector_mode::POSITION, true);
 
 	// Get view matrix after new calculations:
@@ -232,7 +233,7 @@ void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as, bool calcula
 /// </summary>
 void ModuleCamera::ComputeViewMatrix()
 {
-	view_matrix = rotation_matrix.Mul(translation_matrix);
+	view_matrix = Quat(rotation_matrix).Normalized() * (translation_matrix);
 }
 
 void ModuleCamera::AutoRotateAround(float3 position)
@@ -261,15 +262,17 @@ update_status ModuleCamera::PreUpdate()
 {
 	if (should_auto_rotate_around_target)
 	{
-		AutoRotateAround(focus_target_position);
+		AutoRotateAround(focus_destination_position);
 	}
 
 	Move();
-	Rotate();
-	Zoom();
-
 	Focus();
-
+	Zoom();
+	
+	DetermineMouseInputState();
+	Rotate();
+	Orbit();
+	
 	// Recalculate projection matrix if necessary:
 	if (should_recalculate_projection_matrix)
 	{
@@ -341,6 +344,7 @@ void ModuleCamera::Move()
 	float3 new_position = GetPosition();
 
 	bool moved_this_frame = false;
+	bool should_unfocus = false;
 
 	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
 	{
@@ -356,11 +360,13 @@ void ModuleCamera::Move()
 	{
 		new_position += GetRight() * velocity.x;
 		moved_this_frame = true;
+		should_unfocus = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
 	{
 		new_position -= GetRight() * velocity.x;
 		moved_this_frame = true;
+		should_unfocus = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_UP, key_state::REPEAT))
 	{
@@ -377,8 +383,10 @@ void ModuleCamera::Move()
 	{
 		// Apply position changes:
 		SetPosition(new_position);
+	}
 
-		// Override state since move was made:
+	if (should_unfocus)
+	{
 		state = camera_state::UNFOCUSED;
 	}
 }
@@ -391,14 +399,20 @@ void ModuleCamera::Rotate()
 		return;
 	}
 
-	// If user is not clicking on right mouse button, ignore rotation through mouse movement:
-	if (!App->input->GetMouseKey(SDL_BUTTON_RIGHT, key_state::REPEAT))
+	// If mouse_input_state is not ROTATE, return:
+	if (mouse_input_state != camera_mouse_input_state::ROTATE)
 	{
 		return;
 	}
 
 	// Get mouse displacement from ModuleInput:
 	float2 mouse_delta = App->input->GetMouseDisplacement();
+
+	// Don't rotate if no mouse movement were made:
+	if (mouse_delta.Equals(float2::zero))
+	{
+		return;
+	}
 
 	// Store smoothened and adjusted displacements of mouse as radians:
 	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
@@ -424,6 +438,55 @@ void ModuleCamera::Rotate()
 	// Recalculate up and right of camera according to new direction, but no need 
 	// to recalculate stored rotation angles:
 	LookAt(GetDirection(), vector_mode::DIRECTION, false);
+
+	// Unfocus the camera since a movement was made:
+	state = camera_state::UNFOCUSED;
+}
+
+void ModuleCamera::Orbit()
+{
+	// If the camera is focusing on a target right now, ignore orbiting through mouse movement:
+	if (state == camera_state::FOCUSING)
+	{
+		return;
+	}
+
+	// If mouse_input_state is not ORBIT, return:
+	if (mouse_input_state != camera_mouse_input_state::ORBIT)
+	{
+		return;
+	}
+
+	// Get mouse displacement from ModuleInput:
+	float2 mouse_delta = App->input->GetMouseDisplacement();
+
+	// Store smoothened and adjusted displacements of mouse as radians:
+	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
+	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
+
+	// Get orbit center:
+	const float3 center_position = focus_target_position;
+
+	// Calculate direction from position to orbit center:
+	float3 direction = GetPosition() - center_position;
+
+	// Rotate around camera's up by x_delta:
+	Quat rotate_up = Quat::RotateAxisAngle(GetUp(), x_delta);
+	// Rotate around camera's right by y_delta:
+	Quat rotate_right = Quat::RotateAxisAngle(GetRight(), y_delta);
+	
+	// Apply rotations to direction:
+	direction = (rotate_up * rotate_right).Transform(direction);
+	
+	// Update position:
+	SetPosition(center_position + direction);
+	
+	// Look at selected target:
+	LookAt(center_position);
+
+	// Update focus_target_direction to be the direction camera currently 
+	// facing:
+	focus_target_direction = GetDirection();
 }
 
 void ModuleCamera::Zoom()
@@ -497,6 +560,52 @@ void ModuleCamera::Focus()
 {
 	DetectFocus();
 	ExecuteFocus();
+	ExecuteUnfocus();
+}
+
+void ModuleCamera::DetermineMouseInputState()
+{
+	// Because of the ordering, ROTATE has superiority to
+	// orbit, i.e if user clicks RMB, LMB and LALT at the same
+	// time, camera won't orbit, it will rotate.
+
+	// If user is clicking on right mouse button, set mouse_input_state to rotate mode:
+	if (App->input->GetMouseKey(SDL_BUTTON_RIGHT, key_state::REPEAT))
+	{
+		mouse_input_state = camera_mouse_input_state::ROTATE;
+		return;
+	}
+
+	// If user is clicking on left mouse button and left alt,
+	// set mouse_input_state to rotate mode:
+	if (App->input->GetMouseKey(SDL_BUTTON_LEFT, key_state::REPEAT) &&
+		App->input->GetKey(SDL_SCANCODE_LALT, key_state::REPEAT))
+	{
+		mouse_input_state = camera_mouse_input_state::ORBIT;
+		return;
+	}
+
+	// If none of the modes are detected, set mouse_input_state to idle:
+	mouse_input_state = camera_mouse_input_state::IDLE;
+}
+
+void ModuleCamera::ExecuteUnfocus()
+{
+	if (mouse_input_state == camera_mouse_input_state::ORBIT)
+	{
+		return;
+	}
+
+	if (state != camera_state::UNFOCUSED)
+	{
+		return;
+	}
+
+	focus_lerp_position = 1.0f;
+	focus_target_position = GetPosition() + 10.0f * GetFront();
+	focus_destination_position = GetPosition();
+	focus_target_direction = GetFront();
+	focus_target_radius = 0.0f;
 }
 
 void ModuleCamera::DetectFocus()
@@ -531,7 +640,7 @@ void ModuleCamera::ExecuteFocus()
 	LookAt(direction, vector_mode::DIRECTION);
 
 	// Lerp to target position:
-	float3 position = float3::Lerp(GetPosition(), focus_target_position, focus_lerp_position);
+	float3 position = float3::Lerp(GetPosition(), focus_destination_position, focus_lerp_position);
 	// Set position to lerped position:
 	SetPosition(position);
 }
@@ -547,7 +656,7 @@ void ModuleCamera::SetupFocus(float3 position, float3 size)
 
 void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 {
-	if ((state == camera_state::FOCUSING || state == camera_state::FOCUSED) && position.Equals(focus_target_position) && focus_target_radius == bounding_sphere_radius)
+	if ((state == camera_state::FOCUSING || state == camera_state::FOCUSED) && position.Equals(focus_destination_position) && focus_target_radius == bounding_sphere_radius)
 	{
 		return;
 	}
@@ -570,14 +679,17 @@ void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 	// Set state of camera to FOCUSING:
 	state = camera_state::FOCUSING;
 
+	// Set target position:
+	focus_target_position = position;
+
 	// Set focus_target_radius to given bounding_sphere_radius:
 	focus_target_radius = bounding_sphere_radius;
 
 	// Get target direction (Actually it's direction from target to camera):
-	focus_target_direction = (GetPosition() - position).Normalized();
+	focus_target_direction = (GetPosition() - focus_target_position).Normalized();
 
-	// Set Focus target position to the position away from target's position by desired_distance:
-	focus_target_position = position + desired_distance * focus_target_direction;
+	// Set Focus destination position to the position away from target's position by desired_distance:
+	focus_destination_position = focus_target_position + desired_distance * focus_target_direction;
 
 	// Set focus_lerp_position to 0:
 	focus_lerp_position = 0.0f;

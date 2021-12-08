@@ -17,6 +17,13 @@ enum class camera_state
 	UNFOCUSED,
 };
 
+enum class camera_mouse_input_state
+{
+	ROTATE,
+	ORBIT,
+	IDLE,
+};
+
 class ModuleCamera : public Module
 {
 private:
@@ -33,7 +40,8 @@ private:
 
 	// Current state of camera:
 	camera_state state;
-	
+	camera_mouse_input_state mouse_input_state;
+
 	// Properties:
 	bool is_perspective = true;
 	bool should_auto_rotate_around_target = false;
@@ -48,6 +56,7 @@ private:
 
 	bool focus_on_start;
 	float3 focus_target_position;
+	float3 focus_destination_position;
 	float3 focus_target_direction;
 	float focus_duration;
 	float focus_lerp_position;
@@ -103,9 +112,13 @@ private:
 
 	void Move();
 	void Rotate();
+	void Orbit();
 	void Zoom();
 	void Focus();
 
+	void DetermineMouseInputState();
+
+	void ExecuteUnfocus();
 	void DetectFocus();
 	void ExecuteFocus();
 	void SetupFocus(float3 position, float3 size);
