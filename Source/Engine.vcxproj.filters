@@ -741,6 +741,9 @@
     <ClInclude Include="Component.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentType.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">

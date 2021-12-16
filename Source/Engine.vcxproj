@@ -292,6 +292,7 @@
     <ClInclude Include="ASSIMP\include\assimp\XMLTools.h" />
     <ClInclude Include="ASSIMP\include\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentType.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3_loader.h" />
