@@ -309,7 +309,6 @@
     <ClInclude Include="DEVIL\include\IL\ilut_config.h" />
     <ClInclude Include="DEVIL\include\IL\ilu_region.h" />
     <ClInclude Include="DEVIL\include\IL\il_wrap.h" />
-    <ClInclude Include="Dummy.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK2D.h" />
