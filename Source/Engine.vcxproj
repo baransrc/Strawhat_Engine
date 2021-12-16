@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Component.cpp" />
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_sdl.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="DEAR_IMGUI\include\imgui_draw.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui_tables.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui_widgets.cpp" />
+    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MATH_GEO_LIB\Algorithm\GJK.cpp" />
@@ -289,6 +291,7 @@
     <ClInclude Include="ASSIMP\include\assimp\Vertex.h" />
     <ClInclude Include="ASSIMP\include\assimp\XMLTools.h" />
     <ClInclude Include="ASSIMP\include\assimp\ZipArchiveIOSystem.h" />
+    <ClInclude Include="Component.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_opengl3_loader.h" />
@@ -309,6 +312,7 @@
     <ClInclude Include="DEVIL\include\IL\ilut_config.h" />
     <ClInclude Include="DEVIL\include\IL\ilu_region.h" />
     <ClInclude Include="DEVIL\include\IL\il_wrap.h" />
+    <ClInclude Include="Entity.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK2D.h" />
