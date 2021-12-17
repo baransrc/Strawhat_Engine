@@ -13,10 +13,12 @@ public:
 	Component();
 	virtual ~Component() = default;
 
+	const Entity* Owner() const;
+	bool Enabled() const;
 	virtual component_type Type();
-	virtual void Initialize();
+	virtual void Initialize(Entity* new_owner);
 	virtual void Enable();
 	virtual void Disable();
 	virtual void Update();
-	virtual bool IsEnabled();
+	virtual void DrawGizmo();
 };
