@@ -2,20 +2,29 @@
 #include "Module.h"
 #include <vector>
 
+class Entity;
+
 class ModuleEditor : public Module
 {
 private:
+	// TODO: Store these flags in a bool array
+	// create a WindowFlagId enum to store their
+	// index and access them through that:
 	bool show_demo_window = true;
 	bool show_about_window = false;
 	bool show_console_window = false;
 	bool show_render_exercise_texture_info_window = false;
 	bool show_performance_window = false;
-	bool show_module_settings_window = false;
+	bool show_module_settings_window = true;
 	bool show_exit_popup = false;
 	bool should_exit_application = false;
+	bool should_draw_inspector_window = true;
+
 	char* license_buffer = nullptr;
 	std::vector<float> ms_data;
 	std::vector<float> fps_data;
+
+	Entity* base_entity = nullptr;
 
 public:
 	ModuleEditor();
@@ -34,6 +43,7 @@ public:
 	void DrawConsoleWindow();
 	void DrawRenderExerciseTextureInfoWindow();
 	void DrawPerformanceWindow();
+	void DrawInspector();
 
 	void DrawModuleSettings();
 

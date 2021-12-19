@@ -8,6 +8,8 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 #include "Globals.h"
+#include "Entity.h"
+#include "Component.h"
 
 ModuleEditor::ModuleEditor()
 {
@@ -32,19 +34,27 @@ bool ModuleEditor::Init()
 	// Reserve space for fps and ms graphs:
 	ms_data.reserve(TIMER_BUFFER_LENGTH);
 	fps_data.reserve(TIMER_BUFFER_LENGTH);
-    
+
 	show_demo_window = true;
-    
+
+	// Entity related stuff, just for testing, will be deleted:
+	base_entity = new Entity();
+
+	base_entity->Initialize("Hierarchy");
+
 	return true;
 }
 
 bool ModuleEditor::CleanUp()
 {
 	LOG("Destroying Editor");
-    
+
 	UninitializeDearImGui();
 
 	free(license_buffer);
+
+	// Entity related stuff, just for testing, will be deleted:
+	delete base_entity;
 
 	return true;
 }
@@ -67,6 +77,7 @@ void ModuleEditor::DrawMainMenuBar()
 				show_performance_window = false;
 				show_module_settings_window = false;
 				show_exit_popup = false;
+				should_draw_inspector_window = false;
 			}
 
 			if (ImGui::MenuItem("Exit"))
@@ -132,7 +143,7 @@ void ModuleEditor::DrawExitPopup()
 			show_exit_popup = false;
 			should_exit_application = true;
 		}
-		if(ImGui::Button("Cancel", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+		if (ImGui::Button("Cancel", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 		{
 			show_exit_popup = false;
 		}
@@ -144,12 +155,12 @@ void ModuleEditor::DrawAboutWindow()
 {
 	// Begin About Window:
 	ImGui::Begin("About", &show_about_window);
-	
+
 	ImGui::AlignTextToFramePadding();
 	ImGui::TextWrapped("Strawhat Engine");
 	ImGui::Separator();
 	ImGui::TextWrapped("Strawhat Engine is being developed for UPC Master's degree in Advanced Programming for Videogames.\n");
-	
+
 	ImGui::TextWrapped("\n");
 	ImGui::TextWrapped("Repository");
 	ImGui::Separator();
@@ -176,10 +187,10 @@ void ModuleEditor::DrawAboutWindow()
 
 	if (license_buffer == nullptr)
 	{
-		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,0,0,255));
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
 		ImGui::TextWrapped("An error occured while fetching license.");
 		ImGui::PopStyleColor();
-	} 
+	}
 	else
 	{
 		ImGui::TextWrapped(license_buffer);
@@ -243,14 +254,14 @@ void ModuleEditor::DrawPerformanceWindow()
 		ms_data.erase(ms_data.begin());
 	}
 	ms_data.push_back(Time->DeltaTimeMs());
-	
+
 	ImGui::Begin("Performance", &show_performance_window);
-	
+
 	char title[25];
-	
+
 	sprintf_s(title, 25, "Framerate %.1f", fps_data.back());
 	ImGui::PlotHistogram("##framerate", &fps_data.front(), fps_data.size(), 0, title, 0.0f, 100.0f, ImVec2(310, 100));
-	
+
 	sprintf_s(title, 25, "Milliseconds %.1f", ms_data.back());
 	ImGui::PlotHistogram("##milliseconds", &ms_data.front(), ms_data.size(), 0, title, 0.0f, 40.0f, ImVec2(310, 100));
 	ImGui::Text("\n");
@@ -258,6 +269,69 @@ void ModuleEditor::DrawPerformanceWindow()
 	App->renderer->OnPerformanceWindow();
 
 	ImGui::End();
+}
+
+void ModuleEditor::DrawInspector()
+{
+	if (!should_draw_inspector_window)
+	{
+		return;
+	}
+
+	ImGui::PushID("Inspector##Window");
+	ImGui::Begin("Inspector", &should_draw_inspector_window);
+	// For now. Will be deleted after ModuleSceneManager is added:
+
+	Entity* selected_entity = base_entity->selected_entity_in_hierarchy;
+
+	if (selected_entity != nullptr)
+	{
+		ImGui::BeginGroup();
+		ImGui::Text(selected_entity->Name().c_str());
+		ImGui::Text("ID: "); ImGui::SameLine(); ImGui::Text(std::to_string(selected_entity->Id()).c_str());
+		ImGui::EndGroup();
+
+		// Show right click menu
+		if (ImGui::BeginPopupContextItem("Inspector##Window"))
+		{
+
+			if (ImGui::BeginMenu("Add Component"))
+			{
+
+				if (ImGui::Selectable("Camera"))
+				{
+					selected_entity->AddComponent(component_type::CAMERA);
+				}
+				if (ImGui::Selectable("Mesh"))
+				{
+					selected_entity->AddComponent(component_type::MESH);
+				}
+				if (ImGui::Selectable("Transform")) // TODO: For testing purposes, delete this.
+				{
+					selected_entity->AddComponent(component_type::TRANSFORM);
+				}
+
+				ImGui::EndMenu();
+				
+			}
+
+			if (ImGui::Selectable("Other"))
+			{
+
+			}
+
+			ImGui::EndPopup();
+		}
+
+		for (Component* component : selected_entity->GetComponents())
+		{
+			component->DrawInspector();
+		}
+	}
+
+
+	ImGui::End();
+	ImGui::PopID();
 }
 
 void ModuleEditor::DrawModuleSettings()
@@ -268,9 +342,15 @@ void ModuleEditor::DrawModuleSettings()
 	}
 
 	ImGui::Begin("Module Settings", &show_module_settings_window);
-	
+
 	App->renderer->OnEditor();
-	
+
+
+	if (ImGui::CollapsingHeader("Entity Experiment"))
+	{
+		base_entity->DrawEditor();
+	}
+
 	ImGui::End();
 }
 
@@ -280,7 +360,7 @@ update_status ModuleEditor::PreUpdate()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
-    
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -303,9 +383,11 @@ update_status ModuleEditor::Update()
 
 	DrawModuleSettings();
 
+	DrawInspector();
+
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -324,7 +406,7 @@ void ModuleEditor::InitializeDearImGui()
 {
 	// Create Dear ImGui context:
 	ImGui::CreateContext();
-    
+
 	// Initialize Dear ImGui for SDL2 and OpenGL3:
 	ImGui_ImplSDL2_InitForOpenGL(App->window->window, App->renderer->context);
 	ImGui_ImplOpenGL3_Init(GLSL_VERSION);
@@ -335,7 +417,7 @@ void ModuleEditor::UninitializeDearImGui()
 	// Shutdown Dear ImGui for OpenGL3 and SDL2:
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
-    
+
 	// Destroy Dear ImGui context:
 	ImGui::DestroyContext();
 }
