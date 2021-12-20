@@ -302,18 +302,27 @@ Entity* Entity::FindChild(unsigned int child_entity_id) const
 
 void Entity::DrawEditor()
 {
-	ImGui::PushID(id);
+	char main_id_buffer[64];
+	sprintf(main_id_buffer, "ent##%u\0");
 
-	bool open = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap);
+	ImGui::PushID(main_id_buffer);
 
-	//// If current node is double clicked:
-	//if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-	//{
-	//	being_renamed = true;
-	//}
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+
+	if (children.size() <= 0)
+	{
+		flags |= ImGuiTreeNodeFlags_Leaf;
+	}
+
+	if (selected_entity_in_hierarchy != nullptr && selected_entity_in_hierarchy->Id() == Id())
+	{
+		flags |= ImGuiTreeNodeFlags_Selected;
+	}
+
+	bool open = ImGui::TreeNodeEx(name.c_str(), flags);
 
 	// If Current node is clicked:
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
 		selected_entity_in_hierarchy = this;
 	}
@@ -323,13 +332,13 @@ void Entity::DrawEditor()
 	{
 		ImGui::SetItemAllowOverlap();
 		char buffer[1024] = "Rename To";
-		char id_buffer[64];
-		sprintf(id_buffer, "rn##%u\0");
+		char rename_id_buffer[64];
+		sprintf(rename_id_buffer, "rn##%u\0");
 
-		LOG("%s", id_buffer);
+		LOG("%s", rename_id_buffer);
 
 		ImGui::SameLine();
-		ImGui::PushID(id_buffer);
+		ImGui::PushID(rename_id_buffer);
 		if (ImGui::InputTextWithHint("", name.c_str(), &buffer[0], 1024, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
 		{
 			SetName(buffer);
@@ -339,7 +348,7 @@ void Entity::DrawEditor()
 	}
 
 	// Right Click context menu:
-	if (ImGui::BeginPopupContextItem())
+	if (ImGui::BeginPopupContextItem(main_id_buffer))
 	{
 		if (ImGui::MenuItem("Add Empty"))
 		{
