@@ -29,7 +29,7 @@ Mesh::~Mesh()
 /// which does an allocation for vertices and indices.
 /// It is strongly advised that, recurring use of this 
 /// method may result in memory leak. 
-/// So, please eitherv delete this mesh and initialize it 
+/// So, please either delete this mesh and initialize it 
 /// again, or use another Mesh.
 /// </summary>
 /// <param name="mesh_data"></param>

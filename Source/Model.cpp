@@ -10,6 +10,10 @@
 #include "assimp/postprocess.h"					// For aiProcess_Triangulate, aiProcess_FlipUVs
 #include "assimp/Importer.hpp"					// For Assimp::Importer
 
+// For scientific purposes:
+#include "ComponentMesh.h"
+#include "Entity.h"
+
 Model::Model()
 {
 }
@@ -33,10 +37,17 @@ Model::~Model()
 	texture_ids = nullptr;
 
 	// Delete Meshes inside meshes:
-	for (size_t i = 0; i < number_of_loaded_meshes; ++i)
+	/*for (size_t i = 0; i < number_of_loaded_meshes; ++i)
 	{
 		delete meshes[i];
-	}
+	}*/
+
+	// Delete fake entity:
+	delete fake_entity;
+
+	// Free component meshes:
+	free(component_meshes);
+
 	// Free memory occupied by meshes:
 	free(meshes);
 	meshes = nullptr;
@@ -48,10 +59,14 @@ Model::~Model()
 void Model::Draw() const
 {
 	// Draw all the meshes inside this model:
-	for (size_t i = 0; i < number_of_loaded_meshes; ++i)
+	/*for (size_t i = 0; i < number_of_loaded_meshes; ++i)
 	{
 		meshes[i]->Draw(texture_ids);
-	}
+	}*/
+
+	LOG("Model - Texture id: %u", texture_ids[0]);
+
+	fake_entity->Update();
 
 	DrawOBB();
 }
@@ -288,10 +303,14 @@ void Model::LoadTextures(const aiScene* scene)
 /// <param name="scene"></param>
 void Model::LoadMeshes(const aiScene* scene)
 {
+	fake_entity = new Entity();
+	fake_entity->Initialize("Fake Entity");
+
 	number_of_meshes = scene->mNumMeshes;
 	number_of_loaded_meshes = 0;
 
-	meshes = (Mesh**)calloc(number_of_meshes, sizeof(Mesh*));
+	//meshes = (Mesh**)calloc(number_of_meshes, sizeof(Mesh*));
+	component_meshes = (ComponentMesh**)calloc(number_of_meshes, sizeof(ComponentMesh*));
 
 	number_of_triangles = 0;
 	number_of_indices = 0;
@@ -303,6 +322,7 @@ void Model::LoadMeshes(const aiScene* scene)
 	{
 		current_mesh_data = scene->mMeshes[i];
 
+		/*
 		Mesh* current_mesh = new Mesh();
 
 		current_mesh->Load(current_mesh_data);
@@ -312,6 +332,23 @@ void Model::LoadMeshes(const aiScene* scene)
 		number_of_vertices += current_mesh->GetNumberOfVertices();
 
 		meshes[number_of_loaded_meshes] = current_mesh;
+		*/
+
+
+		ComponentMesh* current_component_mesh = new ComponentMesh();
+
+		Entity* current_node = new Entity();
+		current_node->Initialize("Child");
+		current_node->SetParent(fake_entity);
+		
+		current_component_mesh->Initialize(current_node);
+		current_component_mesh->Load(current_mesh_data, texture_ids, number_of_textures);
+
+		number_of_triangles += current_component_mesh->GetNumberOfTriangles();
+		number_of_indices += current_component_mesh->GetNumberOfIndices();
+		number_of_vertices += current_component_mesh->GetNumberOfVertices();
+
+		component_meshes[number_of_loaded_meshes] = current_component_mesh;
 
 		++number_of_loaded_meshes;
 	}
@@ -329,7 +366,8 @@ void Model::LoadOBB()
 	// Make temp AABB enclose all the AABBs of meshes:
 	for (size_t i = 0; i < number_of_loaded_meshes; ++i)
 	{
-		aabb.Enclose(*(meshes[i]->GetAABB()));
+		//aabb.Enclose(*(meshes[i]->GetAABB()));
+		aabb.Enclose(*(component_meshes[i]->GetAABB()));
 	}
 
 	// Form OBB from temp aabb:

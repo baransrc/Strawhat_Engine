@@ -3,6 +3,8 @@
 #include "MATH_GEO_LIB/Geometry/OBB.h"
 
 class Mesh;
+class ComponentMesh;
+class Entity;
 
 class Model
 {
@@ -13,6 +15,8 @@ private:
 
 	unsigned int* texture_ids;
 	Mesh** meshes;
+	ComponentMesh** component_meshes;
+	Entity* fake_entity;
 
 	math::OBB obb;
 	float minimal_enclosing_sphere_radius;
