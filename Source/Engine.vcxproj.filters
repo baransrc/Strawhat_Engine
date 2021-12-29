@@ -186,6 +186,9 @@
     <ClCompile Include="Component.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentMesh.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -742,6 +745,9 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="ComponentType.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentMesh.h">
       <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
