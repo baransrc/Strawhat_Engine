@@ -33,6 +33,7 @@ void Component::Initialize(Entity* new_owner)
 {
 	enabled = true;
 	owner = new_owner;
+	owner->AddComponent(this);
 	id = GetCurrentId();
 }
 
