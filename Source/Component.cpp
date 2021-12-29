@@ -20,7 +20,7 @@ const Entity* Component::Owner() const
 /// 
 /// </summary>
 /// <returns>Type of the component.</returns>
-component_type Component::Type()
+component_type Component::Type() const
 {
 	return component_type::UNDEFINED;
 }

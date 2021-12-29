@@ -21,7 +21,7 @@ public:
 	const Entity* Owner() const;
 	bool Enabled() const;
 	unsigned int Id() const;
-	virtual component_type Type();
+	virtual component_type Type() const;
 	virtual void Initialize(Entity* new_owner);
 	virtual void Enable();
 	virtual void Disable();
