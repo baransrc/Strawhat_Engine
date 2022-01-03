@@ -105,8 +105,6 @@ void ComponentMesh::Load(const aiMesh* mesh_data, const unsigned int* model_text
 
 void ComponentMesh::Update()
 {
-	LOG("ComponentMesh - Texture id: %u", texture_ids[0]);
-
 	// Activate Texture Unit 0:
 	glActiveTexture(GL_TEXTURE0);
 	// Bind Texture Unit 0:
