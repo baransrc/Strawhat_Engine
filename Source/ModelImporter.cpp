@@ -11,208 +11,272 @@
 #include "assimp/postprocess.h"					// For aiProcess_Triangulate, aiProcess_FlipUVs
 #include "assimp/Importer.hpp"					// For Assimp::Importer
 
-/// <summary>
-/// Loads Entity with children entities having ComponentMesh from the given model file.
-/// </summary>
-/// <param name="path_to_file">File path of the model</param>
-/// <returns>Model as entity. User is responsible for deletion.</returns>
-Entity* ModelImporter::Import(const char* path_to_file)
+
+namespace ModelImporter
 {
-	Assimp::Importer importer;
-
-	char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
-	util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
-
-
-	const aiScene* scene = importer.ReadFile(path_to_file, aiProcess_Triangulate | aiProcess_FlipUVs);
-
-	// aiProcess_Triangulate: If the model is not entirely consisting of triangles, transform all the
-	// primitive to triangles.
-	// aiProcess_FlipUVs: If texture image is reversed around the y-axis, flip it.
-	// Can use aiProcess_GenNormals as well in the future to create normal vectors for each vertex if 
-	// the loaded model has no vertex normal data.
-	// NOTE: For more flags check http://assimp.sourceforge.net/lib_html/postprocess_8h.html
-
-	if (!scene)
+	// Internal functions to be hidden from external usage:
+	namespace
 	{
-		LOG("Error Loading Model File \"%s\": %s", path_to_file, importer.GetErrorString());
-		return nullptr;
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Start Loading Textures
-	//
-	size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
-	size_t number_of_loaded_textures = 0;
-
-	// Allocate memory for all the textures in scene:
-	unsigned int* texture_ids = (unsigned int*)calloc(number_of_textures, sizeof(unsigned int));
-
-	// For storing file name of textures of each iteration of the below loop:
-	aiString texture_file_path;
-
-	for (size_t i = 0; i < scene->mNumMaterials; ++i)
-	{
-		// Get texture file name:
-		aiReturn is_diffuse_texture = scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texture_file_path);
-
-		// If couldn't load the diffuse texture file name from material,
-		// continue to the next material:
-		if (is_diffuse_texture != aiReturn_SUCCESS)
+		/// <summary>
+		/// Loads texture in given file_path, if cannot load sucessfully, it unloads the default texture it loaded.
+		/// </summary>
+		/// <param name="output_texture_id">Texture id loaded from file_path</param>
+		/// <param name="file_path">Path to the texture file.</param>
+		/// <returns>True if loading was successful, false if not.</returns>
+		bool ModelImporter_TryLoadingTextureFromFile(unsigned int& output_texture_id, const char* file_path)
 		{
-			continue;
-		}
+			output_texture_id = 0;
+			bool successful = false;
 
-		bool succesfully_loaded = true;
-
-		LOG("Loading texture for material number %i", i);
-
-		LOG("Searching for texture file specified in \"%s\"", texture_file_path.C_Str());
-
-		// Try loading from the path given in model file:
-		texture_ids[number_of_loaded_textures] = App->texture->LoadTexture
-		(
-			texture_file_path.C_Str(),
-			GL_NEAREST,
-			GL_NEAREST,
-			GL_CLAMP_TO_EDGE,
-			GL_CLAMP_TO_EDGE,
-			true,
-			true,
-			succesfully_loaded
-		);
-
-		if (succesfully_loaded)
-		{
-			LOG("Successfully loaded texture in file\"%s\"", texture_file_path.C_Str());
-		}
-		// In case of failure in finding the texture file in the path given in the model file,
-		// Take the name of the texture file and search for it inside the directory of the 
-		// model file:
-		else
-		{
-			LOG("Could not find the texture file specified in \"%s\"", texture_file_path.C_Str());
-
-			// Store texture file path as char*:
-			char* temp_texture_file_name = util::ConcatCStrings("", texture_file_path.C_Str());
-
-			util::SubstrBeforeCharFromEnd(&temp_texture_file_name, '\\');
-
-			// Form path of texture next to model file:
-			aiString file_in_model_directory(path_to_parent_directory);
-			file_in_model_directory.Append(temp_texture_file_name);
-
-			LOG("Searching for texture file specified in \"%s\"", file_in_model_directory.C_Str());
-
-			// Unload previously loaded error texture:
-			App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
-			// Load texture with new parameters:
-			texture_ids[number_of_loaded_textures] = App->texture->LoadTexture
+			output_texture_id = App->texture->LoadTexture
 			(
-				file_in_model_directory.C_Str(),
+				file_path,
 				GL_NEAREST,
 				GL_NEAREST,
 				GL_CLAMP_TO_EDGE,
 				GL_CLAMP_TO_EDGE,
 				true,
 				true,
-				succesfully_loaded
+				successful
 			);
 
-			if (succesfully_loaded)
+			if (!successful)
 			{
-				LOG("Successfully loaded texture in file\"%s\"", file_in_model_directory.C_Str());
+				App->texture->UnloadTexture(&output_texture_id);
 			}
-			else // If texture still remains unable to be loaded, try to find it inside the texture folder.
+
+			return successful;
+		}
+
+		/// <summary>
+		/// Searches and loads texture in three steps:
+		/// 1. Inside the directory specified in the model file.
+		/// 2. Inside the directory of model.
+		/// 3. Inside the default texture file of the engine.
+		/// </summary>
+		/// <param name="output_texture_id">Id of loaded texture</param>
+		/// <param name="path_to_texture">Path to texture</param>
+		/// <param name="path_to_parent_directory">Path to model directory</param>
+		/// <returns>True if loading was successful, false if not.</returns>
+		bool ModelImporter_LoadTexture(unsigned int& output_texture_id, const char* path_to_texture, const char* path_to_parent_directory)
+		{
+			static const int search_in_specified_dir = 0;
+			static const int search_in_model_dir = 1;
+			static const int search_in_default_texture_dir = 2;
+			static const int step_count = 3;
+
+			bool successful = false;
+
+			for (int trial = search_in_specified_dir; trial < step_count; ++trial)
 			{
-				LOG("Could not find the texture file specified in \"%s\"", file_in_model_directory.C_Str());
-
-				aiString file_in_working_directory(App->GetWorkingDirectory());
-				file_in_working_directory.Append(TEXTURES_FOLDER);
-				file_in_working_directory.Append(temp_texture_file_name);
-
-				LOG("Searching for texture file specified in \"%s\"", file_in_working_directory.C_Str());
-
-				// Unload previously loaded error texture:
-				App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
-				// Load texture with new parameters:
-				texture_ids[number_of_loaded_textures] = App->texture->LoadTexture
-				(
-					file_in_working_directory.C_Str(),
-					GL_NEAREST,
-					GL_NEAREST,
-					GL_CLAMP_TO_EDGE,
-					GL_CLAMP_TO_EDGE,
-					true,
-					true,
-					succesfully_loaded
-				);
-
-				if (succesfully_loaded)
+				switch (trial)
 				{
-					LOG("Successfully loaded texture in file\"%s\"", file_in_working_directory.C_Str());
+					// Search inside the directory specified in the model file:
+					case search_in_specified_dir: 
+					{
+						LOG("Searching for texture file specified in \"%s\"", path_to_texture);
+
+						successful = ModelImporter_TryLoadingTextureFromFile(output_texture_id, path_to_texture);
+					}
+					break;
+
+					// Search in the parent directory of the model:
+					case search_in_model_dir:
+					{
+						char* texture_file_name = util::CopyCString(path_to_texture);
+						util::SubstrBeforeCharFromEnd(&texture_file_name, '\\');
+						char* path_in_model_dir = util::ConcatCStrings(path_to_parent_directory, texture_file_name);
+
+						LOG("Searching for texture file specified in \"%s\"", path_in_model_dir);
+
+						successful = ModelImporter_TryLoadingTextureFromFile(output_texture_id, path_in_model_dir);
+
+						free(path_in_model_dir);
+						free(texture_file_name);
+					}
+					break;
+
+					// Search in the default texture directory of Strawhat Engine:
+					case search_in_default_texture_dir:
+					{
+						char* texture_file_name = util::CopyCString(path_to_texture);
+						util::SubstrBeforeCharFromEnd(&texture_file_name, '\\');
+						char* default_texture_dir = util::ConcatCStrings(App->GetWorkingDirectory(), TEXTURES_FOLDER);
+						char* path_in_default_texture_dir = util::ConcatCStrings(default_texture_dir, texture_file_name);
+
+						LOG("Searching for texture file specified in \"%s\"", path_in_default_texture_dir);
+
+						successful = ModelImporter_TryLoadingTextureFromFile(output_texture_id, path_in_default_texture_dir);
+
+						free(path_in_default_texture_dir);
+						free(default_texture_dir);
+						free(texture_file_name);
+					}
+					break;
+				}
+
+				if (successful)
+				{
+					LOG("Search completed successfully.");
+					break;
 				}
 				else
 				{
-					// Unload previously loaded error texture:
-					App->texture->UnloadTexture(&texture_ids[number_of_loaded_textures]);
-
-					LOG("Could not find the texture file specified in \"%s\"", file_in_working_directory.C_Str());
-					LOG("Aborting texture file lookup, model will be loaded without textures");
+					LOG("Search was unsuccessful.");
 				}
 			}
 
-			// Delete temp_texture_file_name as it's not needed anymore:
-			free(temp_texture_file_name);
+			return successful;
 		}
 
-		++number_of_loaded_textures;
+		/// <summary>
+		/// Loads textures and creates an array of texture ids.
+		/// </summary>
+		/// <param name="scene">Model</param>
+		/// <param name="path_to_parent_directory">Path to model directory</param>
+		/// <returns>Array of texture ids.</returns>
+		unsigned int* ModelImporter_LoadTextureIds(const aiScene* scene, const char* path_to_parent_directory)
+		{
+			size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
+
+			// Allocate memory for all the textures in scene:
+			unsigned int* texture_ids = (unsigned int*)calloc(number_of_textures, sizeof(unsigned int));
+
+			// For storing file name of textures of each iteration of the below loop:
+			aiString texture_file_path;
+
+			for (size_t i = 0; i < number_of_textures; ++i)
+			{
+				// Get texture file name:
+				aiReturn is_diffuse_texture = scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texture_file_path);
+
+				// If couldn't load the diffuse texture file name from material,
+				// continue to the next material:
+				if (is_diffuse_texture != aiReturn_SUCCESS)
+				{
+					continue;
+				}
+
+				unsigned int texture_id = 0;
+				bool loaded = ModelImporter_LoadTexture(texture_id, texture_file_path.C_Str(), path_to_parent_directory);
+
+				// Since calloc defaults to 0, don't assign if not successful:
+				// TODO: Make sure texture with id 0 is the default texture.
+				if (loaded)
+				{
+					texture_ids[i] = texture_id;
+				}
+			}
+
+			return texture_ids;
+		}
+
+		
+		/// <summary>
+		/// Loads meshes as entity with child entities having mesh components.
+		/// </summary>
+		/// <param name="scene">Model</param>
+		/// <param name="scene_name">Name of model</param>
+		/// <param name="texture_ids">An array consisting of texture ids</param>
+		/// <returns>Entity with child entities having mesh components.</returns>
+		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name, unsigned int* texture_ids)
+		{
+			Entity* model_entity = new Entity();
+			model_entity->Initialize(scene_name);
+
+			size_t number_of_meshes = scene->mNumMeshes;
+			size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
+
+			// For logging purposes:
+			size_t number_of_loaded_meshes = 0;
+			size_t number_of_triangles = 0;
+			size_t number_of_indices = 0;
+			size_t number_of_vertices = 0;
+
+			LOG("Loading model as entity named %s", scene_name);
+
+			aiMesh* current_mesh_data;
+
+			for (size_t i = 0; i < number_of_meshes; ++i)
+			{
+				current_mesh_data = scene->mMeshes[i];
+
+				ComponentMesh* current_component_mesh = new ComponentMesh();
+
+				Entity* current_node = new Entity();
+				current_node->Initialize((current_mesh_data->mName.C_Str()));
+				current_node->SetParent(model_entity);
+
+				current_component_mesh->Initialize(current_node);
+				current_component_mesh->Load(current_mesh_data, texture_ids, number_of_textures);
+
+				// For logging purposes:
+				number_of_triangles += current_component_mesh->GetNumberOfTriangles();
+				number_of_indices += current_component_mesh->GetNumberOfIndices();
+				number_of_vertices += current_component_mesh->GetNumberOfVertices();
+				++number_of_loaded_meshes;
+			}
+
+			LOG("Loaded model as entity named %s:\n\tNumber of child meshes: %zu\n\tNumber of triangles: %zu\n\tNumber of indices: %zu\n\tNumber of vertices: %zu",
+				scene_name,
+				number_of_loaded_meshes,
+				number_of_triangles,
+				number_of_indices,
+				number_of_vertices
+			);
+
+			return model_entity;
+		}
 	}
-	//
-	// End Loading Textures
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Start Loading Meshes
-	//
-	Entity* model_entity = new Entity();
-	model_entity->Initialize("Fake Entity");
-
-	size_t number_of_meshes = scene->mNumMeshes;
-	size_t number_of_loaded_meshes = 0;
-	
-	size_t number_of_triangles = 0;
-	size_t number_of_indices = 0;
-	size_t number_of_vertices = 0;
-
-	aiMesh* current_mesh_data;
-
-	for (size_t i = 0; i < number_of_meshes; ++i)
+	/// <summary>
+	/// Loads Entity with children entities having ComponentMesh from the given model file.
+	/// </summary>
+	/// <param name="path_to_file">File path of the model</param>
+	/// <returns>Model as entity. User is responsible for deletion.</returns>
+	Entity* Import(const char* path_to_file)
 	{
-		current_mesh_data = scene->mMeshes[i];
+		Assimp::Importer importer;
+		const aiScene* model = importer.ReadFile(path_to_file, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-		ComponentMesh* current_component_mesh = new ComponentMesh();
+		// aiProcess_Triangulate: If the model is not entirely consisting of triangles, transform all the
+		// primitive to triangles.
+		// aiProcess_FlipUVs: If texture image is reversed around the y-axis, flip it.
+		// Can use aiProcess_GenNormals as well in the future to create normal vectors for each vertex if 
+		// the loaded model has no vertex normal data.
+		// NOTE: For more flags check http://assimp.sourceforge.net/lib_html/postprocess_8h.html
 
-		Entity* current_node = new Entity();
-		current_node->Initialize(current_mesh_data->mName.C_Str());
-		current_node->SetParent(model_entity);
+		if (!model)
+		{
+			LOG("Error Loading Model File \"%s\": %s", path_to_file, importer.GetErrorString());
+			return nullptr;
+		}
+		else
+		{
+			LOG("Model file \"%s\" is loaded successfully.", path_to_file);
+		}
 
-		current_component_mesh->Initialize(current_node);
-		current_component_mesh->Load(current_mesh_data, texture_ids, number_of_textures);
+		// Get the parent directory path from full file path:
+		char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
+		util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
 
-		number_of_triangles += current_component_mesh->GetNumberOfTriangles();
-		number_of_indices += current_component_mesh->GetNumberOfIndices();
-		number_of_vertices += current_component_mesh->GetNumberOfVertices();
+		// Get Texture IDs:
+		unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory);
 
-		++number_of_loaded_meshes;
+		char* model_name = util::ConcatCStrings("", path_to_file);
+		util::SubstrBeforeCharFromEnd(&model_name, '\\');
+
+		Entity* loaded_model = ModelImporter_LoadMeshesAsEntity(
+			model,
+			model_name,
+			texture_ids
+		);
+
+		// Deallocate resources:
+		free(model_name);
+		free(texture_ids);
+		free(path_to_parent_directory);
+
+		return loaded_model;
 	}
-	//
-	// End Loading Meshes
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// Delete resources:
-	free(texture_ids);
-	free(path_to_parent_directory);
-
-	return model_entity;
 }
