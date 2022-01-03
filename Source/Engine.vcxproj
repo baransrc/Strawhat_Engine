@@ -158,6 +158,7 @@
     <ClCompile Include="DEAR_IMGUI\include\imgui_tables.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui_widgets.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="ModelImporter.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MATH_GEO_LIB\Algorithm\GJK.cpp" />
@@ -317,6 +318,7 @@
     <ClInclude Include="DEVIL\include\IL\il_wrap.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Globals.h" />
+    <ClInclude Include="ModelImporter.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\GJK2D.h" />
     <ClInclude Include="MATH_GEO_LIB\Algorithm\Random\LCG.h" />

@@ -259,7 +259,10 @@ void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
 
 void ModuleCamera::OnModelChanged()
 {
-	float size =  App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius();
+	// TODO: Calculate size here:
+	float size = 32;
+		
+		//App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius();
 
 	float new_far_plane_distance = frustum.FarPlaneDistance();
 
@@ -350,7 +353,7 @@ void ModuleCamera::Move()
 		fast_movement_speed :
 		movement_speed;
 
-	const float3 velocity = Time->DeltaTime() * current_movement_speed * App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius()*0.1f;
+	const float3 velocity = Time->DeltaTime() * current_movement_speed /** App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius()*0.1f*/;
 
 	// Store and Cache Position:
 	float3 new_position = GetPosition();
@@ -625,7 +628,12 @@ void ModuleCamera::DetectFocus()
 	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN) ||  focus_on_model_changed)
 	{
 		focus_on_model_changed = false;
-		SetupFocus(App->renderer->GetLoadedModel()->GetCenterPosition(), App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius());
+		
+		// TODO: Fix this
+		//SetupFocus(App->renderer->GetLoadedModel()->GetCenterPosition(), App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius());
+		
+		SetupFocus(float3::zero, 10);
+
 	}
 }
 

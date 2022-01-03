@@ -32,6 +32,7 @@ Model::~Model()
 	{
 		App->texture->UnloadTexture(&texture_ids[i]);
 	}
+
 	// Free memory occupied by texture_ids:
 	free(texture_ids);
 	texture_ids = nullptr;

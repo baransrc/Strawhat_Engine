@@ -189,6 +189,9 @@
     <ClCompile Include="ComponentMesh.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="ModelImporter.cpp">
+      <Filter>Importers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -750,6 +753,9 @@
     <ClInclude Include="ComponentMesh.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="ModelImporter.h">
+      <Filter>Importers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">
@@ -778,6 +784,9 @@
     </Filter>
     <Filter Include="Components">
       <UniqueIdentifier>{2569b2e3-705f-4041-9eb8-64aac3c5bab4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Importers">
+      <UniqueIdentifier>{f8244ec7-068b-4268-9a96-88feed5b7d41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@ struct SDL_Texture;
 struct SDL_Renderer;
 struct SDL_Rect;
 class Model;
+class Entity;
 
 class ModuleRender : public Module
 {
@@ -15,8 +16,10 @@ public:
 private:
 	unsigned int viewport_width = SCREEN_WIDTH;
 	unsigned int viewport_height = SCREEN_HEIGHT;
-	Model* default_model;
-	Model* model = nullptr;
+	Entity* default_entity;
+	Entity* loaded_entity;
+	//Model* default_model;
+	//Model* model = nullptr;
 	float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 public:
@@ -31,7 +34,8 @@ public:
 	void WindowResized(unsigned width, unsigned height);
 	void OnDropFile(char* file_directory);
 
-	const Model* GetLoadedModel() const { return model == nullptr ? default_model : model; };
+	Entity* GetLoadedModel() const { return loaded_entity == nullptr ? default_entity : loaded_entity; };
+	//const Model* GetLoadedModel() const { return model == nullptr ? default_model : model; };
 
 	float GetRequiredAxisTriadLength() const;
 	

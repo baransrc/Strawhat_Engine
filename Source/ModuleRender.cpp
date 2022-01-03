@@ -6,8 +6,10 @@
 #include "ModuleShaderProgram.h"
 #include "Util.h"
 #include "Model.h"
+#include "ModelImporter.h"
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
+#include "Entity.h"
 
 ModuleRender::ModuleRender()
 {
@@ -41,8 +43,11 @@ bool ModuleRender::Init()
 	// Load Default Model:
 	// For now, this model is loaded inside ModuleRenderer, but it makes more sense to have a scene
 	// Loading all these model's ad renderer calls the current loaded scene's draw method:
-	default_model = new Model();
-	default_model->Load(default_model_file_name);
+	/*default_model = new Model();
+	default_model->Load(default_model_file_name);*/
+
+	default_entity = ModelImporter::Import(default_model_file_name);
+
 
 	viewport_height = App->window->window_height;
 	viewport_width = App->window->window_width;
@@ -73,7 +78,7 @@ update_status ModuleRender::Update()
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
-	GetLoadedModel()->Draw();
+	GetLoadedModel()->Update();
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -94,11 +99,14 @@ bool ModuleRender::CleanUp()
 	//Delete OpenGL Context:
 	SDL_GL_DeleteContext(context);
 
-	//Delete Model:
-	delete model;
+	////Delete Model:
+	//delete model;
 
-	//Delete Default Model;
-	delete default_model;
+	////Delete Default Model;
+	//delete default_model;
+
+	delete default_entity;
+	delete loaded_entity;
 
 	return true;
 }
@@ -118,7 +126,7 @@ void ModuleRender::OnDropFile(char* file_directory)
 
 float ModuleRender::GetRequiredAxisTriadLength() const
 {
-	return GetLoadedModel()->GetMinimalEnclosingSphereRadius() + 1.0f;
+	return /*GetLoadedModel()->GetMinimalEnclosingSphereRadius() + */ 10.0f;
 }
 
 void ModuleRender::OnEditor()
@@ -171,7 +179,7 @@ void ModuleRender::OnEditor()
 		ImGui::PopID();
 	}
 
-	GetLoadedModel()->OnEditor();
+	//GetLoadedModel()->OnEditor();
 
 	// Apply Settings:
 	smooth_lines ? glEnable(GL_LINE_SMOOTH) : glDisable(GL_LINE_SMOOTH);
@@ -203,20 +211,19 @@ void ModuleRender::OnPerformanceWindow() const
 
 void ModuleRender::InitializeModel(char* file_directory)
 {
-	if (model != nullptr)
+	if (loaded_entity != nullptr)
 	{
-		delete model;
-		model = nullptr;
+		delete loaded_entity;
+		loaded_entity = nullptr;
 	}
 
-	model = new Model();
-	bool successful = model->Load(file_directory);
+	loaded_entity = ModelImporter::Import(file_directory);
 
-	if (!successful)
-	{
-		delete model;
-		model = nullptr;
-	}
+	//if (loaded_entity == nullptr)
+	//{
+	//	delete model;
+	//	model = nullptr;
+	//}
 }
 
 void ModuleRender::InitializeOpenGL()
