@@ -285,6 +285,20 @@ namespace util
 	}
 
 	// User is responsible for deallocation.
+	inline char* CopyCString(const char* source)
+	{
+		size_t source_size = strlen(source);
+
+		char* output_string = (char*)malloc(source_size + 1);
+
+		memcpy(output_string, source, source_size);
+	
+		output_string[source_size] = '\0';
+
+		return output_string;
+	}
+
+	// User is responsible for deallocation.
 	inline char* ConcatCStrings(const char* first, const char* second)
 	{
 		size_t first_size = strlen(first);
