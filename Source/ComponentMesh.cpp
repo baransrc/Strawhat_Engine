@@ -35,14 +35,14 @@ void ComponentMesh::Initialize(Entity* new_owner)
 	Component::Initialize(new_owner);
 }
 
-void ComponentMesh::Load(const aiMesh* mesh_data, const unsigned int* model_textures, size_t model_texture_amount)
+void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const unsigned int* new_texture_ids, size_t new_number_of_vertices, size_t new_number_of_indices, size_t new_number_of_triangles, size_t new_number_of_texture_ids)
 {
 	// TODO: Get this model_textures stuff from somewhere, do not hold this for each mesh component.
-	number_of_textures = model_texture_amount;
-	texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * number_of_textures);
-	for (size_t i = 0; i < number_of_textures; ++i)
+	number_of_texture_ids = new_number_of_texture_ids;
+	texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * number_of_texture_ids);
+	for (size_t i = 0; i < number_of_texture_ids; ++i)
 	{
-		texture_ids[0] = model_textures[0];
+		texture_ids[0] = new_texture_ids[0];
 	}
 
 	// If Load was called before this call, clear 
@@ -52,8 +52,15 @@ void ComponentMesh::Load(const aiMesh* mesh_data, const unsigned int* model_text
 		Reset();
 	}
 
-	// Parse all the mesh data from Assimp mesh_data:
-	LoadMeshData(mesh_data);
+	// Get vertices:
+	vertices = new_vertices;
+	// Get indices:
+	indices = new_indices;
+
+	// Get supplied number of vertices, indices and triangles:
+	number_of_vertices = new_number_of_vertices;
+	number_of_indices = new_number_of_indices;
+	number_of_triangles = new_number_of_triangles;
 
 	// Generate VAO:
 	glGenVertexArrays(1, &vertex_array_object);
@@ -100,7 +107,10 @@ void ComponentMesh::Load(const aiMesh* mesh_data, const unsigned int* model_text
 	glBindVertexArray(0);
 
 	// Load AABB:
-	LoadAABB(mesh_data);
+	LoadAABB();
+
+	// Set as currently loaded:
+	is_currently_loaded = true;
 }
 
 void ComponentMesh::Update()
@@ -145,63 +155,18 @@ void ComponentMesh::DrawInspectorContent()
 {
 }
 
-void ComponentMesh::LoadMeshData(const aiMesh* mesh_data)
+void ComponentMesh::LoadAABB()
 {
-	// NOTE: Should this method free vertices and indices
-	// if they are not nullptr before their calloc calls
-	// to avoid memory leaks if the user calls Mesh::Load
-	// again?
+	//TODO: Maybe there is a more efficient method to this. Find one.
 
-	number_of_vertices = mesh_data->mNumVertices;
-	number_of_triangles = mesh_data->mNumFaces;
-
-	vertices = (float*)calloc(number_of_vertices * 8, sizeof(float)); // Initializes to 0 by default.
+	float3* temp_vertices = new float3[number_of_vertices];
 
 	for (size_t i = 0; i < number_of_vertices * 8; i += 8)
 	{
-		const aiVector3D position = mesh_data->mVertices[i / 8];
-		const aiVector3D normal = mesh_data->mNormals[i / 8];
-
-		// Position:
-		vertices[i + 0] = position.x; // NOTE: Yeah I'm adding +0 because I like consistency, please don't judge me.
-		vertices[i + 1] = position.y;
-		vertices[i + 2] = position.z;
-
-		// Normal:
-		vertices[i + 3] = normal.x;
-		vertices[i + 4] = normal.y;
-		vertices[i + 5] = normal.z;
-
-		// Since all the vertices data is initialized to 0.0f by default,
-		// if mesh_data->mTextureCoords[0] is null, leave texture coordinates 
-		// as zero, and move to the next iteration.
-		if (!mesh_data->mTextureCoords[0])
-		{
-			continue;
-		}
-
-		const aiVector3D texture_coordinate = mesh_data->mTextureCoords[0][i / 8];
-
-		// Texture Coordinates:
-		vertices[i + 6] = texture_coordinate.x;
-		vertices[i + 7] = texture_coordinate.y;
+		temp_vertices[i / 8] = float3(vertices[i + 0], vertices[i + 1], vertices[i + 2]);
 	}
 
-	size_t number_of_faces = mesh_data->mNumFaces;
-	number_of_indices = number_of_faces * 3; // Assuming there are 3 vertices per triangle.
+	bounding_box = AABB::MinimalEnclosingAABB(temp_vertices, number_of_vertices);
 
-	indices = (unsigned int*)calloc(number_of_indices, sizeof(unsigned int)); // Initializes to 0 by default.
-
-	for (size_t i = 0; i < number_of_faces; ++i)
-	{
-		indices[i * 3 + 0] = mesh_data->mFaces[i].mIndices[0]; // NOTE: It's me again, adding 0 for the pure sake of visual consistency.
-		indices[i * 3 + 1] = mesh_data->mFaces[i].mIndices[1];
-		indices[i * 3 + 2] = mesh_data->mFaces[i].mIndices[2];
-	}
-}
-
-void ComponentMesh::LoadAABB(const aiMesh* mesh_data)
-{
-	// Since the memory layouts of float3 and aiVector3D this works.
-	bounding_box = AABB::MinimalEnclosingAABB((float3*)(&(mesh_data->mVertices[0])), mesh_data->mNumVertices);
+	delete[] temp_vertices;
 }

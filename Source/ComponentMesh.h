@@ -4,7 +4,6 @@
 
 #include "MATH_GEO_LIB/Math/float3.h"
 #include "MATH_GEO_LIB/Geometry/AABB.h"
-#include "ASSIMP/mesh.h"
 
 #include <vector>
 
@@ -24,7 +23,7 @@ private:
 	size_t number_of_vertices;
 	size_t number_of_indices;
 	size_t number_of_triangles;
-	size_t number_of_textures;
+	size_t number_of_texture_ids;
 
 	bool is_currently_loaded;
 
@@ -34,7 +33,15 @@ public:
 
 	component_type Type() const override;
 	void Initialize(Entity* new_owner) override;
-	void Load(const aiMesh* mesh_data, const unsigned int* model_textures, size_t model_texture_amount); // NOTE: This will be done inside Model Importer in the future. ModelImporter will directly pass in the indices and vertices to this class.
+	void Load(
+		float* new_vertices, 
+		unsigned int* new_indices, 
+		const unsigned int* new_texture_ids, 
+		size_t new_number_of_vertices, 
+		size_t new_number_of_indices, 
+		size_t new_number_of_triangles,
+		size_t new_number_of_texture_ids
+	);
 	void Update() override;
 	void Reset();
 	void DrawGizmo() override;
@@ -48,7 +55,6 @@ protected:
 	void DrawInspectorContent() override;
 
 private:
-	void LoadMeshData(const aiMesh* mesh_data);
-	void LoadAABB(const aiMesh* mesh_data);
+	void LoadAABB();
 };
 

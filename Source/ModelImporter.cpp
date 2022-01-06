@@ -171,6 +171,64 @@ namespace ModelImporter
 			return texture_ids;
 		}
 
+		ComponentMesh* ModelImporter_LoadComponentMeshFromMeshData(aiMesh* mesh_data, Entity* owner, unsigned int* texture_ids, size_t number_of_textures)
+		{
+			size_t number_of_vertices = mesh_data->mNumVertices;
+			size_t number_of_triangles = mesh_data->mNumFaces;
+
+			float* vertices = (float*)calloc(number_of_vertices * 8, sizeof(float)); // Initializes to 0 by default.
+
+			for (size_t i = 0; i < number_of_vertices * 8; i += 8)
+			{
+				const aiVector3D position = mesh_data->mVertices[i / 8];
+				const aiVector3D normal = mesh_data->mNormals[i / 8];
+
+				// Position:
+				vertices[i + 0] = position.x; // NOTE: Yeah I'm adding +0 because I like consistency, please don't judge me.
+				vertices[i + 1] = position.y;
+				vertices[i + 2] = position.z;
+
+				// Normal:
+				vertices[i + 3] = normal.x;
+				vertices[i + 4] = normal.y;
+				vertices[i + 5] = normal.z;
+
+				// Since all the vertices data is initialized to 0.0f by default,
+				// if mesh_data->mTextureCoords[0] is null, leave texture coordinates 
+				// as zero, and move to the next iteration.
+				if (!mesh_data->mTextureCoords[0])
+				{
+					continue;
+				}
+
+				const aiVector3D texture_coordinate = mesh_data->mTextureCoords[0][i / 8];
+
+				// Texture Coordinates:
+				vertices[i + 6] = texture_coordinate.x;
+				vertices[i + 7] = texture_coordinate.y;
+			}
+
+			size_t number_of_faces = mesh_data->mNumFaces;
+			size_t number_of_indices = number_of_faces * 3; // Assuming there are 3 vertices per triangle.
+
+			unsigned int* indices = (unsigned int*)calloc(number_of_indices, sizeof(unsigned int)); // Initializes to 0 by default.
+
+			for (size_t i = 0; i < number_of_faces; ++i)
+			{
+				indices[i * 3 + 0] = mesh_data->mFaces[i].mIndices[0]; // NOTE: It's me again, adding 0 for the pure sake of visual consistency.
+				indices[i * 3 + 1] = mesh_data->mFaces[i].mIndices[1];
+				indices[i * 3 + 2] = mesh_data->mFaces[i].mIndices[2];
+			}
+
+			// NOTE: This function passes dynamically allocated vertices and indices arrays to the created component_mesh.
+			// component_mesh is responsible for the deallocation of those resources.
+			
+			ComponentMesh* component_mesh = new ComponentMesh();
+			component_mesh->Initialize(owner);
+			component_mesh->Load(vertices, indices, texture_ids, number_of_vertices, number_of_indices, number_of_triangles, number_of_textures);
+
+			return component_mesh;
+		}
 		
 		/// <summary>
 		/// Loads meshes as entity with child entities having mesh components.
@@ -201,14 +259,12 @@ namespace ModelImporter
 			{
 				current_mesh_data = scene->mMeshes[i];
 
-				ComponentMesh* current_component_mesh = new ComponentMesh();
-
 				Entity* current_node = new Entity();
 				current_node->Initialize((current_mesh_data->mName.C_Str()));
 				current_node->SetParent(model_entity);
 
-				current_component_mesh->Initialize(current_node);
-				current_component_mesh->Load(current_mesh_data, texture_ids, number_of_textures);
+				ComponentMesh* current_component_mesh = 
+					ModelImporter_LoadComponentMeshFromMeshData(current_mesh_data, current_node, texture_ids, number_of_textures);
 
 				// For logging purposes:
 				number_of_triangles += current_component_mesh->GetNumberOfTriangles();
