@@ -5,7 +5,6 @@
 #include "ModuleWindow.h"
 #include "ModuleShaderProgram.h"
 #include "Util.h"
-#include "Model.h"
 #include "ModelImporter.h"
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"

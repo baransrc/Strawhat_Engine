@@ -151,8 +151,6 @@
     <ClCompile Include="MATH_GEO_LIB\Time\Clock.cpp">
       <Filter>Libraries\MathGeoLib</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModuleCamera.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -709,8 +707,6 @@
     <ClInclude Include="ASSIMP\include\assimp\Compiler\pushpack1.h">
       <Filter>Libraries\Assimp</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
     <ClInclude Include="Module.h">
       <Filter>Modules</Filter>
     </ClInclude>
