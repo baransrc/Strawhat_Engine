@@ -190,6 +190,9 @@
     <ClCompile Include="ModelImporter.cpp">
       <Filter>Importers</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentBoundingBox.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -753,6 +756,9 @@
       <Filter>Importers</Filter>
     </ClInclude>
     <ClInclude Include="Event.h" />
+    <ClInclude Include="ComponentBoundingBox.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">

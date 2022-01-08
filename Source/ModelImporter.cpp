@@ -1,5 +1,6 @@
 #include "ModelImporter.h"
 #include "Entity.h"
+#include "ComponentBoundingBox.h"
 #include "ComponentMesh.h"
 #include "ASSIMP/scene.h"
 #include "Globals.h"							// For LOG
@@ -10,7 +11,6 @@
 #include "MATH_GEO_LIB/Geometry/Sphere.h"		// For OBB::ToMinimumEnclosingSphere
 #include "assimp/postprocess.h"					// For aiProcess_Triangulate, aiProcess_FlipUVs
 #include "assimp/Importer.hpp"					// For Assimp::Importer
-
 
 namespace ModelImporter
 {
@@ -262,6 +262,10 @@ namespace ModelImporter
 				Entity* current_node = new Entity();
 				current_node->Initialize((current_mesh_data->mName.C_Str()));
 				current_node->SetParent(model_entity);
+
+				ComponentBoundingBox* component_bounding_box = new ComponentBoundingBox();
+
+				component_bounding_box->Initialize(current_node);
 
 				ComponentMesh* current_component_mesh = 
 					ModelImporter_LoadComponentMeshFromMeshData(current_mesh_data, current_node, texture_ids, number_of_textures);
