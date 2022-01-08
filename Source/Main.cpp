@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "ModuleRender.h"
 #include "Globals.h"
+#include "Event.h"
 
 #include "SDL/include/SDL.h"
 #pragma comment( lib, "SDL/lib/x64/SDL2.lib" )
@@ -33,6 +34,16 @@ Console* console = NULL;
 TimeManager* Time = NULL;
 Application* App = NULL;
 
+void SomeFunc1(int a, float b)
+{
+	LOG("SomeFunc1: %i %f", a, b);
+}
+
+void SomeFunc2(int a, float b)
+{
+	LOG("SomeFunc2: %i %f", a, b);
+}
+
 int main(int argc, char ** argv)
 {
 	atexit(DumpLeaks);
@@ -43,6 +54,20 @@ int main(int argc, char ** argv)
 
 	console = new Console();
 	Time = new TimeManager();
+
+	Event<int, float>* some_event = new Event<int, float>();
+
+	some_event->AddListener(&SomeFunc1);
+	some_event->AddListener(&SomeFunc2);
+
+	some_event->Invoke(1, 2.333f);
+
+	some_event->RemoveListener(&SomeFunc2);
+
+	some_event->Invoke(3, 9999.0f);
+
+	delete some_event;
+
 
 	while (state != main_states::MAIN_EXIT)
 	{

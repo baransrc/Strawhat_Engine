@@ -752,6 +752,7 @@
     <ClInclude Include="ModelImporter.h">
       <Filter>Importers</Filter>
     </ClInclude>
+    <ClInclude Include="Event.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">
