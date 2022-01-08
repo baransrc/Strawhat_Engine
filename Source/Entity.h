@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "ComponentType.h"
+#include "Event.h"
 
 class Component;
 
@@ -11,6 +12,8 @@ class Entity
 private:
 	std::vector<Component*> components;
 	std::vector<Entity*> children;
+	Event<component_type>* components_changed;
+	Event<component_type>* components_changed_in_descendants;
 	Entity* parent;
 	std::string name;
 	unsigned int id;
@@ -34,7 +37,6 @@ public:
 	Component* CreateComponent(component_type type) const;
 	Component* GetComponent(component_type type);
 
-
 	const std::vector<Component*>& GetComponents() const;
 
 	void SetName(std::string new_name);
@@ -47,6 +49,9 @@ public:
 	void RemoveChild(Entity* child);
 	Entity* FindChild(unsigned int child_entity_id) const;
 	void DrawEditor();
+
+	Event<component_type>* GetComponentsChangedEvent() const;
+	Event<component_type>* GetComponentsChangedInDescendantsEvent() const;
 
 private:
 	Component* FindComponentById(unsigned int id) const;

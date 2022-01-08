@@ -7,7 +7,14 @@
 // and will be deleted when ModuleSceneManager is added:
 Entity* Entity::selected_entity_in_hierarchy = nullptr;
 
-Entity::Entity() : name(""), active(false), id(0), parent(nullptr), being_renamed(false)
+Entity::Entity() : 
+	name(""), 
+	active(false), 
+	id(0), 
+	parent(nullptr), 
+	being_renamed(false), 
+	components_changed(nullptr), 
+	components_changed_in_descendants(nullptr)
 {
 }
 
@@ -26,9 +33,12 @@ Entity::~Entity()
 	}
 
 	children.clear();
+
+	delete components_changed;
+	delete components_changed_in_descendants;
 }
 
-/// <summary>
+/// <summary>s
 /// Initializes this Entity by defining it's name and id, and setting it as active.
 /// </summary>
 /// <param name="new_name">Name of this Entity.</param>
@@ -37,6 +47,9 @@ void Entity::Initialize(std::string new_name)
 	name = new_name;
 	active = true;
 	id = GetCurrentId();
+
+	components_changed = new Event<component_type>();
+	components_changed_in_descendants = new Event<component_type>();
 
 	LOG("Entity initialized with name: %s and id: %u", name.c_str(), id);
 }
@@ -82,6 +95,13 @@ bool Entity::AddComponent(Component* component)
 	// TODO: check for type and maximum number of that entity should her owner have before adding.
 
 	components.push_back(component);
+
+	// Trigger components changed events:
+	components_changed->Invoke(component->Type());
+	if (parent != nullptr)
+	{
+		parent->components_changed_in_descendants->Invoke(component->Type());
+	}
 }
 
 /// <summary>
@@ -130,6 +150,13 @@ void Entity::RemoveComponent(Component* component)
 
 	if (founded_component)
 	{
+		// Trigger components changed events:
+		components_changed->Invoke(component->Type());
+		if (parent != nullptr)
+		{
+			parent->components_changed_in_descendants->Invoke(component->Type());
+		}
+
 		delete component;
 		components.erase(component_index);
 	}
@@ -393,6 +420,16 @@ void Entity::DrawEditor()
 	}
 
 	ImGui::PopID();
+}
+
+Event<component_type>* Entity::GetComponentsChangedEvent() const
+{
+	return components_changed;
+}
+
+Event<component_type>* Entity::GetComponentsChangedInDescendantsEvent() const
+{
+	return components_changed_in_descendants;
 }
 
 /// <summary>
