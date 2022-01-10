@@ -36,6 +36,8 @@ public:
 	void RemoveComponent(Component* component);
 	Component* CreateComponent(component_type type) const;
 	Component* GetComponent(component_type type);
+	std::vector<Component*> GetComponents(component_type type) const;
+	std::vector<Component*> GetComponentsIncludingChildren(component_type type) const;
 
 	const std::vector<Component*>& GetComponents() const;
 

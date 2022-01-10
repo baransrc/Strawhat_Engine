@@ -92,7 +92,14 @@ bool Entity::AddComponent(Component* component)
 		return false;
 	}
 
-	// TODO: check for type and maximum number of that entity should her owner have before adding.
+	bool component_of_type_already_exists = GetComponent(component->Type()) != nullptr;
+
+	// If Component of type already exists and an Entity cannot have more than one of this
+	// component at the same time, Don't add component and halt the method:
+	if (component_of_type_already_exists && !Component::CanBeMoreThanOne(component->Type()))
+	{
+		return false;
+	}
 
 	components.push_back(component);
 
@@ -181,14 +188,64 @@ Component* Entity::CreateComponent(component_type type) const
 }
 
 /// <summary>
-/// Don't use this, not implemented yet.
+/// Get the first component of type type.
 /// </summary>
-/// <param name="component"></param>
+/// <param name="type">Type of component</param>
+/// <returns>First Component found in given type if it exists, nullptr if not.</returns>
 Component* Entity::GetComponent(component_type type)
 {
-	// TODO: Add Get Component Functionality.
+	for (Component* component : components)
+	{
+		if (component->Type() == type)
+		{
+			return component;
+		}
+	}
 
 	return nullptr;
+}
+
+std::vector<Component*> Entity::GetComponents(component_type type) const
+{
+	std::vector<Component*> components_of_type;
+	
+	components_of_type.reserve(components.size());
+
+	for (Component* component : components)
+	{
+		if (component->Type() == type)
+		{
+			components_of_type.push_back(component);
+
+			// If there is meant to be only one Component of this type
+			// in the Entity, break out of the loop once a Component of
+			// this type is found:
+			if (!Component::CanBeMoreThanOne(type))
+			{
+				break;
+			}
+
+		}
+	}
+
+	return components_of_type;
+}
+
+std::vector<Component*> Entity::GetComponentsIncludingChildren(component_type type) const
+{
+	std::vector<Component*> components_in_children = GetComponents(type);
+	
+	for (Entity* child : children)
+	{
+		std::vector<Component*> components_in_child = child->GetComponents(type);
+
+		for (Component* component : components_in_child)
+		{
+			components_in_children.push_back(component);
+		}
+	}
+
+	return components_in_children;
 }
 
 const std::vector<Component*>& Entity::GetComponents() const
