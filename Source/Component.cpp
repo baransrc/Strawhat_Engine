@@ -26,6 +26,29 @@ component_type Component::Type() const
 }
 
 /// <summary>
+/// Is the type of Component can appear more than one in an Entity?
+/// </summary>
+/// <param name="type">Type of the Component</param>
+/// <returns>true if there can be more than one of Component of the same type in Entity, false if not.</returns>
+bool Component::CanBeMoreThanOne(component_type type)
+{
+	// NOTE: If there is a component that can be more than one in an entity,
+	// make it's type mapped to true here.
+
+	switch (type)
+	{
+		case component_type::UNDEFINED:
+		{
+			return true;
+		}
+		default:
+		{
+			return false;
+		}
+	}
+}
+
+/// <summary>
 /// Initializes the component with it's owner.
 /// </summary>
 /// <param name="new_owner"></param>

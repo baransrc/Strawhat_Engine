@@ -22,6 +22,7 @@ public:
 	bool Enabled() const;
 	unsigned int Id() const;
 	virtual component_type Type() const;
+	static bool CanBeMoreThanOne(component_type type);
 	virtual void Initialize(Entity* new_owner);
 	virtual void Enable();
 	virtual void Disable();
