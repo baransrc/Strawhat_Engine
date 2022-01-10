@@ -37,6 +37,19 @@ void ComponentBoundingBox::Initialize(Entity* new_owner)
 
 void ComponentBoundingBox::Load()
 {
+    // NOTE: For now we only get mesh components to calculate the bounding box,
+    // In the future when colliders are added for example, we may need to include them
+    // as well.
+
+    math::OBB bounding_box;
+    std::vector<Component*> mesh_components = owner->GetComponentsIncludingChildren(component_type::MESH);
+
+    for (Component* mesh_component : mesh_components)
+    {
+        //math::AABB aabb = math::OBB::Bo
+    }
+
+
 }
 
 void ComponentBoundingBox::Update()
