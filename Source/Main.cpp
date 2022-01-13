@@ -71,6 +71,8 @@ int main(int argc, char ** argv)
 
 	while (state != main_states::MAIN_EXIT)
 	{
+		OPTICK_FRAME("StrawHat Engine Loop");
+
 		switch (state)
 		{
 		case main_states::MAIN_CREATION:
