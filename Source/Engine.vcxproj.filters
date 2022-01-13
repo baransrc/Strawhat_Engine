@@ -760,10 +760,10 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="OPTICK\include\optick.config.h">
-      <Filter>Optick</Filter>
+      <Filter>Libraries\Optick</Filter>
     </ClInclude>
     <ClInclude Include="OPTICK\include\optick.h">
-      <Filter>Optick</Filter>
+      <Filter>Libraries\Optick</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -797,7 +797,7 @@
     <Filter Include="Importers">
       <UniqueIdentifier>{f8244ec7-068b-4268-9a96-88feed5b7d41}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Optick">
+    <Filter Include="Libraries\Optick">
       <UniqueIdentifier>{b70da05f-ecb3-441b-8665-60c7a3f5215e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
