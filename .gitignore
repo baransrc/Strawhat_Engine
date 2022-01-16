@@ -374,3 +374,7 @@ MigrationBackup/
 !Source/DEVIL/lib/x86/*
 !Source/DEVIL/lib/x86/Release/*
 !Source/DEVIL/lib/x86/unicode/*
+!Source/OPTICK/lib/*
+!Source/OPTICK/lib/x64/*
+!Source/OPTICK/lib/x64/debug/*
+!Source/OPTICK/lib/x64/release/*
