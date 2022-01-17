@@ -7,6 +7,8 @@
 #include "Globals.h"
 #include "MathGeoLib.h"
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
+#include "ComponentBoundingBox.h"
+#include "Entity.h"
 
 ModuleCamera::ModuleCamera()
 {
@@ -258,8 +260,18 @@ void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
 
 void ModuleCamera::OnModelChanged()
 {
+	float size = 10.0F;
+
+	// TODO: For some reason GetComponent is not working find the reason!
+	ComponentBoundingBox* bounding_box = (ComponentBoundingBox*)(App->renderer->GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX));
+
+	if (bounding_box != nullptr)
+	{
+		size = bounding_box->GetMinimalEnclosingSphereRadius();
+	}
+
 	// TODO: Calculate size here:
-	float size = 32;
+	
 		
 		//App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius();
 
@@ -628,11 +640,16 @@ void ModuleCamera::DetectFocus()
 	{
 		focus_on_model_changed = false;
 		
-		// TODO: Fix this
-		//SetupFocus(App->renderer->GetLoadedModel()->GetCenterPosition(), App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius());
+		// Get Bounding Box component of the Entity:
+		ComponentBoundingBox* bounding_box = (ComponentBoundingBox*) App->renderer->GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX);
 		
-		SetupFocus(float3::zero, 10);
+		// If Entity has no bounding box component attached to it, don't focus:
+		if (bounding_box == nullptr)
+		{
+			return;
+		}
 
+		SetupFocus(bounding_box->GetCenterPosition(), bounding_box->GetMinimalEnclosingSphereRadius());
 	}
 }
 

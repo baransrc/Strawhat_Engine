@@ -23,7 +23,7 @@ public:
 
     void            Draw(const float4x4& view, const float4x4& proj, unsigned width, unsigned height);
 
-    void DrawCuboid(vec* points);
+    void DrawCuboid(vec* points, vec color);
 private:
 
     static DDRenderInterfaceCoreGL* implementation;

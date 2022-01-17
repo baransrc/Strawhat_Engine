@@ -77,6 +77,19 @@ void Entity::Update()
 	}
 }
 
+void Entity::DrawGizmos()
+{
+	if (selected_entity_in_hierarchy == nullptr || selected_entity_in_hierarchy->Id() != Id())
+	{
+		return;
+	}
+
+	for (Component* component : components)
+	{
+		component->DrawGizmo();
+	}
+}
+
 /// <summary>
 /// Adds a component that has been created and Initialized by user somewhere else. Please note that, if this
 /// method returns false, user should delete the component created, herself.
@@ -409,6 +422,7 @@ void Entity::DrawEditor()
 	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
 		selected_entity_in_hierarchy = this;
+		LOG("Selected entity in hierarchy: %u", selected_entity_in_hierarchy->Id());
 	}
 
 	// Rename text input area:

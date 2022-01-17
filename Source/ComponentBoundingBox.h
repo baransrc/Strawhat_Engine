@@ -11,6 +11,7 @@ class ComponentBoundingBox : public Component
 private:
 	math::OBB obb;
 	float minimal_enclosing_sphere_radius;
+	math::float3 center_position;
 	EventListener<component_type> reload_listener;
 
 public:
@@ -23,5 +24,10 @@ public:
 	void Reload(component_type type);
 	void Update() override;
 	void DrawGizmo() override;
-};
+	const math::OBB& GetBoundingBox();
+	float GetMinimalEnclosingSphereRadius();
+	math::float3 GetCenterPosition();
 
+protected:
+	void DrawInspectorContent() override;
+};

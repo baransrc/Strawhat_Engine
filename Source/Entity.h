@@ -31,6 +31,8 @@ public:
 	void Initialize(std::string new_name);
 	void Update();
 
+	void DrawGizmos();
+
 	bool AddComponent(Component* component);
 	void AddComponent(component_type type);
 	void RemoveComponent(Component* component);
@@ -51,6 +53,8 @@ public:
 	void RemoveChild(Entity* child);
 	Entity* FindChild(unsigned int child_entity_id) const;
 	void DrawEditor();
+
+
 
 	Event<component_type>* GetComponentsChangedEvent() const;
 	Event<component_type>* GetComponentsChangedInDescendantsEvent() const;

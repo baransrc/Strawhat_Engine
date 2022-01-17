@@ -633,9 +633,9 @@ void ModuleDebugDraw::Draw(const float4x4& view, const float4x4& proj, unsigned 
     dd::flush();
 }
 
-void ModuleDebugDraw::DrawCuboid(vec* points)
+void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
 {
-    dd::box(points, dd::colors::LightGreen);
+    dd::box(points, color);
 
-    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); // TODO: Get screen width and height, or camera render width and height?
+    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); 
 }

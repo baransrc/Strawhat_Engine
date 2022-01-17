@@ -18,8 +18,6 @@ private:
 	unsigned int viewport_height = SCREEN_HEIGHT;
 	Entity* default_entity;
 	Entity* loaded_entity;
-	//Model* default_model;
-	//Model* model = nullptr;
 	float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 public:
@@ -35,7 +33,6 @@ public:
 	void OnDropFile(char* file_directory);
 
 	Entity* GetLoadedModel() const { return loaded_entity == nullptr ? default_entity : loaded_entity; };
-	//const Model* GetLoadedModel() const { return model == nullptr ? default_model : model; };
 
 	float GetRequiredAxisTriadLength() const;
 	

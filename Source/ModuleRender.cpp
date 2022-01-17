@@ -4,11 +4,15 @@
 #include "ModuleCamera.h"
 #include "ModuleWindow.h"
 #include "ModuleShaderProgram.h"
+#include "ModuleDebugDraw.h"
+#include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 #include "Util.h"
 #include "ModelImporter.h"
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
+#include "ComponentBoundingBox.h"
 #include "Entity.h"
+
 
 ModuleRender::ModuleRender()
 {
@@ -78,6 +82,8 @@ update_status ModuleRender::Update()
 {
 	OPTICK_CATEGORY("ModuleRender::Update", Optick::Category::Rendering);
 
+	Entity::selected_entity_in_hierarchy->DrawGizmos();
+
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
@@ -104,12 +110,6 @@ bool ModuleRender::CleanUp()
 	//Delete OpenGL Context:
 	SDL_GL_DeleteContext(context);
 
-	////Delete Model:
-	//delete model;
-
-	////Delete Default Model;
-	//delete default_model;
-
 	delete default_entity;
 	delete loaded_entity;
 
@@ -131,7 +131,14 @@ void ModuleRender::OnDropFile(char* file_directory)
 
 float ModuleRender::GetRequiredAxisTriadLength() const
 {
-	return /*GetLoadedModel()->GetMinimalEnclosingSphereRadius() + */ 10.0f;
+	ComponentBoundingBox* bounding_box = (ComponentBoundingBox*)(GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX));
+	
+	if (bounding_box == nullptr)
+	{
+		return 10.0f;
+	}
+
+	return bounding_box->GetMinimalEnclosingSphereRadius() + 10.0f;
 }
 
 void ModuleRender::OnEditor()

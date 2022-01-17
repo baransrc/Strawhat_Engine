@@ -55,19 +55,19 @@ int main(int argc, char ** argv)
 	console = new Console();
 	Time = new TimeManager();
 
-	Event<int, float> some_event = Event<int, float>();
+	//Event<int, float> some_event = Event<int, float>();
 
-	EventListener<int, float> some_func_1 = EventListener<int, float>(std::bind(&SomeFunc1, std::placeholders::_1, std::placeholders::_2));
-	EventListener<int, float> some_func_2 = EventListener<int, float>(std::bind(&SomeFunc2, std::placeholders::_1, std::placeholders::_2));
+	//EventListener<int, float> some_func_1 = EventListener<int, float>(std::bind(&SomeFunc1, std::placeholders::_1, std::placeholders::_2));
+	//EventListener<int, float> some_func_2 = EventListener<int, float>(std::bind(&SomeFunc2, std::placeholders::_1, std::placeholders::_2));
 
-	some_event.AddListener(&some_func_1);
-	some_event.AddListener(&some_func_2);
+	//some_event.AddListener(&some_func_1);
+	//some_event.AddListener(&some_func_2);
 
-	some_event.Invoke(1, 2.333f);
+	//some_event.Invoke(1, 2.333f);
 
-	some_event.RemoveListener(&some_func_2);
+	//some_event.RemoveListener(&some_func_2);
 
-	some_event.Invoke(3, 9999.0f);
+	//some_event.Invoke(3, 9999.0f);
 
 	while (state != main_states::MAIN_EXIT)
 	{
