@@ -12,9 +12,7 @@ Entity::Entity() :
 	active(false), 
 	id(0), 
 	parent(nullptr), 
-	being_renamed(false), 
-	components_changed(nullptr), 
-	components_changed_in_descendants(nullptr)
+	being_renamed(false)
 {
 }
 
@@ -50,8 +48,6 @@ void Entity::Initialize(std::string new_name)
 
 	components_changed = new Event<component_type>();
 	components_changed_in_descendants = new Event<component_type>();
-
-	LOG("Entity initialized with name: %s and id: %u", name.c_str(), id);
 }
 
 /// <summary>
@@ -74,6 +70,19 @@ void Entity::Update()
 		{
 			child->Update();
 		}
+	}
+}
+
+void Entity::DrawGizmos()
+{
+	if (selected_entity_in_hierarchy == nullptr || selected_entity_in_hierarchy->Id() != Id())
+	{
+		return;
+	}
+
+	for (Component* component : components)
+	{
+		component->DrawGizmo();
 	}
 }
 
@@ -104,11 +113,7 @@ bool Entity::AddComponent(Component* component)
 	components.push_back(component);
 
 	// Trigger components changed events:
-	components_changed->Invoke(component->Type());
-	if (parent != nullptr)
-	{
-		parent->components_changed_in_descendants->Invoke(component->Type());
-	}
+	InvokeComponentsChangedEvents(component->Type());
 }
 
 /// <summary>
@@ -157,12 +162,7 @@ void Entity::RemoveComponent(Component* component)
 
 	if (founded_component)
 	{
-		// Trigger components changed events:
-		components_changed->Invoke(component->Type());
-		if (parent != nullptr)
-		{
-			parent->components_changed_in_descendants->Invoke(component->Type());
-		}
+		InvokeComponentsChangedEvents(component->Type());
 
 		delete component;
 		components.erase(component_index);
@@ -360,6 +360,8 @@ void Entity::RemoveChild(Entity* child)
 	{
 		children.erase(child_index);
 	}
+
+	// TODO: Add componentchanged event invoke statement here too.
 }
 
 /// <summary>
@@ -409,6 +411,7 @@ void Entity::DrawEditor()
 	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
 		selected_entity_in_hierarchy = this;
+		LOG("Selected entity in hierarchy: %u", selected_entity_in_hierarchy->Id());
 	}
 
 	// Rename text input area:
@@ -479,12 +482,22 @@ void Entity::DrawEditor()
 	ImGui::PopID();
 }
 
-Event<component_type>* Entity::GetComponentsChangedEvent() const
+void Entity::InvokeComponentsChangedEvents(component_type type) const
+{
+	components_changed->Invoke(type);
+
+	if (parent != nullptr)
+	{
+		parent->components_changed_in_descendants->Invoke(type);
+	}
+}
+
+Event<component_type>* const  Entity::GetComponentsChangedEvent() const
 {
 	return components_changed;
 }
 
-Event<component_type>* Entity::GetComponentsChangedInDescendantsEvent() const
+Event<component_type>* const Entity::GetComponentsChangedInDescendantsEvent() const
 {
 	return components_changed_in_descendants;
 }

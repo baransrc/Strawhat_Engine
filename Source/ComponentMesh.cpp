@@ -2,12 +2,18 @@
 
 #include "Application.h"
 #include "ModuleShaderProgram.h"
+#include "ModuleDebugDraw.h"
 
 #include "GLEW/include/GL/glew.h"
+
+#include "MATH_GEO_LIB/Geometry/Polyhedron.h"
+
+#include "Entity.h"
 
 ComponentMesh::ComponentMesh() : Component(),
 								 vertices(nullptr),
 								 indices(nullptr),
+								 texture_ids(nullptr),
 								 vertex_array_object(0),
 								 vertex_buffer_object(0),
 								 element_buffer_object(0),
@@ -15,6 +21,7 @@ ComponentMesh::ComponentMesh() : Component(),
 								 number_of_vertices(0),
 								 number_of_indices(0),
 								 number_of_triangles(0),
+								 number_of_texture_ids(0),
 								 is_currently_loaded(false)
 
 {
@@ -62,6 +69,9 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 	number_of_indices = new_number_of_indices;
 	number_of_triangles = new_number_of_triangles;
 
+	// Load AABB:
+	LoadAABB();
+
 	// Generate VAO:
 	glGenVertexArrays(1, &vertex_array_object);
 	// Generate VBO:
@@ -106,15 +116,17 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 	// Unbind VAO with id vertex_array_object_id:
 	glBindVertexArray(0);
 
-	// Load AABB:
-	LoadAABB();
-
 	// Set as currently loaded:
 	is_currently_loaded = true;
+
+	// Invoke change in parent and its ancestors:
+	owner->InvokeComponentsChangedEvents(Type());
 }
 
 void ComponentMesh::Update()
 {
+	// Use the shader:
+	App->shader_program->Use();
 	// Activate Texture Unit 0:
 	glActiveTexture(GL_TEXTURE0);
 	// Bind Texture Unit 0:
@@ -148,7 +160,7 @@ void ComponentMesh::Reset()
 
 void ComponentMesh::DrawGizmo()
 {
-	Component::DrawGizmo();
+	App->debug_draw->DrawCuboid(bounding_box.ToPolyhedron().VertexArrayPtr(), math::float3(1.0f, 0.0f, 0.0f));
 }
 
 void ComponentMesh::DrawInspectorContent()
@@ -166,7 +178,9 @@ void ComponentMesh::LoadAABB()
 		temp_vertices[i / 8] = float3(vertices[i + 0], vertices[i + 1], vertices[i + 2]);
 	}
 
-	bounding_box = AABB::MinimalEnclosingAABB(temp_vertices, number_of_vertices);
+	bounding_box.SetNegativeInfinity();
+
+	bounding_box.SetFrom(temp_vertices, number_of_vertices);
 
 	delete[] temp_vertices;
 }

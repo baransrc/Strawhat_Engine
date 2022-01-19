@@ -2,6 +2,7 @@
 #include "Module.h"
 #include "Globals.h"
 #include "Math/float2.h"
+#include "Event.h"
 
 constexpr size_t NUM_MOUSE_BUTTONS = 5;
 
@@ -16,22 +17,24 @@ enum class key_state
 class ModuleInput : public Module
 {
 public:
-	
+
 	ModuleInput();
 	~ModuleInput() override;
 
 	bool Init();
 	bool CleanUp();
-	
+
 	update_status PreUpdate();
-	
+
 	bool GetKey(size_t key_code, key_state state) const;
 	bool GetMouseKey(size_t mouse_key_code, key_state state) const;
 	float2 GetMousePosition() const { return mouse_position; }
 	float2 GetMouseDisplacement() const { return mouse_displacement; }
 	float2 GetMouseWheelDisplacement() const { return mouse_wheel_displacement; }
+	Event<const char*>* const GetFileDroppedEvent() const { return file_dropped_event; }
 
 private:
+	Event<const char*>* file_dropped_event;
 	uint32_t window_width = SCREEN_WIDTH;
 	uint32_t window_height = SCREEN_HEIGHT;
 	float window_width_inverse = 1.0f / (float)window_width;

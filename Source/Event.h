@@ -51,16 +51,12 @@ public:
 template<typename... ARGS>
 inline void Event<ARGS...>::AddListener(EventListener<ARGS...>* listener)
 {
-	LOG("Added Listener");
-
 	listeners.push_back(listener);
 }
 
 template<typename... ARGS>
 inline void Event<ARGS...>::RemoveListener(EventListener<ARGS...>* listener)
 {
-	LOG("Removed Listener");
-
 	std::vector<EventListener<ARGS...>*>::template iterator index_to_erase;
 
 	// NOTE: Right now this determines index to erase by comparing the memory addresses,
@@ -88,8 +84,6 @@ inline void Event<ARGS...>::RemoveAllListeners()
 template<typename... ARGS>
 inline void Event<ARGS...>::Invoke(ARGS... args)
 {
-	LOG("Invoked event");
-
 	for (EventListener<ARGS...>* listener : listeners)
 	{
 		(*listener)(args...);
