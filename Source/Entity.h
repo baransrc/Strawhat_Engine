@@ -54,10 +54,10 @@ public:
 	Entity* FindChild(unsigned int child_entity_id) const;
 	void DrawEditor();
 
+	void InvokeComponentsChangedEvents(component_type type) const;
 
-
-	Event<component_type>* GetComponentsChangedEvent() const;
-	Event<component_type>* GetComponentsChangedInDescendantsEvent() const;
+	Event<component_type>* const GetComponentsChangedEvent() const;
+	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;
 
 private:
 	Component* FindComponentById(unsigned int id) const;
