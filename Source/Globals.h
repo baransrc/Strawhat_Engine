@@ -22,6 +22,7 @@ enum class update_status
 #define TEXTURES_FOLDER "\\Textures\\"
 #define LENA_TEXTURE_PATH "\\Textures\\Lena.png"
 #define BAKER_HOUSE_MODEL_PATH "\\Models\\BakerHouse.fbx"
+#define ROBOT_MODEL_PATH "\\Models\\Robot.FBX"
 #define TEXTURE_DATA_FORMAT "{start_%lu}\Path: %s\nFormat: %s\nWidth: %i\nHeight: %i\nDepth: %i\n{end_%lu}\n"
 
 // Configuration -----------
