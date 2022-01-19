@@ -260,20 +260,17 @@ void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
 
 void ModuleCamera::OnModelChanged()
 {
-	float size = 10.0F;
+	// Initialize the size of the model to 10 by default:
+	float size = 10.0f;
 
-	// TODO: For some reason GetComponent is not working find the reason!
+	// NOTE: This code assumes renderer will always return an Entity that is not 
+	// a nullptr.
 	ComponentBoundingBox* bounding_box = (ComponentBoundingBox*)(App->renderer->GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX));
 
 	if (bounding_box != nullptr)
 	{
 		size = bounding_box->GetMinimalEnclosingSphereRadius();
 	}
-
-	// TODO: Calculate size here:
-	
-		
-		//App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius();
 
 	float new_far_plane_distance = frustum.FarPlaneDistance();
 
