@@ -13,6 +13,7 @@
 ComponentMesh::ComponentMesh() : Component(),
 								 vertices(nullptr),
 								 indices(nullptr),
+								 texture_ids(nullptr),
 								 vertex_array_object(0),
 								 vertex_buffer_object(0),
 								 element_buffer_object(0),
@@ -20,6 +21,7 @@ ComponentMesh::ComponentMesh() : Component(),
 								 number_of_vertices(0),
 								 number_of_indices(0),
 								 number_of_triangles(0),
+								 number_of_texture_ids(0),
 								 is_currently_loaded(false)
 
 {
@@ -117,19 +119,14 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 	// Set as currently loaded:
 	is_currently_loaded = true;
 
-	// Invoke change in parent:
-	// TODO: This is ugly af, fix this, maybe we need some sub events?
-	if (owner->Parent() != nullptr)
-	{
-		owner->Parent()->GetComponentsChangedInDescendantsEvent()->Invoke(Type());
-	}
-	owner->GetComponentsChangedEvent()->Invoke(Type());
+	// Invoke change in parent and its ancestors:
+	owner->InvokeComponentsChangedEvents(Type());
 }
 
 void ComponentMesh::Update()
 {
+	// Use the shader:
 	App->shader_program->Use();
-
 	// Activate Texture Unit 0:
 	glActiveTexture(GL_TEXTURE0);
 	// Bind Texture Unit 0:
