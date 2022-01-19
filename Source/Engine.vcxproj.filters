@@ -193,6 +193,9 @@
     <ClCompile Include="ComponentBoundingBox.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentLight.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -764,6 +767,9 @@
     </ClInclude>
     <ClInclude Include="OPTICK\include\optick.h">
       <Filter>Libraries\Optick</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentLight.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
