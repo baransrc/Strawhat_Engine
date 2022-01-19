@@ -39,6 +39,9 @@ bool ModuleInput::Init()
     // Initialize Mouse State array with each element as IDLE;
     memset(mouse_buttons_state, static_cast<int>(key_state::IDLE), sizeof(key_state) * NUM_MOUSE_BUTTONS);
 
+    // Initialize file_dropped_event:
+    file_dropped_event = new Event<const char*>();
+
 	return ret;
 }
 
@@ -179,9 +182,7 @@ update_status ModuleInput::PreUpdate()
             {
                 char* dropped_file_directory = sdl_event.drop.file;
 
-                LOG("Dropped File: %s", dropped_file_directory);
-
-                App->renderer->OnDropFile(dropped_file_directory);
+                file_dropped_event->Invoke(dropped_file_directory);
 
                 SDL_free(dropped_file_directory);
             }
@@ -199,6 +200,8 @@ bool ModuleInput::CleanUp()
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
     delete[] keyboard_state;
+
+    delete file_dropped_event;
 
 	return true;
 }
