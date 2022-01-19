@@ -44,7 +44,6 @@ namespace util
 	}
 
 	// User is responsible for deallocation.
-	// TODO: ModuleShaderProgram must use this function too.
 	inline void ReadFile(const char* file_name, char** data)
 	{
 		FILE* file = nullptr;

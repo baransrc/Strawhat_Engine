@@ -33,14 +33,9 @@ void ComponentBoundingBox::Initialize(Entity* new_owner)
 {
     Component::Initialize(new_owner);
 
-    LOG("Initialized Component Bounding Box (%u)", Id());
-    
-    LOG("Loaded ComponentBoundingBox OBB for the first time.");
     Load();
     
     reload_listener = EventListener<component_type>(std::bind(&ComponentBoundingBox::Reload, this, std::placeholders::_1));
-
-    LOG("Subscribed to the Component Changed Events (%u)", Id());
 
     owner->GetComponentsChangedEvent()->AddListener(&reload_listener);
     owner->GetComponentsChangedInDescendantsEvent()->AddListener(&reload_listener);
@@ -69,12 +64,9 @@ void ComponentBoundingBox::Load()
     for (Component* mesh_component : mesh_components)
     {
         ComponentMesh* mesh = (ComponentMesh*)mesh_component;
-       const  math::AABB* mesh_aabb = mesh->GetAABB();
+        const math::AABB* mesh_aabb = mesh->GetAABB();
 
         aabb.Enclose(*mesh_aabb);
-
-        LOG("Calculating bounding box with mesh that has component id %u, with extents: %f, %f, %f",
-            mesh->Id(), mesh_aabb->HalfSize().x, mesh_aabb->HalfSize().y, mesh_aabb->HalfSize().z);
     }
 
     // Form OBB from temp aabb:
@@ -113,12 +105,14 @@ math::float3 ComponentBoundingBox::GetCenterPosition()
 
 void ComponentBoundingBox::Reload(component_type type)
 {
+    // NOTE: If any component of type other than MESH would change
+    // the size of the BOUNDING_BOX, make this function aware of them as
+    // well.
+
     if (type != component_type::MESH)
     {
         return;
     }
-
-    LOG("Reloading Bounding box %u: %s", Id(), component_type_to_string(type));
 
     Load();
 }
