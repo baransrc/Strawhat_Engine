@@ -3,6 +3,7 @@
 #include "ModuleRender.h"
 #include "ModuleCamera.h"
 #include "ModuleWindow.h"
+#include "ModuleInput.h"
 #include "ModuleShaderProgram.h"
 #include "ModuleDebugDraw.h"
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
@@ -46,11 +47,12 @@ bool ModuleRender::Init()
 	// Load Default Model:
 	// For now, this model is loaded inside ModuleRenderer, but it makes more sense to have a scene
 	// Loading all these model's ad renderer calls the current loaded scene's draw method:
-	/*default_model = new Model();
-	default_model->Load(default_model_file_name);*/
-
 	default_entity = ModelImporter::Import(default_model_file_name);
 
+	// Initialize file_dropped_event_listener:
+	file_dropped_event_listener = EventListener<const char*>(std::bind(&ModuleRender::HandleFileDrop, this, std::placeholders::_1));
+	// Subscribe to file drop event of ModuleInput:
+	App->input->GetFileDroppedEvent()->AddListener(&file_dropped_event_listener);
 
 	viewport_height = App->window->window_height;
 	viewport_width = App->window->window_width;
@@ -111,6 +113,14 @@ bool ModuleRender::CleanUp()
 	//Delete OpenGL Context:
 	SDL_GL_DeleteContext(context);
 
+	// TODO(baran): Move this into a private method.
+	// Unsubscribe from file dropped event if it's not null:
+	Event<const char*>* file_dropped_event = App->input->GetFileDroppedEvent();
+	if (file_dropped_event != nullptr)
+	{
+		file_dropped_event->RemoveListener(&file_dropped_event_listener);
+	}
+
 	delete default_entity;
 	delete loaded_entity;
 
@@ -123,7 +133,7 @@ void ModuleRender::WindowResized(unsigned width, unsigned height)
 	viewport_height = height;
 }
 
-void ModuleRender::OnDropFile(char* file_directory)
+void ModuleRender::HandleFileDrop(const char* file_directory)
 {
 	InitializeModel(file_directory);
 
@@ -192,8 +202,6 @@ void ModuleRender::OnEditor()
 		ImGui::PopID();
 	}
 
-	//GetLoadedModel()->OnEditor();
-
 	// Apply Settings:
 	smooth_lines ? glEnable(GL_LINE_SMOOTH) : glDisable(GL_LINE_SMOOTH);
 	cull_face ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
@@ -222,7 +230,7 @@ void ModuleRender::OnPerformanceWindow() const
 	ImGui::Text("Free VRAM: %fGiB", free_vram_gib);
 }
 
-void ModuleRender::InitializeModel(char* file_directory)
+void ModuleRender::InitializeModel(const char* file_directory)
 {
 	if (loaded_entity != nullptr)
 	{
@@ -231,12 +239,6 @@ void ModuleRender::InitializeModel(char* file_directory)
 	}
 
 	loaded_entity = ModelImporter::Import(file_directory);
-
-	//if (loaded_entity == nullptr)
-	//{
-	//	delete model;
-	//	model = nullptr;
-	//}
 }
 
 void ModuleRender::InitializeOpenGL()
