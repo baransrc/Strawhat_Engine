@@ -38,10 +38,6 @@ bool ModuleEditor::Init()
 	show_demo_window = true;
 
 	// Entity related stuff, just for testing, will be deleted:
-	//base_entity = new Entity();
-
-	//base_entity->Initialize("Hierarchy");
-
 	base_entity = App->renderer->GetLoadedModel();
 
 	return true;
@@ -54,9 +50,6 @@ bool ModuleEditor::CleanUp()
 	UninitializeDearImGui();
 
 	free(license_buffer);
-
-	// Entity related stuff, just for testing, will be deleted:
-	//delete base_entity;
 
 	return true;
 }
