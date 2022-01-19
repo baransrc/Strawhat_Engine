@@ -10,6 +10,7 @@
 #include "Globals.h"
 #include "Entity.h"
 #include "Component.h"
+#include "ComponentLight.h"
 
 ModuleEditor::ModuleEditor()
 {
@@ -41,6 +42,16 @@ bool ModuleEditor::Init()
 	base_entity = new Entity();
 
 	base_entity->Initialize("Hierarchy");
+
+	Entity* light_entity = new Entity();
+	light_entity->Initialize("Light");
+	light_entity->SetParent(base_entity);
+	ComponentLight* component_light = new ComponentLight();
+	component_light->Initialize(light_entity);
+	float3 pos = float3(0.5, 0, 0.5);
+	float3 scale = float3(1, 1, 1);
+	float3 color = float3(1, 1, 1);
+	component_light->Load(light_type::DIRECTIONAL, pos, scale, color);
 
 	return true;
 }
