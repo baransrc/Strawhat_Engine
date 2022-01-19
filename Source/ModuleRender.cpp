@@ -63,7 +63,7 @@ bool ModuleRender::Init()
 
 update_status ModuleRender::PreUpdate()
 {
-	OPTICK_CATEGORY("ModuleRender::PreUpdate", Optick::Category::Rendering);
+	//OPTICK_CATEGORY("ModuleRender::PreUpdate", Optick::Category::Rendering);
 	
 	// Resize the viewport to the newly resized window:
 	glViewport(0, 0, viewport_width, viewport_height);
@@ -80,13 +80,14 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
-	OPTICK_CATEGORY("ModuleRender::Update", Optick::Category::Rendering);
+	//OPTICK_CATEGORY("ModuleRender::Update", Optick::Category::Rendering);
 
 	Entity::selected_entity_in_hierarchy->DrawGizmos();
 
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
 
+	// Update loaded model:
 	GetLoadedModel()->Update();
 
 	return update_status::UPDATE_CONTINUE;
@@ -94,7 +95,7 @@ update_status ModuleRender::Update()
 
 update_status ModuleRender::PostUpdate()
 {
-	OPTICK_CATEGORY("ModuleRender::PostUpdate", Optick::Category::Rendering);
+	//OPTICK_CATEGORY("ModuleRender::PostUpdate", Optick::Category::Rendering);
 
 	// Swap frame buffer:
 	SDL_GL_SwapWindow(App->window->window);

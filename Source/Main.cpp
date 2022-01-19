@@ -34,16 +34,6 @@ Console* console = NULL;
 TimeManager* Time = NULL;
 Application* App = NULL;
 
-void SomeFunc1(int a, float b)
-{
-	LOG("SomeFunc1: %i %f", a, b);
-}
-
-void SomeFunc2(int a, float b)
-{
-	LOG("SomeFunc2: %i %f", a, b);
-}
-
 int main(int argc, char ** argv)
 {
 	atexit(DumpLeaks);
@@ -55,24 +45,9 @@ int main(int argc, char ** argv)
 	console = new Console();
 	Time = new TimeManager();
 
-	//Event<int, float> some_event = Event<int, float>();
-
-	//EventListener<int, float> some_func_1 = EventListener<int, float>(std::bind(&SomeFunc1, std::placeholders::_1, std::placeholders::_2));
-	//EventListener<int, float> some_func_2 = EventListener<int, float>(std::bind(&SomeFunc2, std::placeholders::_1, std::placeholders::_2));
-
-	//some_event.AddListener(&some_func_1);
-	//some_event.AddListener(&some_func_2);
-
-	//some_event.Invoke(1, 2.333f);
-
-	//some_event.RemoveListener(&some_func_2);
-
-	//some_event.Invoke(3, 9999.0f);
-
 	while (state != main_states::MAIN_EXIT)
 	{
-		OPTICK_FRAME("StrawHat Engine Loop");
-
+		
 		switch (state)
 		{
 		case main_states::MAIN_CREATION:
@@ -100,6 +75,8 @@ int main(int argc, char ** argv)
 		case main_states::MAIN_UPDATE:
 		{
 			Time->Start();
+
+			//OPTICK_FRAME("StrawHat Engine Loop");
 
 			update_status update_return = App->Update();
 
