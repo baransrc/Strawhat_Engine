@@ -51,7 +51,7 @@ bool ModuleEditor::Init()
 	float3 pos = float3(0.5, 0, 0.5);
 	float3 scale = float3(1, 1, 1);
 	float3 color = float3(1, 1, 1);
-	component_light->Load(light_type::DIRECTIONAL, pos, scale, color);
+	component_light->Load(light_type::SPOT, pos, scale, color);
 
 	return true;
 }
