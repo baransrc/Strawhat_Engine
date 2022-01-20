@@ -150,6 +150,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentBoundingBox.cpp" />
+    <ClCompile Include="ComponentLight.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_sdl.cpp" />
@@ -294,6 +295,7 @@
     <ClInclude Include="ASSIMP\include\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentBoundingBox.h" />
+    <ClInclude Include="ComponentLight.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentType.h" />
     <ClInclude Include="Console.h" />
