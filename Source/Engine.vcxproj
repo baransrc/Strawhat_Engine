@@ -413,6 +413,8 @@
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Game\Shaders\fragment.glsl" />
+    <None Include="..\Game\Shaders\vertex.glsl" />
     <None Include="ASSIMP\include\assimp\color4.inl" />
     <None Include="ASSIMP\include\assimp\config.h.in" />
     <None Include="ASSIMP\include\assimp\material.inl" />

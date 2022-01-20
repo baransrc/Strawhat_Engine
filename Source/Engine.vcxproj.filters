@@ -806,6 +806,9 @@
     <Filter Include="Libraries\Optick">
       <UniqueIdentifier>{b70da05f-ecb3-441b-8665-60c7a3f5215e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{f5da03b6-3dab-45d8-bc02-4581fd1f3310}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="MATH_GEO_LIB\Geometry\KDTree.inl">
@@ -846,6 +849,12 @@
     </None>
     <None Include="ASSIMP\include\assimp\vector3.inl">
       <Filter>Libraries\Assimp</Filter>
+    </None>
+    <None Include="..\Game\Shaders\fragment.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\Game\Shaders\vertex.glsl">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
