@@ -104,7 +104,7 @@ public:
 	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION, bool calculate_rotation = true);
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
-	void WindowResized(unsigned int width, unsigned int height);
+	void HandleWindowResized(unsigned int width, unsigned int height);
 
 	void OnModelChanged();
 

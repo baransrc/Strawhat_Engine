@@ -75,7 +75,7 @@ bool ModuleCamera::Init()
 	// No need to calculate projection matrix as it will be calculated in the PreUpdate method.
 
 	// Initialize window resized event lister:
-	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::WindowResized, this, std::placeholders::_1, std::placeholders::_2));
+	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
 	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
 	
@@ -266,7 +266,7 @@ void ModuleCamera::AutoRotateAround(float3 position)
 	LookAt(position);
 }
 
-void ModuleCamera::WindowResized(unsigned int width, unsigned int height)
+void ModuleCamera::HandleWindowResized(unsigned int width, unsigned int height)
 {
 	SetAspectRatio((float)width / (float)height);
 }

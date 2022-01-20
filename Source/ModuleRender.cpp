@@ -55,7 +55,7 @@ bool ModuleRender::Init()
 	App->input->GetFileDroppedEvent()->AddListener(&file_dropped_event_listener);
 
 	// Initialize window_resized_event_listener:
-	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleRender::WindowResized, this, std::placeholders::_1, std::placeholders::_2));
+	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleRender::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
 	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
 
@@ -139,7 +139,7 @@ bool ModuleRender::CleanUp()
 	return true;
 }
 
-void ModuleRender::WindowResized(unsigned width, unsigned height)
+void ModuleRender::HandleWindowResized(unsigned width, unsigned height)
 {
 	viewport_width = width;
 	viewport_height = height;

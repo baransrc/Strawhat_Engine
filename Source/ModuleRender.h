@@ -33,7 +33,7 @@ public:
 	update_status Update();
 	update_status PostUpdate();
 	bool CleanUp();
-	void WindowResized(unsigned int width, unsigned int height);
+	void HandleWindowResized(unsigned int width, unsigned int height);
 	void HandleFileDrop(const char* file_directory);
 
 	Entity* GetLoadedModel() const { return loaded_entity == nullptr ? default_entity : loaded_entity; };
