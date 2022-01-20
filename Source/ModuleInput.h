@@ -32,8 +32,10 @@ public:
 	float2 GetMouseDisplacement() const { return mouse_displacement; }
 	float2 GetMouseWheelDisplacement() const { return mouse_wheel_displacement; }
 	Event<const char*>* const GetFileDroppedEvent() const { return file_dropped_event; }
+	Event<unsigned int, unsigned int>* const GetWindowResizedEvent() const { return window_resized_event; }
 
 private:
+	Event<unsigned int, unsigned int>* window_resized_event;
 	Event<const char*>* file_dropped_event;
 	uint32_t window_width = SCREEN_WIDTH;
 	uint32_t window_height = SCREEN_HEIGHT;

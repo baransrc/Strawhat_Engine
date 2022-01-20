@@ -3,6 +3,7 @@
 #include "MATH_GEO_LIB/Geometry/Frustum.h"
 #include "MATH_GEO_LIB/Math/float4x4.h"
 #include "MATH_GEO_LIB/Math/float3.h"
+#include "Event.h"
 
 enum class vector_mode
 {
@@ -65,6 +66,9 @@ private:
 	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
 	bool should_recalculate_projection_matrix = false;
 
+	// Event Listeners:
+	EventListener<unsigned int, unsigned int> window_resized_event_listener;
+
 public:
 	ModuleCamera();
 	~ModuleCamera() override;
@@ -100,7 +104,7 @@ public:
 	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION, bool calculate_rotation = true);
 	void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
-	void WindowResized(unsigned int width, unsigned int height);
+	void HandleWindowResized(unsigned int width, unsigned int height);
 
 	void OnModelChanged();
 
