@@ -21,6 +21,7 @@ private:
 	Entity* default_entity;
 	Entity* loaded_entity;
 	EventListener<const char*> file_dropped_event_listener;
+	EventListener<unsigned int, unsigned int> window_resized_event_listener;
 	float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 public:
@@ -32,7 +33,7 @@ public:
 	update_status Update();
 	update_status PostUpdate();
 	bool CleanUp();
-	void WindowResized(unsigned width, unsigned height);
+	void WindowResized(unsigned int width, unsigned int height);
 	void HandleFileDrop(const char* file_directory);
 
 	Entity* GetLoadedModel() const { return loaded_entity == nullptr ? default_entity : loaded_entity; };

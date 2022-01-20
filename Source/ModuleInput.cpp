@@ -42,6 +42,9 @@ bool ModuleInput::Init()
     // Initialize file_dropped_event:
     file_dropped_event = new Event<const char*>();
 
+    // Initialize window_resized_event:
+    window_resized_event = new Event<unsigned int, unsigned int>();
+
 	return ret;
 }
 
@@ -120,8 +123,7 @@ update_status ModuleInput::PreUpdate()
                     window_width_inverse = 1.0f / (float)max(1, window_width);
                     window_height_inverse = 1.0f / (float)max(1, window_height);
 
-                    App->renderer->WindowResized(window_width, window_height);
-                    App->camera->WindowResized(window_width, window_height);
+                    window_resized_event->Invoke(window_width, window_height);
                 }
             }
             break;
@@ -202,6 +204,8 @@ bool ModuleInput::CleanUp()
     delete[] keyboard_state;
 
     delete file_dropped_event;
+
+    delete window_resized_event;
 
 	return true;
 }

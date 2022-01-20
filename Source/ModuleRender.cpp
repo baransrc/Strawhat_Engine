@@ -54,6 +54,11 @@ bool ModuleRender::Init()
 	// Subscribe to file drop event of ModuleInput:
 	App->input->GetFileDroppedEvent()->AddListener(&file_dropped_event_listener);
 
+	// Initialize window_resized_event_listener:
+	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleRender::WindowResized, this, std::placeholders::_1, std::placeholders::_2));
+	// Subscribe to window resized event of ModuleInput:
+	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
+
 	viewport_height = App->window->window_height;
 	viewport_width = App->window->window_width;
 
@@ -119,6 +124,13 @@ bool ModuleRender::CleanUp()
 	if (file_dropped_event != nullptr)
 	{
 		file_dropped_event->RemoveListener(&file_dropped_event_listener);
+	}
+	// TODO(baran): Move this into a private method.
+	// Unsubscribe from window resized if it's not null:
+	Event<unsigned int, unsigned int>* window_resized_event = App->input->GetWindowResizedEvent();
+	if (window_resized_event != nullptr)
+	{
+		window_resized_event->RemoveListener(&window_resized_event_listener);
 	}
 
 	delete default_entity;

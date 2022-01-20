@@ -3,6 +3,7 @@
 #include "MATH_GEO_LIB/Geometry/Frustum.h"
 #include "MATH_GEO_LIB/Math/float4x4.h"
 #include "MATH_GEO_LIB/Math/float3.h"
+#include "Event.h"
 
 enum class vector_mode
 {
@@ -64,6 +65,9 @@ private:
 
 	// Used as a flag to recalculate the projection matrix in the next PreUpdate:
 	bool should_recalculate_projection_matrix = false;
+
+	// Event Listeners:
+	EventListener<unsigned int, unsigned int> window_resized_event_listener;
 
 public:
 	ModuleCamera();

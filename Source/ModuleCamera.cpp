@@ -73,12 +73,25 @@ bool ModuleCamera::Init()
 	ComputeViewMatrix();
 
 	// No need to calculate projection matrix as it will be calculated in the PreUpdate method.
+
+	// Initialize window resized event lister:
+	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::WindowResized, this, std::placeholders::_1, std::placeholders::_2));
+	// Subscribe to window resized event of ModuleInput:
+	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
 	
 	return true;
 }
 
 bool ModuleCamera::CleanUp()
 {
+	// TODO(baran): Move this into a private method.
+	// Unsubscribe from window resized if it's not null:
+	Event<unsigned int, unsigned int>* window_resized_event = App->input->GetWindowResizedEvent();
+	if (window_resized_event != nullptr)
+	{
+		window_resized_event->RemoveListener(&window_resized_event_listener);
+	}
+
 	return true;
 }
 
