@@ -59,7 +59,7 @@ void main()
     if(theta > light.cutOff) // remember that we're working with angles as cosines instead of degrees so a '>' is used.
     {    
         // ambient
-        vec3 ambient = ambient_color * texture(input_texture, interpolated_texture_coordinate).rgb;
+        vec3 ambient = light.ambient * texture(input_texture, interpolated_texture_coordinate).rgb;
         
         // diffuse 
         vec3 norm = normalize(interpolated_colorNORMALS);
@@ -75,19 +75,19 @@ void main()
         
         // attenuation
         float distance    = length(light.position - fragment_position);
-        float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+        float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
 
-        ambient  *= attenuation; // remove attenuation from ambient, as otherwise at large distances the light would be darker inside than outside the spotlight due the ambient term in the else branche
-        diffuse   *= attenuation;
-        specular *= attenuation;   
+        //ambient  *= attenuation; // remove attenuation from ambient, as otherwise at large distances the light would be darker inside than outside the spotlight due the ambient term in the else branche
+        //diffuse   *= attenuation;
+        //specular *= attenuation;   
             
-        vec3 result = ambient + diffuse + specular;
+        vec3 result = ambient + diffuse /*+ specular*/;
         frag_color = vec4(result, 1.0);
     }
     else 
     {
         // else, use ambient light so scene isn't completely dark outside the spotlight.
         frag_color = vec4(light.ambient * texture(input_texture, interpolated_texture_coordinate).rgb, 1.0);
+        //frag_color = vec4((0.2, 0.2, 0.2) * texture(input_texture, interpolated_texture_coordinate).rgb, 1.0);
     }
-
 } 
