@@ -196,6 +196,7 @@
     <ClCompile Include="ComponentLight.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -771,6 +772,7 @@
     <ClInclude Include="ComponentLight.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentTransform.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">
