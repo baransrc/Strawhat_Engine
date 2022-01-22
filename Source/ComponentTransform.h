@@ -7,22 +7,18 @@
 class ComponentTransform : public Component
 {
 private:
-	math::float3 position;
-	math::float3 position_local;
-	math::float3 scale;
-	math::float3 scale_local;
-	math::float3 rotation_euler;
-	math::float3 rotation_euler_local;
-	math::Quat rotation;
-	math::Quat rotation_local;
-	math::float4x4 matrix;
-	math::float4x4 matrix_local;
-	math::float3 right;
-	math::float3 up;
-	math::float3 front;
-
-	bool should_calculate_matrix;
-	bool should_calculate_local_matrix;
+	math::float3	position;
+	math::float3	position_local;
+	math::float3	scale;
+	math::float3	scale_local;
+	math::float3	rotation_euler;
+	math::float3	rotation_euler_local;
+	math::Quat		rotation;
+	math::Quat		rotation_local;
+	math::float3	right;
+	math::float3	up;
+	math::float3	front;
+	math::float4x4	matrix;
 
 public:
 	ComponentTransform();
@@ -31,9 +27,9 @@ public:
 	void Initialize(Entity* new_owner) override;
 	void Update() override;
 	void DrawGizmo() override;
-
+	
 	component_type Type() const override;
-
+	
 	const math::float3& GetPosition() const;
 	const math::float3& GetScale() const;
 	const math::float3& GetEulerRotation() const;
@@ -43,11 +39,10 @@ public:
 	const math::Quat& GetRotation() const;
 	const math::Quat& GetLocalRotation() const;
 	const math::float4x4& GetMatrix() const;
-	const math::float4x4& GetLocalMatrix() const;
 	const math::float3& GetRight() const;
 	const math::float3& GetUp() const;
 	const math::float3& GetFront() const;
-
+	
 	void SetPosition(const math::float3& new_position);
 	void SetScale(const math::float3& new_scale);
 	void SetEulerRotation(const math::float3& new_rotation_euler);
@@ -61,9 +56,12 @@ protected:
 	void DrawInspectorContent() override;
 
 private: 
-	static void CalculateMatrixFrom(const math::float3& new_position, 
-									const math::float3& new_rotation_euler, 
-									const math::float3& new_scale);
-	void CalculateMatrix();
-	void CalculateLocalMatrix();
+	void CalculatePositionFromLocalPosition();
+	void CalculateLocalPositionFromPosition();
+	void CalculateRotationFromLocalRotation();
+	void CalculateLocalRotationFromRotation();
+	void CalculateScaleFromLocalScale();
+	void CalculateLocalScaleFromScale();
+	void CalculateMatrix(bool marked_as_dirty_by_parent);
+	void UpdateTransformOfHierarchy(bool marked_as_dirty_by_parent);
 };
