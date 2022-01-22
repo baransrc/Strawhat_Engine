@@ -1,5 +1,10 @@
 #include "ComponentTransform.h"
 #include "Entity.h"
+#include "MATH_GEO_LIB/Math/float3x3.h"
+
+#define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+#define DEG_TO_RAD (PI / 180.0)
+#define RAD_TO_DEG (180.0 / PI)
 
 ComponentTransform::ComponentTransform() :
 position(math::float3::zero),
@@ -8,8 +13,8 @@ scale(math::float3::one),
 scale_local(math::float3::one),
 rotation_euler(math::float3::zero),
 rotation_euler_local(math::float3::zero),
-rotation(math::Quat()),
-rotation_local(math::Quat()),
+rotation(math::Quat::identity),
+rotation_local(math::Quat::identity),
 matrix(math::float4x4::identity),
 right(math::float3::zero),
 up(math::float3::zero),
@@ -121,13 +126,21 @@ void ComponentTransform::SetScale(const math::float3& new_scale)
 
 void ComponentTransform::SetEulerRotation(const math::float3& new_rotation_euler)
 {
-	SetRotation(math::Quat::FromEulerXYZ(math::DegToRad(new_rotation_euler.x), math::DegToRad(new_rotation_euler.y), math::DegToRad(new_rotation_euler.z)));
+	math::float3 delta_eulers = (new_rotation_euler - rotation_euler).Mul(DEG_TO_RAD);
+	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
+
+	rotation = rotation * delta_rotation;
+	rotation_euler = new_rotation_euler;
+
+	CalculateLocalRotationFromRotation();
+
+	UpdateTransformOfHierarchy(false);
 }
 
 void ComponentTransform::SetRotation(const math::Quat& new_rotation)
 {
 	rotation = new_rotation;
-	rotation_euler = rotation.ToEulerXYZ().Mul(RadToDeg(1.0f));
+	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
 
 	CalculateLocalRotationFromRotation();
 
@@ -154,13 +167,15 @@ void ComponentTransform::SetLocalScale(const math::float3& new_scale_local)
 
 void ComponentTransform::SetLocalEulerRotation(const math::float3& new_rotation_euler_local)
 {
-	SetLocalRotation(
-		math::Quat::FromEulerXYZ(
-			math::DegToRad(new_rotation_euler_local.x), 
-			math::DegToRad(new_rotation_euler_local.y), 
-			math::DegToRad(new_rotation_euler_local.z)
-		)
-	);
+	math::float3 delta_eulers = (new_rotation_euler_local - rotation_euler_local).Mul(DEG_TO_RAD);
+	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
+	
+	rotation = rotation * delta_rotation;
+	rotation_local = rotation_local * delta_rotation;
+	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
+	rotation_euler_local = new_rotation_euler_local;
+	
+	UpdateTransformOfHierarchy(false);
 }
 
 void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
@@ -325,25 +340,29 @@ void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
 		CalculateScaleFromLocalScale();
 	}
 
-	math::float4x4 translation_matrix = math::float4x4::identity;
-	math::float4x4 rotation_matrix = math::float4x4::identity;
-	math::float4x4 scaling_matrix = math::float4x4::identity;
+	matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
 
-	// Setup the translation matrix:
-	translation_matrix[0][3] = -position.x;
-	translation_matrix[1][3] = -position.y;
-	translation_matrix[2][3] = -position.z;
+	//math::float4x4 translation_matrix = math::float4x4::identity;
+	//math::float4x4 rotation_matrix = math::float4x4::identity;
+	//math::float4x4 scaling_matrix = math::float4x4::identity;
 
-	// Setup the rotation matrix:
-	rotation_matrix = rotation * rotation_matrix;
+	//// Setup the translation matrix:
+	//translation_matrix[0][3] = -position.x;
+	//translation_matrix[1][3] = -position.y;
+	//translation_matrix[2][3] = -position.z;
 
-	// Setup the scaling matrix:
-	scaling_matrix[0][0] = scale.x;
-	scaling_matrix[1][1] = scale.y;
-	scaling_matrix[2][2] = scale.z;
+	//// Setup the rotation matrix:
+	//rotation_matrix = rotation * rotation_matrix;
 
-	// Calculate transform matrix:
-	matrix = rotation_matrix * translation_matrix * scaling_matrix;
+	//// Setup the scaling matrix:
+	//scaling_matrix[0][0] = scale.x;
+	//scaling_matrix[1][1] = scale.y;
+	//scaling_matrix[2][2] = scale.z;
+
+	//// Calculate transform matrix:
+	//matrix = rotation_matrix * translation_matrix * scaling_matrix;
+
+	math::float3x3 rotation_matrix = matrix.RotatePart();
 
 	// Set the front up and right:
 	front = -float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]);
