@@ -6,10 +6,12 @@
 #include "Event.h"
 
 class Component;
+class ComponentTransform;
 
 class Entity
 {
 private:
+	ComponentTransform* transform;
 	std::vector<Component*> components;
 	std::vector<Entity*> children;
 	Event<component_type>* components_changed;
@@ -38,7 +40,9 @@ public:
 	void RemoveComponent(Component* component);
 	Component* CreateComponent(component_type type) const;
 	Component* GetComponent(component_type type);
+	const std::vector<Entity*>& GetChildren() const;
 	std::vector<Component*> GetComponents(component_type type) const;
+	std::vector<Component*> GetComponentsInChildren(component_type type) const;
 	std::vector<Component*> GetComponentsIncludingChildren(component_type type) const;
 
 	const std::vector<Component*>& GetComponents() const;
@@ -58,6 +62,8 @@ public:
 
 	Event<component_type>* const GetComponentsChangedEvent() const;
 	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;
+
+	ComponentTransform* const Transform() const;
 
 private:
 	Component* FindComponentById(unsigned int id) const;

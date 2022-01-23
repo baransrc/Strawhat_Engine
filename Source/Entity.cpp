@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "DEAR_IMGUI/include/imgui.h"
 #include "Globals.h"
+#include "ComponentTransform.h"
 
 // This is for experiments on component addition and viewing for now. 
 // and will be deleted when ModuleSceneManager is added:
@@ -48,6 +49,14 @@ void Entity::Initialize(std::string new_name)
 
 	components_changed = new Event<component_type>();
 	components_changed_in_descendants = new Event<component_type>();
+
+	// Initialize and add transform component:
+	transform = new ComponentTransform();
+	transform->Initialize(this);
+	// NOTE: Initialize adds transform to components list of this entity.
+	// So, no additional need to delete it separately, as it gets deleted
+	// along with other components. Same goes with Update as well.
+
 }
 
 /// <summary>
@@ -205,6 +214,11 @@ Component* Entity::GetComponent(component_type type)
 	return nullptr;
 }
 
+const std::vector<Entity*>& Entity::GetChildren() const
+{
+	return children;
+}
+
 std::vector<Component*> Entity::GetComponents(component_type type) const
 {
 	std::vector<Component*> components_of_type;
@@ -229,6 +243,23 @@ std::vector<Component*> Entity::GetComponents(component_type type) const
 	}
 
 	return components_of_type;
+}
+
+std::vector<Component*> Entity::GetComponentsInChildren(component_type type) const
+{
+	std::vector<Component*> components_in_children;
+
+	for (Entity* child : children)
+	{
+		std::vector<Component*> components_in_child = child->GetComponents(type);
+
+		for (Component* component : components_in_child)
+		{
+			components_in_children.push_back(component);
+		}
+	}
+
+	return components_in_children;
 }
 
 std::vector<Component*> Entity::GetComponentsIncludingChildren(component_type type) const
@@ -500,6 +531,11 @@ Event<component_type>* const  Entity::GetComponentsChangedEvent() const
 Event<component_type>* const Entity::GetComponentsChangedInDescendantsEvent() const
 {
 	return components_changed_in_descendants;
+}
+
+ComponentTransform* const Entity::Transform() const
+{
+	return transform;
 }
 
 /// <summary>
