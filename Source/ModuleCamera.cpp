@@ -78,6 +78,13 @@ bool ModuleCamera::Init()
 	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
 	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
+
+	//// Use the shader:
+	//App->shader_program->Use();
+
+	//float3 position = GetPosition();
+	////Send camera position
+	//App->shader_program->SetUniformVariable("camera_position", position);
 	
 	return true;
 }
@@ -287,7 +294,7 @@ void ModuleCamera::OnModelChanged()
 
 	float new_far_plane_distance = frustum.FarPlaneDistance();
 
-	new_far_plane_distance = math::Max(size * 10, new_far_plane_distance);
+	new_far_plane_distance = math::Max(size * 10000, new_far_plane_distance);
 
 	SetFarPlaneDistance(new_far_plane_distance);
 
@@ -326,6 +333,10 @@ update_status ModuleCamera::PreUpdate()
 	App->shader_program->SetUniformVariable("model_matrix", model_matrix, true);
 	App->shader_program->SetUniformVariable("view_matrix", view_matrix, true);
 	App->shader_program->SetUniformVariable("projection_matrix", projection_matrix, true);
+
+	float3 position = GetPosition();
+	//Send camera position
+	App->shader_program->SetUniformVariable("camera_position", position);
 
 	return update_status::UPDATE_CONTINUE;
 }
