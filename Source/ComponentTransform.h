@@ -40,6 +40,7 @@ public:
 	const math::Quat& GetRotation() const;
 	const math::Quat& GetLocalRotation() const;
 	const math::float4x4& GetMatrix() const;
+	const math::float4x4 GetLocalMatrix() const;
 	const math::float3& GetRight() const;
 	const math::float3& GetUp() const;
 	const math::float3& GetFront() const;

@@ -42,6 +42,7 @@ public:
 	Component* GetComponent(component_type type);
 	const std::vector<Entity*>& GetChildren() const;
 	std::vector<Component*> GetComponents(component_type type) const;
+	std::vector<Component*> GetComponentsInChildren(component_type type) const;
 	std::vector<Component*> GetComponentsIncludingChildren(component_type type) const;
 
 	const std::vector<Component*>& GetComponents() const;

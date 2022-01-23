@@ -245,6 +245,23 @@ std::vector<Component*> Entity::GetComponents(component_type type) const
 	return components_of_type;
 }
 
+std::vector<Component*> Entity::GetComponentsInChildren(component_type type) const
+{
+	std::vector<Component*> components_in_children;
+
+	for (Entity* child : children)
+	{
+		std::vector<Component*> components_in_child = child->GetComponents(type);
+
+		for (Component* component : components_in_child)
+		{
+			components_in_children.push_back(component);
+		}
+	}
+
+	return components_in_children;
+}
+
 std::vector<Component*> Entity::GetComponentsIncludingChildren(component_type type) const
 {
 	std::vector<Component*> components_in_children = GetComponents(type);

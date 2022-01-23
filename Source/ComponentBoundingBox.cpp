@@ -62,18 +62,28 @@ void ComponentBoundingBox::Load()
 
     std::vector<Component*> mesh_components = owner->GetComponentsIncludingChildren(component_type::MESH);
 
+    ComponentMesh* mesh_component = (ComponentMesh*)owner->GetComponent(component_type::MESH);
+
     for (Component* mesh_component : mesh_components)
     {
         ComponentMesh* mesh = (ComponentMesh*)mesh_component;
         const math::AABB& mesh_aabb = mesh->GetAABB();
+        math::OBB local_obb;
 
-        aabb.Enclose(mesh_aabb);
+        local_obb.SetFrom(mesh_aabb);
+        local_obb.Scale(mesh->Owner()->Transform()->GetPosition(), mesh->Owner()->Transform()->GetScale());
+        local_obb.Translate(-mesh->Owner()->Transform()->GetPosition());
+        local_obb.Transform(mesh->Owner()->Transform()->GetRotation());
+
+        aabb.Enclose(local_obb);
     }
+
+    // NOTE: For now this is not a true obb, it's just an obb that acts like aabb,
+    // rotations are not truly captured to be more precise. Maybe using child bound
+    // ing boxes would give a better result.
 
     // Form OBB from temp aabb:
     obb.SetFrom(aabb);
-    // Transform obb according to the transform component of owner:
-    obb.Transform(owner->Transform()->GetMatrix());
 
     // Get Minimal enclosing sphere radius:
     const math::Sphere minimal_enclosing_sphere = obb.MinimalEnclosingSphere();
@@ -87,6 +97,7 @@ void ComponentBoundingBox::Update()
 
 void ComponentBoundingBox::DrawGizmo()
 {
+
     static const int order[8] = { 0, 1, 5, 4, 2, 3, 7, 6 };
     float3 vertices[8];
     for (int i = 0; i < 8; ++i)

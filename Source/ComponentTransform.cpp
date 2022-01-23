@@ -93,6 +93,11 @@ const math::float4x4& ComponentTransform::GetMatrix() const
 	return matrix;
 }
 
+const math::float4x4 ComponentTransform::GetLocalMatrix() const
+{
+	return math::float4x4::FromTRS(position_local, rotation_local, scale_local);
+}
+
 const math::float3& ComponentTransform::GetRight() const
 {
 	return right;
@@ -199,7 +204,7 @@ void ComponentTransform::DrawInspectorContent()
 	if (ImGui::DragFloat3("Local Position", position_local_editor.ptr(), 1.0f, -inf, inf)) {
 		SetLocalPosition(position_local_editor);
 	}
-	if (ImGui::DragFloat3("Local Rotation", rotation_local_editor.ptr(), 1.0f, -360.f, 360.f)) {
+	if (ImGui::DragFloat3("Local Rotation", rotation_local_editor.ptr(), 1.0f, 0.0f, 360.f)) {
 		SetLocalEulerRotation(rotation_local_editor);
 	}
 	if (ImGui::DragFloat3("Local Scale", scale_local_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
@@ -215,7 +220,7 @@ void ComponentTransform::DrawInspectorContent()
 	if (ImGui::DragFloat3("Position", position_editor.ptr(), 1.0f, -inf, inf)) {
 		SetPosition(position_editor);
 	}
-	if (ImGui::DragFloat3("Rotation", rotation_editor.ptr(), 1.0f, -360.f, 360.f)) {
+	if (ImGui::DragFloat3("Rotation", rotation_editor.ptr(), 1.0f, 0.0f, 360.f)) {
 		SetEulerRotation(rotation_editor);
 	}
 	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
@@ -342,29 +347,29 @@ void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
 		CalculateScaleFromLocalScale();
 	}
 
-	matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
+	//matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
 
-	//math::float4x4 translation_matrix = math::float4x4::identity;
-	//math::float4x4 rotation_matrix = math::float4x4::identity;
-	//math::float4x4 scaling_matrix = math::float4x4::identity;
+	math::float4x4 translation_matrix = math::float4x4::identity;
+	math::float4x4 rotation_matrix = math::float4x4::identity;
+	math::float4x4 scaling_matrix = math::float4x4::identity;
 
-	//// Setup the translation matrix:
-	//translation_matrix[0][3] = -position.x;
-	//translation_matrix[1][3] = -position.y;
-	//translation_matrix[2][3] = -position.z;
+	// Setup the translation matrix:
+	translation_matrix[0][3] = -position.x;
+	translation_matrix[1][3] = -position.y;
+	translation_matrix[2][3] = -position.z;
 
-	//// Setup the rotation matrix:
-	//rotation_matrix = rotation * rotation_matrix;
+	// Setup the rotation matrix:
+	rotation_matrix = rotation * rotation_matrix;
 
-	//// Setup the scaling matrix:
-	//scaling_matrix[0][0] = scale.x;
-	//scaling_matrix[1][1] = scale.y;
-	//scaling_matrix[2][2] = scale.z;
+	// Setup the scaling matrix:
+	scaling_matrix[0][0] = scale.x;
+	scaling_matrix[1][1] = scale.y;
+	scaling_matrix[2][2] = scale.z;
 
-	//// Calculate transform matrix:
-	//matrix = rotation_matrix * translation_matrix * scaling_matrix;
+	// Calculate transform matrix:
+	matrix = rotation_matrix * translation_matrix * scaling_matrix;
 
-	math::float3x3 rotation_matrix = matrix.RotatePart();
+	//math::float3x3 rotation_matrix = matrix.RotatePart();
 
 	// Set the front up and right:
 	front = -float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]);
@@ -380,7 +385,7 @@ void ComponentTransform::UpdateTransformOfHierarchy(bool marked_as_dirty_by_pare
 	// as this method calls ComponentTransform::UpdateTransformOfHierarchy
 	// recursively on children of the current Entity. Also please note that,
 	// this event must be invoked after new matrix is calculated.
-	owner->GetComponentsChangedEvent()->Invoke(Type());
+	owner->InvokeComponentsChangedEvents(Type());
 
 	const std::vector<Entity*>& owner_children = owner->GetChildren();
 
