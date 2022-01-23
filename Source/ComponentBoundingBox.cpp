@@ -60,20 +60,17 @@ void ComponentBoundingBox::Load()
     math::AABB aabb;
     aabb.SetNegativeInfinity();
 
-    std::vector<Component*> mesh_components = owner->GetComponentsIncludingChildren(component_type::MESH);
+    std::vector<ComponentMesh*> mesh_components = owner->GetComponentsIncludingChildren<ComponentMesh>();
 
-    ComponentMesh* mesh_component = (ComponentMesh*)owner->GetComponent(component_type::MESH);
-
-    for (Component* mesh_component : mesh_components)
+    for (ComponentMesh* mesh_component : mesh_components)
     {
-        ComponentMesh* mesh = (ComponentMesh*)mesh_component;
-        const math::AABB& mesh_aabb = mesh->GetAABB();
+        const math::AABB& mesh_aabb = mesh_component->GetAABB();
         math::OBB local_obb;
 
         local_obb.SetFrom(mesh_aabb);
-        local_obb.Scale(mesh->Owner()->Transform()->GetPosition(), mesh->Owner()->Transform()->GetScale());
-        local_obb.Translate(-mesh->Owner()->Transform()->GetPosition());
-        local_obb.Transform(mesh->Owner()->Transform()->GetRotation());
+        local_obb.Scale(math::float3::zero, mesh_component->Owner()->Transform()->GetScale());
+        local_obb.Translate(-mesh_component->Owner()->Transform()->GetPosition());
+        local_obb.Transform(mesh_component->Owner()->Transform()->GetRotation());
 
         aabb.Enclose(local_obb);
     }
@@ -97,7 +94,6 @@ void ComponentBoundingBox::Update()
 
 void ComponentBoundingBox::DrawGizmo()
 {
-
     static const int order[8] = { 0, 1, 5, 4, 2, 3, 7, 6 };
     float3 vertices[8];
     for (int i = 0; i < 8; ++i)

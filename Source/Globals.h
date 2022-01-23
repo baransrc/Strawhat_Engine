@@ -5,6 +5,8 @@
 #include "Console.h"
 #include "Time.h"
 
+
+#define TYPE_IF_DERIVED_CLASS(BASE, DERIVED, TYPE) std::enable_if_t<std::is_base_of<BASE, DERIVED>::value, TYPE>
 #define LOG(format, ...) log(__FILE__, __LINE__, format, __VA_ARGS__);
 
 void log(const char file[], int line, const char* format, ...);

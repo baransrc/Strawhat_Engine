@@ -278,7 +278,7 @@ void ModuleCamera::OnModelChanged()
 
 	// NOTE: This code assumes renderer will always return an Entity that is not 
 	// a nullptr.
-	ComponentBoundingBox* bounding_box = (ComponentBoundingBox*)(App->renderer->GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX));
+	ComponentBoundingBox* bounding_box = App->renderer->GetLoadedModel()->GetComponent<ComponentBoundingBox>();
 
 	if (bounding_box != nullptr)
 	{
@@ -651,7 +651,7 @@ void ModuleCamera::DetectFocus()
 		focus_on_model_changed = false;
 		
 		// Get Bounding Box component of the Entity:
-		ComponentBoundingBox* bounding_box = (ComponentBoundingBox*) App->renderer->GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX);
+		ComponentBoundingBox* bounding_box = App->renderer->GetLoadedModel()->GetComponent<ComponentBoundingBox>();
 		
 		// If Entity has no bounding box component attached to it, don't focus:
 		if (bounding_box == nullptr)

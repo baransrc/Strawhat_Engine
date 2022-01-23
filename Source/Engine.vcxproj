@@ -426,6 +426,7 @@
     <None Include="ASSIMP\include\assimp\SmoothingGroups.inl" />
     <None Include="ASSIMP\include\assimp\vector2.inl" />
     <None Include="ASSIMP\include\assimp\vector3.inl" />
+    <None Include="cpp.hint" />
     <None Include="MATH_GEO_LIB\Geometry\KDTree.inl" />
     <None Include="MATH_GEO_LIB\Geometry\QuadTree.inl" />
     <None Include="MATH_GEO_LIB\Math\float2.inl" />

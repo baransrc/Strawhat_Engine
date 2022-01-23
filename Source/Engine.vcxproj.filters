@@ -862,5 +862,6 @@
     <None Include="..\Game\Shaders\vertex.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
