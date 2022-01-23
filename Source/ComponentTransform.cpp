@@ -381,10 +381,7 @@ void ComponentTransform::UpdateTransformOfHierarchy(bool marked_as_dirty_by_pare
 {
 	CalculateMatrix(marked_as_dirty_by_parent);
 
-	// NOTE: Recursive version of this does not need to be called
-	// as this method calls ComponentTransform::UpdateTransformOfHierarchy
-	// recursively on children of the current Entity. Also please note that,
-	// this event must be invoked after new matrix is calculated.
+	// NOTE(Baran): This event must be invoked after new matrix is calculated.
 	owner->InvokeComponentsChangedEvents(Type());
 
 	const std::vector<Entity*>& owner_children = owner->GetChildren();
