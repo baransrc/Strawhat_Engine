@@ -52,6 +52,16 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 	{
 	case light_type::POINT:
 	{
+
+		// Make sure we are using the true shader before passing the arguments:
+		App->shader_program->Use();
+
+		// Pass position of the directional light
+		float3 aux_pos = App->camera->GetPosition();
+		App->shader_program->SetUniformVariable("light.position", position);
+		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
+		App->shader_program->SetUniformVariable("light.diffuse", color);
+
 		break;
 	}
 	case light_type::DIRECTIONAL:
@@ -110,6 +120,11 @@ void ComponentLight::Update()
 	{
 	case light_type::POINT:
 	{
+		// Pass position of the point light
+		App->shader_program->SetUniformVariable("light.position", position);
+		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
+		App->shader_program->SetUniformVariable("light.diffuse", color);
+
 		break;
 	}
 	case light_type::DIRECTIONAL:
@@ -118,8 +133,9 @@ void ComponentLight::Update()
 		//App->shader_program->Use();
 
 		// Pass position of the directional light
-		App->shader_program->SetUniformVariable("directional_light", position);
-		App->shader_program->SetUniformVariable("directional_color", color);
+		App->shader_program->SetUniformVariable("light.direction", position);
+		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
+		App->shader_program->SetUniformVariable("light.diffuse", color);
 
 		break;
 	}
