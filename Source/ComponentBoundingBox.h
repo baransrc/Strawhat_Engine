@@ -12,7 +12,7 @@ private:
 	math::OBB obb;
 	float minimal_enclosing_sphere_radius;
 	math::float3 center_position;
-	EventListener<component_type> reload_listener;
+	EventListener<component_type> component_changed_event_listener;
 
 public:
 	ComponentBoundingBox();
@@ -21,7 +21,7 @@ public:
 	component_type Type() const override;
 	void Initialize(Entity* new_owner) override;
 	void Load();
-	void Reload(component_type type);
+	void HandleComponentChanged(component_type type);
 	void Update() override;
 	void DrawGizmo() override;
 	const math::OBB& GetBoundingBox();

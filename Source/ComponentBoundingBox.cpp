@@ -1,5 +1,7 @@
 #include "ComponentBoundingBox.h"
 #include "ComponentMesh.h"
+#include "ComponentTransform.h"
+
 #include "Entity.h"
 
 #include "Application.h"
@@ -8,7 +10,6 @@
 #include "MATH_GEO_LIB/Geometry/AABB.h"
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
-
 
 ComponentBoundingBox::ComponentBoundingBox() : minimal_enclosing_sphere_radius(10.0f)
 {
@@ -19,8 +20,8 @@ ComponentBoundingBox::~ComponentBoundingBox()
 {
     if (owner != nullptr)
     {
-        owner->GetComponentsChangedEvent()->RemoveListener(&reload_listener);
-        owner->GetComponentsChangedInDescendantsEvent()->RemoveListener(&reload_listener);
+        owner->GetComponentsChangedEvent()->RemoveListener(&component_changed_event_listener);
+        owner->GetComponentsChangedInDescendantsEvent()->RemoveListener(&component_changed_event_listener);
     }
 }
 
@@ -35,10 +36,10 @@ void ComponentBoundingBox::Initialize(Entity* new_owner)
 
     Load();
     
-    reload_listener = EventListener<component_type>(std::bind(&ComponentBoundingBox::Reload, this, std::placeholders::_1));
-
-    owner->GetComponentsChangedEvent()->AddListener(&reload_listener);
-    owner->GetComponentsChangedInDescendantsEvent()->AddListener(&reload_listener);
+    component_changed_event_listener = EventListener<component_type>(std::bind(&ComponentBoundingBox::HandleComponentChanged, this, std::placeholders::_1));
+    
+    owner->GetComponentsChangedEvent()->AddListener(&component_changed_event_listener);
+    owner->GetComponentsChangedInDescendantsEvent()->AddListener(&component_changed_event_listener);
 }
 
 void ComponentBoundingBox::Load()
@@ -64,13 +65,15 @@ void ComponentBoundingBox::Load()
     for (Component* mesh_component : mesh_components)
     {
         ComponentMesh* mesh = (ComponentMesh*)mesh_component;
-        const math::AABB* mesh_aabb = mesh->GetAABB();
+        const math::AABB& mesh_aabb = mesh->GetAABB();
 
-        aabb.Enclose(*mesh_aabb);
+        aabb.Enclose(mesh_aabb);
     }
 
     // Form OBB from temp aabb:
     obb.SetFrom(aabb);
+    // Transform obb according to the transform component of owner:
+    obb.Transform(owner->Transform()->GetMatrix());
 
     // Get Minimal enclosing sphere radius:
     const math::Sphere minimal_enclosing_sphere = obb.MinimalEnclosingSphere();
@@ -103,15 +106,19 @@ math::float3 ComponentBoundingBox::GetCenterPosition()
 }
 
 
-void ComponentBoundingBox::Reload(component_type type)
+void ComponentBoundingBox::HandleComponentChanged(component_type type)
 {
-    // NOTE: If any component of type other than MESH would change
+    // NOTE: If any component of type other than MESH or TRANSFORM would change
     // the size of the BOUNDING_BOX, make this function aware of them as
     // well.
 
-    if (type != component_type::MESH)
+    switch (type)
     {
-        return;
+        case component_type::TRANSFORM:
+        case component_type::MESH:
+            break;
+        default:
+            return;
     }
 
     Load();
