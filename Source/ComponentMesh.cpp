@@ -1,4 +1,5 @@
 #include "ComponentMesh.h"
+#include "ComponentMaterial.h"
 
 #include "Application.h"
 #include "ModuleShaderProgram.h"
@@ -44,13 +45,13 @@ void ComponentMesh::Initialize(Entity* new_owner)
 
 void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const unsigned int* new_texture_ids, size_t new_number_of_vertices, size_t new_number_of_indices, size_t new_number_of_triangles, size_t new_number_of_texture_ids)
 {
-	// TODO: Get this model_textures stuff from somewhere, do not hold this for each mesh component.
-	number_of_texture_ids = new_number_of_texture_ids;
-	texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * number_of_texture_ids);
-	for (size_t i = 0; i < number_of_texture_ids; ++i)
-	{
-		texture_ids[0] = new_texture_ids[0];
-	}
+	////TODO: Get this model_textures stuff from somewhere, do not hold this for each mesh component.
+	//number_of_texture_ids = new_number_of_texture_ids;
+	//texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * number_of_texture_ids);
+	//for (size_t i = 0; i < number_of_texture_ids; ++i)
+	//{
+	//	texture_ids[i] = new_texture_ids[i];
+	//}
 
 	// If Load was called before this call, clear 
 	// all the previous mesh data and load afterwards:
@@ -125,14 +126,29 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 
 void ComponentMesh::Update()
 {
-	// Use the shader:
-	App->shader_program->Use();
-	// Activate Texture Unit 0:
-	glActiveTexture(GL_TEXTURE0);
-	// Bind Texture Unit 0:
-	glBindTexture(GL_TEXTURE_2D, texture_ids[0]); // For now we are interested in only diffuse texture
-	// Set Texture Parameter in shader:
-	App->shader_program->SetUniformVariable("input_texture", 0);
+	//// Use the shader:
+	//App->shader_program->Use();
+	//// Activate Texture Unit 0:
+	//glActiveTexture(GL_TEXTURE0);
+	//// Bind Texture Unit 0:
+	//glBindTexture(GL_TEXTURE_2D, texture_ids[0]); // For now we are interested in only diffuse texture
+	//// Set Texture Parameter in shader:
+	//App->shader_program->SetUniformVariable("material.diffuse", texture_ids[0]-1);
+
+	ComponentMaterial* material = (ComponentMaterial*) owner->GetComponent(component_type::MATERIAL);
+
+	if (material != nullptr)
+	{
+		material->Use();
+	}
+	else 
+	{
+		//// Use the shader:
+		//App->shader_program->Use();
+		////Set default color material
+		//App->shader_program->SetUniformVariable("material.color", float4(1.0, 0.5, 0.2, 1.0));
+
+	}
 
 	// Bind VAO:
 	glBindVertexArray(vertex_array_object);
