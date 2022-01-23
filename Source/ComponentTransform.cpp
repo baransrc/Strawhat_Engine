@@ -1,5 +1,6 @@
 #include "ComponentTransform.h"
 #include "Entity.h"
+
 #include "MATH_GEO_LIB/Math/float3x3.h"
 
 #define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
@@ -20,6 +21,7 @@ right(math::float3::zero),
 up(math::float3::zero),
 front(math::float3::zero)
 {
+
 }
 
 ComponentTransform::~ComponentTransform()
@@ -181,7 +183,7 @@ void ComponentTransform::SetLocalEulerRotation(const math::float3& new_rotation_
 void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
 {
 	rotation_local = new_rotation_local;
-	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RadToDeg(1.0f));
+	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
 
 	CalculateRotationFromLocalRotation();
 
@@ -271,7 +273,7 @@ void ComponentTransform::CalculateRotationFromLocalRotation()
 		rotation = parent_rotation.Mul(rotation_local);
 	}
 
-	rotation_euler = rotation.ToEulerXYZ().Mul(RadToDeg(1.0f));
+	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
 }
 
 void ComponentTransform::CalculateLocalRotationFromRotation()
@@ -288,7 +290,7 @@ void ComponentTransform::CalculateLocalRotationFromRotation()
 		rotation_local = parent_rotation_inverse.Mul(rotation);
 	}
 
-	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RadToDeg(1.0f));
+	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
 }
 
 void ComponentTransform::CalculateScaleFromLocalScale()
@@ -374,7 +376,11 @@ void ComponentTransform::UpdateTransformOfHierarchy(bool marked_as_dirty_by_pare
 {
 	CalculateMatrix(marked_as_dirty_by_parent);
 
-	// TODO: Put transform_changed_event here.
+	// NOTE: Recursive version of this does not need to be called
+	// as this method calls ComponentTransform::UpdateTransformOfHierarchy
+	// recursively on children of the current Entity. Also please note that,
+	// this event must be invoked after new matrix is calculated.
+	owner->GetComponentsChangedEvent()->Invoke(Type());
 
 	const std::vector<Entity*>& owner_children = owner->GetChildren();
 
