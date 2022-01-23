@@ -192,6 +192,11 @@ namespace ModelImporter
 			//	}
 			//}
 
+			// Deallocate resources:
+			free(diffuse);
+			free(specular);
+			free(occlusion);
+
 			return texture_ids;
 		}
 
@@ -377,6 +382,7 @@ namespace ModelImporter
 		free(model_name);
 		free(texture_ids);
 		free(path_to_parent_directory);
+		free(name_of_file);
 
 		return loaded_model;
 	}

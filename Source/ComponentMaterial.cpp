@@ -114,6 +114,8 @@ void ComponentMaterial::Use()
 void ComponentMaterial::Reset()
 {
 	is_currently_loaded = false;
+
+	free(texture_ids);
 }
 
 
