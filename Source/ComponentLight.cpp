@@ -60,8 +60,10 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 		App->shader_program->Use();
 
 		// Pass position of the directional light
-		App->shader_program->SetUniformVariable("directional_light", position);
-		App->shader_program->SetUniformVariable("directional_color", color);
+		float3 aux_pos = App->camera->GetPosition();
+		App->shader_program->SetUniformVariable("light.direction", position);
+		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
+		App->shader_program->SetUniformVariable("light.diffuse", color);
 
 		break;
 	}
