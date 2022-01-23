@@ -49,7 +49,8 @@ public:
 	size_t GetNumberOfVertices() const { return number_of_vertices; };
 	size_t GetNumberOfIndices() const { return number_of_indices; };
 	size_t GetNumberOfTriangles() const { return number_of_triangles; };
-	const math::AABB* GetAABB() const { return &bounding_box; };
+	const math::AABB& GetAABB() const { return bounding_box; };
+
 
 protected:
 	void DrawInspectorContent() override;

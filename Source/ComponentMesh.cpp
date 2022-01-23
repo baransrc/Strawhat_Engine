@@ -162,7 +162,6 @@ void ComponentMesh::Reset()
 
 void ComponentMesh::DrawGizmo()
 {
-	App->debug_draw->DrawCuboid(bounding_box.ToPolyhedron().VertexArrayPtr(), math::float3(1.0f, 0.0f, 0.0f));
 }
 
 void ComponentMesh::DrawInspectorContent()
