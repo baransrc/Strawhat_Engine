@@ -87,7 +87,14 @@ void ComponentBoundingBox::Update()
 
 void ComponentBoundingBox::DrawGizmo()
 {
-    App->debug_draw->DrawCuboid(obb.ToPolyhedron().VertexArrayPtr(), math::float3(0.0f, 1.0f, 0.0f));
+    static const int order[8] = { 0, 1, 5, 4, 2, 3, 7, 6 };
+    float3 vertices[8];
+    for (int i = 0; i < 8; ++i)
+    {
+        vertices[i] = obb.CornerPoint(order[i]);
+    }
+        
+    App->debug_draw->DrawCuboid(vertices, math::float3(0.0f, 1.0f, 0.0f));
 }
 
 const math::OBB& ComponentBoundingBox::GetBoundingBox()
