@@ -26,8 +26,8 @@ bool ModuleShaderProgram::Init()
     util::ReadFile(fragment_shader_path, &fragment_shader_buffer);
 
     // Log loaded source codes and file paths to the console:
-    LOG("\nLoaded Vertex Shader (%s):\n------\n%s\n------\n", vertex_shader_path, vertex_shader_buffer);
-    LOG("\nLoaded Fragment Shader (%s):\n------\n%s\n------\n", fragment_shader_path, fragment_shader_buffer);
+    //LOG("\nLoaded Vertex Shader (%s):\n------\n%s\n------\n", vertex_shader_path, vertex_shader_buffer);
+    //LOG("\nLoaded Fragment Shader (%s):\n------\n%s\n------\n", fragment_shader_path, fragment_shader_buffer);
 
     // Release memory occupied by file path buffers as they are not needed anymore:
     free(vertex_shader_path);
@@ -156,6 +156,11 @@ void ModuleShaderProgram::SetUniformVariable(const char* name, int value) const
 }
 
 void ModuleShaderProgram::SetUniformVariable(const char* name, const float3& value) const
+{
+    glUniform3fv(glGetUniformLocation(program_id, name), 1, value.ptr());
+}
+
+void ModuleShaderProgram::SetUniformVariable(const char* name, const float4& value) const
 {
     glUniform3fv(glGetUniformLocation(program_id, name), 1, value.ptr());
 }
