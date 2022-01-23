@@ -196,6 +196,9 @@
     <ClCompile Include="ComponentLight.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentTransform.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
     <ClCompile Include="ComponentMaterial.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -772,6 +775,9 @@
       <Filter>Libraries\Optick</Filter>
     </ClInclude>
     <ClInclude Include="ComponentLight.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentTransform.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="ComponentMaterial.h">

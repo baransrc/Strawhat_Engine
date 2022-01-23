@@ -1,4 +1,6 @@
 #include "ComponentMesh.h"
+#include "ComponentTransform.h"
+#include "Entity.h"
 #include "ComponentMaterial.h"
 
 #include "Application.h"
@@ -6,10 +8,8 @@
 #include "ModuleDebugDraw.h"
 
 #include "GLEW/include/GL/glew.h"
-
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 
-#include "Entity.h"
 
 ComponentMesh::ComponentMesh() : Component(),
 								 vertices(nullptr),
@@ -127,7 +127,7 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 void ComponentMesh::Update()
 {
 	//// Use the shader:
-	//App->shader_program->Use();
+	
 	//// Activate Texture Unit 0:
 	//glActiveTexture(GL_TEXTURE0);
 	//// Bind Texture Unit 0:
@@ -139,12 +139,17 @@ void ComponentMesh::Update()
 
 	if (material != nullptr)
 	{
+		App->shader_program->Use();
+		App->shader_program->SetUniformVariable("model_matrix", owner->Transform()->GetMatrix(), true);
+
 		material->Use();
 	}
 	else 
 	{
 		//// Use the shader:
-		//App->shader_program->Use();
+		App->shader_program->Use();
+		App->shader_program->SetUniformVariable("model_matrix", owner->Transform()->GetMatrix(), true);
+
 		////Set default color material
 		//App->shader_program->SetUniformVariable("material.color", float4(1.0, 0.5, 0.2, 1.0));
 
@@ -176,7 +181,6 @@ void ComponentMesh::Reset()
 
 void ComponentMesh::DrawGizmo()
 {
-	App->debug_draw->DrawCuboid(bounding_box.ToPolyhedron().VertexArrayPtr(), math::float3(1.0f, 0.0f, 0.0f));
 }
 
 void ComponentMesh::DrawInspectorContent()
