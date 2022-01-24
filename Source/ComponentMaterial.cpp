@@ -41,7 +41,7 @@ void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_num
 	for (size_t i = 0; i < number_of_texture_ids; ++i)
 	{
 		texture_ids[i] = new_texture_ids[i];
-		//LOG("Texture %d id %d", i, texture_ids[i]);
+		LOG("Texture %d id %d", i, texture_ids[i]);
 	}
 
 	// Use the shader:
@@ -67,12 +67,12 @@ void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_num
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
 
-	// Activate Texture Unit 3:
-	glActiveTexture(GL_TEXTURE3);
-	// Bind Texture Unit 3:
-	glBindTexture(GL_TEXTURE_2D, texture_ids[3]); // NormalMap texture
-	// Set Texture Parameter in shader:
-	App->shader_program->SetUniformVariable("material.normal", 3);
+	//// Activate Texture Unit 3:
+	//glActiveTexture(GL_TEXTURE3);
+	//// Bind Texture Unit 3:
+	//glBindTexture(GL_TEXTURE_2D, texture_ids[3]); // NormalMap texture
+	//// Set Texture Parameter in shader:
+	//App->shader_program->SetUniformVariable("material.normal", 3);
 
 	// Set as currently loaded:
 	is_currently_loaded = true;
@@ -121,4 +121,7 @@ void ComponentMaterial::Reset()
 
 void ComponentMaterial::DrawInspectorContent()
 {
+	ImGui::Image((void*)(intptr_t)texture_ids[0], ImVec2(150, 150));
+	ImGui::Image((void*)(intptr_t)texture_ids[1], ImVec2(150, 150));
+	ImGui::Image((void*)(intptr_t)texture_ids[2], ImVec2(150, 150));
 }
