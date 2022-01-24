@@ -616,6 +616,9 @@ update_status  ModuleDebugDraw::Update()
 
     Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); // TODO: Get screen width and height, or camera render width and height?
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -637,5 +640,8 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
 {
     dd::box(points, color);
 
-    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); 
+    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
