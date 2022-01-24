@@ -1,5 +1,8 @@
 #include "ComponentLight.h"
 
+#include "ComponentTransform.h"
+#include "Entity.h"
+
 #include "Application.h"
 #include "ModuleShaderProgram.h"
 #include "ModuleCamera.h"
@@ -36,8 +39,10 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 {
 	type = new_type;
 	position = new_position;
+	owner->Transform()->SetPosition(position);
 	//rotation = new_rotation;
 	scale = new_scale;
+	//owner->Transform()->SetScale(scale);
 	color = new_color;
 
 	// If Load was called before this call, clear 
@@ -57,8 +62,8 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 		App->shader_program->Use();
 
 		// Pass position of the directional light
-		float3 aux_pos = App->camera->GetPosition();
-		App->shader_program->SetUniformVariable("light.position", position);
+		float3 aux_pos = owner->Transform()->GetPosition();
+		App->shader_program->SetUniformVariable("light.position", aux_pos);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
 
@@ -70,8 +75,8 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 		App->shader_program->Use();
 
 		// Pass position of the directional light
-		float3 aux_pos = App->camera->GetPosition();
-		App->shader_program->SetUniformVariable("light.direction", position);
+		float3 aux_pos = owner->Transform()->GetFront();
+		App->shader_program->SetUniformVariable("light.direction", aux_pos);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
 
@@ -85,10 +90,7 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 		// Pass position of the directional light
 
 		float3 aux_pos = App->camera->GetPosition();
-		LOG("Output camera getPosition: %f, %f, %f\n", aux_pos.x, aux_pos.y, aux_pos.z);
 		App->shader_program->SetUniformVariable("light.position", aux_pos);
-		LOG("Output camera getPosition: %f, %f, %f\n", App->camera->GetPosition().x, App->camera->GetPosition().y, App->camera->GetPosition().z);
-		LOG("Output camera getFront: %f, %f, %f\n", App->camera->GetFront().x, App->camera->GetFront().y, App->camera->GetFront().z);
 		float3 aux_front = App->camera->GetFront();
 		App->shader_program->SetUniformVariable("light.direction", aux_front);
 		float aux_angle = math::Cos(math::DegToRad(12.5f));
@@ -121,7 +123,8 @@ void ComponentLight::Update()
 	case light_type::POINT:
 	{
 		// Pass position of the point light
-		App->shader_program->SetUniformVariable("light.position", position);
+		float3 aux_pos = owner->Transform()->GetPosition();
+		App->shader_program->SetUniformVariable("light.position", aux_pos);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
 
@@ -133,7 +136,8 @@ void ComponentLight::Update()
 		//App->shader_program->Use();
 
 		// Pass position of the directional light
-		App->shader_program->SetUniformVariable("light.direction", position);
+		float3 aux_pos = owner->Transform()->GetFront();
+		App->shader_program->SetUniformVariable("light.direction", aux_pos);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
 
@@ -145,7 +149,7 @@ void ComponentLight::Update()
 		//App->shader_program->Use();
 
 		// Pass position of the directional light
-		App->shader_program->SetUniformVariable("light.position", App->camera->GetPosition());
+		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
 		App->shader_program->SetUniformVariable("light.direction", App->camera->GetFront());
 		App->shader_program->SetUniformVariable("light.cutOff", math::Cos(math::DegToRad(12.5f)));
 		App->shader_program->SetUniformVariable("light.ambient", (0.2, 0.2, 0.2));
@@ -168,14 +172,6 @@ void ComponentLight::Update()
 void ComponentLight::Reset()
 {
 	is_currently_loaded = false;
-
-	/*free(indices);
-	free(vertices);
-	free(texture_ids);
-
-	indices = nullptr;
-	vertices = nullptr;*/
-
 }
 
 void ComponentLight::DrawGizmo()
@@ -185,4 +181,17 @@ void ComponentLight::DrawGizmo()
 
 void ComponentLight::DrawInspectorContent()
 {
+	ImGui::Text("Type:");
+	if (ImGui::BeginCombo("", component_light_type_to_string(type)))
+	{
+
+		if (ImGui::Selectable("Point"))
+			type = light_type::POINT;
+		if (ImGui::Selectable("Directional"))
+			type = light_type::DIRECTIONAL;
+		if (ImGui::Selectable("Spot"))
+			type = light_type::SPOT;
+
+		ImGui::EndCombo();
+	}
 }
