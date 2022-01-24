@@ -195,6 +195,34 @@ void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
 	UpdateTransformOfHierarchy(false);
 }
 
+void ComponentTransform::LookAt(const math::float3& world_up, const math::float3& direction)
+{
+	math::float3 right_temp = (world_up.Cross(direction)).Normalized();
+	math::float3 up_temp = (direction.Cross(right_temp)).Normalized();
+	//math::float3 rotation = math::float3(acos(direction.x), acos(direction.y), acos(direction.z)) * RAD_TO_DEG;
+
+	// Setup the rotation matrix:
+	math::float3x3 rotation_matrix = math::float3x3::identity;
+
+	// Set direction/-front part:
+	rotation_matrix[2][0] = direction.x;
+	rotation_matrix[2][1] = direction.y;
+	rotation_matrix[2][2] = direction.z;
+
+	// Set up part:
+	rotation_matrix[1][0] = up_temp.x;
+	rotation_matrix[1][1] = up_temp.y;
+	rotation_matrix[1][2] = up_temp.z;
+
+	// Set right part:
+	rotation_matrix[0][0] = right_temp.x;
+	rotation_matrix[0][1] = right_temp.y;
+	rotation_matrix[0][2] = right_temp.z;
+
+	// Set Quaternion from rotation:
+	SetRotation(math::Quat(rotation_matrix));
+}
+
 void ComponentTransform::DrawInspectorContent()
 {
 	math::float3 position_local_editor = position_local;
@@ -347,16 +375,16 @@ void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
 		CalculateScaleFromLocalScale();
 	}
 
-	//matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
+	matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
 
 	math::float4x4 translation_matrix = math::float4x4::identity;
 	math::float4x4 rotation_matrix = math::float4x4::identity;
 	math::float4x4 scaling_matrix = math::float4x4::identity;
 
 	// Setup the translation matrix:
-	translation_matrix[0][3] = -position.x;
-	translation_matrix[1][3] = -position.y;
-	translation_matrix[2][3] = -position.z;
+	translation_matrix[0][3] = position.x;
+	translation_matrix[1][3] = position.y;
+	translation_matrix[2][3] = position.z;
 
 	// Setup the rotation matrix:
 	rotation_matrix = rotation * rotation_matrix;
@@ -367,14 +395,12 @@ void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
 	scaling_matrix[2][2] = scale.z;
 
 	// Calculate transform matrix:
-	matrix = rotation_matrix * translation_matrix * scaling_matrix;
-
-	//math::float3x3 rotation_matrix = matrix.RotatePart();
+	matrix = translation_matrix * rotation_matrix * scaling_matrix;
 
 	// Set the front up and right:
-	front = -float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]);
-	up = float3(rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2]);
-	right = float3(rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2]);
+	front = -float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]).Normalized();
+	up = float3(rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2]).Normalized();
+	right = float3(rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2]).Normalized();
 }
 
 void ComponentTransform::UpdateTransformOfHierarchy(bool marked_as_dirty_by_parent)
