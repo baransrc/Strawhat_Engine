@@ -4,6 +4,7 @@
 #include "Module.h"
 
 #include "Math/float4x4.h"
+#include <WinUser.h>
 
 class DDRenderInterfaceCoreGL;
 class Camera;
@@ -24,6 +25,7 @@ public:
     void            Draw(const float4x4& view, const float4x4& proj, unsigned width, unsigned height);
 
     void DrawCuboid(vec* points, vec color);
+    void DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size);
 private:
 
     static DDRenderInterfaceCoreGL* implementation;

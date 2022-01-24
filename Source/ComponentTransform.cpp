@@ -1,5 +1,7 @@
 #include "ComponentTransform.h"
 #include "Entity.h"
+#include "ModuleDebugDraw.h"
+#include "Application.h"
 
 #include "MATH_GEO_LIB/Math/float3x3.h"
 
@@ -37,10 +39,12 @@ void ComponentTransform::Initialize(Entity* new_owner)
 
 void ComponentTransform::Update()
 {
+	
 }
 
 void ComponentTransform::DrawGizmo()
 {
+	App->debug_draw->DrawArrow(position, position + 5.0f * front, float3(1.0f, 1.0f, 0.0f), 0.1f);
 }
 
 component_type ComponentTransform::Type() const
@@ -375,7 +379,7 @@ void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
 		CalculateScaleFromLocalScale();
 	}
 
-	matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
+	//matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
 
 	math::float4x4 translation_matrix = math::float4x4::identity;
 	math::float4x4 rotation_matrix = math::float4x4::identity;
@@ -401,6 +405,8 @@ void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
 	front = -float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]).Normalized();
 	up = float3(rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2]).Normalized();
 	right = float3(rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2]).Normalized();
+
+	LOG("%s: front: %f, %f, %f rotation: %f, %f, %f", owner->Name().c_str(), front.x, front.y, front.z, rotation_euler.x, rotation_euler.y, rotation_euler.z);
 }
 
 void ComponentTransform::UpdateTransformOfHierarchy(bool marked_as_dirty_by_parent)
