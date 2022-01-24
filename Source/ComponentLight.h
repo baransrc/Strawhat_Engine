@@ -52,3 +52,26 @@ protected:
 	void DrawInspectorContent() override;
 };
 
+inline const char* component_light_type_to_string(light_type type)
+{
+	switch (type)
+	{
+	case light_type::SPOT:
+	{
+		return "Spot";
+	}
+	case light_type::DIRECTIONAL:
+	{
+		return "Directrional";
+	}
+	case light_type::POINT:
+	{
+		return "Point";
+	}
+	default:
+	{
+		return "Refer to ComponentLight.h and add this component to the function.";
+	}
+	}
+}
+
