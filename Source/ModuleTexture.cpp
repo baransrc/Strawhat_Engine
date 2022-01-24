@@ -128,6 +128,11 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
     // Convert every color component into unsigned byte:
     ilConvertImage(is_rgba ? IL_RGBA : IL_RGB, IL_UNSIGNED_BYTE);
 
+    char* tif = util::ConcatCStrings("", file_name);
+    util::SubstrBeforeCharFromEnd(&tif, '.');
+    if(tif[0] == 't' && tif[1] == 'i'&& tif[2] == 'f')
+        iluFlipImage();
+
     //iluRotate(180.0f);
 
     // Generate texture id:
@@ -152,11 +157,13 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
     (
         GL_TEXTURE_2D,                 // Target texture
         0,                             // Level of detail number
+        //GL_RGB,                      // For RenderDoc testing
         ilGetInteger(IL_IMAGE_BPP),    // Number of color components in the texture, il defines it as bytes per pixel
         ilGetInteger(IL_IMAGE_WIDTH),  // Width of texture image
         ilGetInteger(IL_IMAGE_HEIGHT), // Height of texture image
         0,                             // Border of texture image, in docs of Khronos, it says this must be zero
         ilGetInteger(IL_IMAGE_FORMAT), // Format of the image 
+        //GL_RGB,                      // For RenderDoc testing
         GL_UNSIGNED_BYTE,              // Data type of pixel data
         ilGetData()                    // Pointer to the image data in memory
     );
@@ -167,6 +174,8 @@ GLuint ModuleTexture::LoadTexture(const char* file_name,
     // Since image data is already copied to gpu as texture data, 
     // release the memory used by image data:
     ilDeleteImages(1, &image_id);
+
+    free(tif);
     
     return texture_id;
 }
