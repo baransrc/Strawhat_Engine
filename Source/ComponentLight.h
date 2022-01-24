@@ -21,6 +21,8 @@ private:
 	//Quat rotation;
 	float3 scale;
 
+	float shininess;
+
 	float3 color;
 
 	bool is_currently_loaded;

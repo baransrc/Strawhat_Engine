@@ -14,6 +14,7 @@ ComponentLight::ComponentLight() : Component(),
 												position(0,0,0),
 												//rotation(0,0,0,0),
 												scale(1,1,1),
+												shininess(0),
 												color(1,1,1),
 												is_currently_loaded(false)
 
@@ -44,6 +45,8 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 	scale = new_scale;
 	//owner->Transform()->SetScale(scale);
 	color = new_color;
+
+	shininess = 0.0f;
 
 	// If Load was called before this call, clear 
 	// all the previous mesh data and load afterwards:
@@ -79,6 +82,7 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 		App->shader_program->SetUniformVariable("light.direction", aux_pos);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
+		App->shader_program->SetUniformVariable("shininess", shininess);
 
 		break;
 	}
@@ -194,4 +198,9 @@ void ComponentLight::DrawInspectorContent()
 
 		ImGui::EndCombo();
 	}
+
+	float shiny = shininess;
+
+	if (ImGui::DragFloat("Shininess", &shiny, 0.1f, -inf, inf))
+		shininess = shiny;
 }
