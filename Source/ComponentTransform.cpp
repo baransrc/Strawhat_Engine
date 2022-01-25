@@ -4,6 +4,7 @@
 #include "Application.h"
 
 #include "MATH_GEO_LIB/Math/float3x3.h"
+#include "MATH_GEO_LIB/Math/TransformOps.h"
 
 #define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
 #define DEG_TO_RAD (PI / 180.0)
@@ -19,6 +20,7 @@ rotation_euler_local(math::float3::zero),
 rotation(math::Quat::identity),
 rotation_local(math::Quat::identity),
 matrix(math::float4x4::identity),
+matrix_local(math::float4x4::identity),
 right(math::float3::zero),
 up(math::float3::zero),
 front(math::float3::zero)
@@ -101,7 +103,7 @@ const math::float4x4& ComponentTransform::GetMatrix() const
 
 const math::float4x4 ComponentTransform::GetLocalMatrix() const
 {
-	return math::float4x4::FromTRS(position_local, rotation_local, scale_local);
+	return matrix_local;
 }
 
 const math::float3& ComponentTransform::GetRight() const
@@ -122,42 +124,31 @@ const math::float3& ComponentTransform::GetFront() const
 void ComponentTransform::SetPosition(const math::float3& new_position)
 {
 	position = new_position;
+	matrix.SetTranslatePart(position);
 
-	CalculateLocalPositionFromPosition();
-
-	UpdateTransformOfHierarchy(false);
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::SetScale(const math::float3& new_scale)
 {
 	scale = new_scale;
+	matrix.RemoveScale();
+	matrix.Scale(scale);
 
-	CalculateLocalScaleFromScale();
-
-	UpdateTransformOfHierarchy(false);
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::SetEulerRotation(const math::float3& new_rotation_euler)
 {
-	math::float3 delta_eulers = (new_rotation_euler - rotation_euler).Mul(DEG_TO_RAD);
-	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
+	math::float3 delta = (new_rotation_euler - rotation_euler).Abs() * DEG_TO_RAD;
+	math::Quat rotation_amount = math::Quat::FromEulerXYZ(delta.x, delta.y, delta.z);
 
+	rotation = rotation_amount * (rotation);
 	rotation_euler = new_rotation_euler;
-	rotation = delta_rotation.Mul(rotation).Normalized();
-	rotation_local = delta_rotation.Mul(rotation_local).Normalized();
-	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
 
-	UpdateTransformOfHierarchy(false);
+	matrix.SetRotatePart(rotation);
 
-	/*math::float3 delta_eulers = (new_rotation_euler_local - rotation_euler_local).Mul(DEG_TO_RAD);
-	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
-
-	rotation = delta_rotation.Mul(rotation);
-	rotation_local = delta_rotation.Mul(rotation_local);
-	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
-	rotation_euler_local = new_rotation_euler_local;
-
-	UpdateTransformOfHierarchy(false);*/
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::SetRotation(const math::Quat& new_rotation)
@@ -165,90 +156,52 @@ void ComponentTransform::SetRotation(const math::Quat& new_rotation)
 	rotation = new_rotation;
 	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
 
-	CalculateLocalRotationFromRotation();
+	matrix.SetRotatePart(rotation);
 
-	UpdateTransformOfHierarchy(false);
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::SetLocalPosition(const math::float3& new_position_local)
 {
 	position_local = new_position_local;
 
-	CalculatePositionFromLocalPosition();
-
-	UpdateTransformOfHierarchy(false);
+	matrix_local.SetTranslatePart(position_local);
+	
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
 void ComponentTransform::SetLocalScale(const math::float3& new_scale_local)
 {
 	scale_local = new_scale_local;
 
-	CalculateScaleFromLocalScale();
+	matrix_local.RemoveScale();
 
-	UpdateTransformOfHierarchy(false);
+	matrix_local.Scale(new_scale_local);
+
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
 void ComponentTransform::SetLocalEulerRotation(const math::float3& new_rotation_euler_local)
 {
-	math::float3 delta_eulers = (new_rotation_euler_local - rotation_euler_local).Mul(DEG_TO_RAD);
-	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
-	
-	rotation = delta_rotation.Mul(rotation).Normalized();
-	rotation_local = delta_rotation.Mul(rotation_local).Normalized();
-	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
+	math::float3 delta = (new_rotation_euler_local - rotation_euler_local) * DEG_TO_RAD;
+	math::Quat rotation_amount = math::Quat::FromEulerXYZ(delta.x, delta.y, delta.z);
+
+	rotation_local = rotation_amount * (rotation_local);
 	rotation_euler_local = new_rotation_euler_local;
-	
-	UpdateTransformOfHierarchy(false);
+
+	matrix_local.SetRotatePart(rotation_local);
+
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
 void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
 {
 	rotation_local = new_rotation_local;
-	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
+	rotation_euler_local = rotation_local.ToEulerXYZ() * RAD_TO_DEG;
 
-	CalculateRotationFromLocalRotation();
+	matrix_local.SetRotatePart(rotation_local);
 
-	UpdateTransformOfHierarchy(false);
-}
-
-void ComponentTransform::Rotate(const math::Quat& rotate_by)
-{
-	rotation = rotate_by.Mul(rotation);
-	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
-
-	CalculateLocalRotationFromRotation();
-
-	UpdateTransformOfHierarchy(false);
-}
-
-void ComponentTransform::LookAt(const math::float3& world_up, const math::float3& direction)
-{
-	math::float3 right_temp = (world_up.Cross(direction)).Normalized();
-	math::float3 up_temp = (direction.Cross(right_temp)).Normalized();
-	//math::float3 rotation = math::float3(acos(direction.x), acos(direction.y), acos(direction.z)) * RAD_TO_DEG;
-
-	// Setup the rotation matrix:
-	math::float3x3 rotation_matrix = math::float3x3::identity;
-
-	// Set direction/-front part:
-	rotation_matrix[2][0] = direction.x;
-	rotation_matrix[2][1] = direction.y;
-	rotation_matrix[2][2] = direction.z;
-
-	// Set up part:
-	rotation_matrix[1][0] = up_temp.x;
-	rotation_matrix[1][1] = up_temp.y;
-	rotation_matrix[1][2] = up_temp.z;
-
-	// Set right part:
-	rotation_matrix[0][0] = right_temp.x;
-	rotation_matrix[0][1] = right_temp.y;
-	rotation_matrix[0][2] = right_temp.z;
-
-	/*matrix.SetRotatePart(rotation_matrix);*/
-
-	// Set Quaternion from rotation:
-	//SetRotation(math::Quat(rotation_matrix));
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
 void ComponentTransform::DrawInspectorContent()
@@ -282,169 +235,59 @@ void ComponentTransform::DrawInspectorContent()
 	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetScale(scale_editor);
 	}
-
 }
 
-void ComponentTransform::CalculatePositionFromLocalPosition()
+void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mode)
 {
-	Entity* owner_parent = owner->Parent();
+	Entity* owners_parent = owner->Parent();
 
-	if (owner_parent != nullptr)
+	switch (mode)
 	{
-		// As all entities have transform component by
-		// default no need to check for nullptr.
-		math::float3 position_parent = owner_parent->Transform()->GetPosition();
+		case transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL:
+		{
+			matrix_local = owners_parent == nullptr ? 
+				matrix : 
+				owners_parent->Transform()->GetMatrix().Inverted() * matrix;
 
-		position = position_parent + position_local;
-	}
-	else
-	{
-		position = position_local;
-	}
-}
+			matrix_local.Decompose(position_local, rotation_local, scale_local);
 
-void ComponentTransform::CalculateLocalPositionFromPosition()
-{
-	Entity* owner_parent = owner->Parent();
+			rotation_euler_local = rotation_local.ToEulerXYZ() * RAD_TO_DEG;
+		}
+		break;
 
-	if (owner_parent != nullptr)
-	{
-		// As all entities have transform component by
-		// default no need to check for nullptr.
-		math::float3 position_parent = owner_parent->Transform()->GetPosition();
+		case transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL:
+		{
+			matrix = owners_parent == nullptr ? 
+				matrix_local : 
+				owners_parent->Transform()->GetMatrix() * matrix_local;
 
-		position_local = position - position_parent;
-	}
-	else
-	{
-		position_local = position;
-	}
-}
+			matrix.Decompose(position, rotation, scale);
 
-void ComponentTransform::CalculateRotationFromLocalRotation()
-{
-	rotation = rotation_local;
-
-	Entity* owner_parent = owner->Parent();
-	if (owner_parent != nullptr)
-	{
-		// As all entities have transform component by
-		// default no need to check for nullptr.
-		math::Quat parent_rotation = owner_parent->Transform()->GetRotation();
-
-		rotation = parent_rotation.Mul(rotation_local);
+			rotation_euler = rotation.ToEulerXYZ() * RAD_TO_DEG;
+		}
+		break;
 	}
 
-	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
-}
-
-void ComponentTransform::CalculateLocalRotationFromRotation()
-{
-	rotation_local = rotation;
-
-	Entity* owner_parent = owner->Parent();
-	if (owner_parent != nullptr)
-	{
-		// As all entities have transform component by
-		// default no need to check for nullptr.
-		math::Quat parent_rotation_inverse = owner_parent->Transform()->GetRotation().Inverted();
-
-		rotation_local = parent_rotation_inverse.Mul(rotation);
-	}
-
-	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
-}
-
-void ComponentTransform::CalculateScaleFromLocalScale()
-{
-	Entity* owner_parent = owner->Parent();
-	
-	if (owner_parent != nullptr)
-	{
-		// As all entities have transform component by
-		// default no need to check for nullptr.
-		math::float3 scale_parent = owner_parent->Transform()->GetScale();
-
-		scale = scale_parent.Mul(scale_local);
-	}
-	else
-	{
-		scale = scale_local;
-	}
-}
-
-void ComponentTransform::CalculateLocalScaleFromScale()
-{
-	Entity* owner_parent = owner->Parent();
-
-	if (owner_parent != nullptr)
-	{
-		// As all entities have transform component by
-		// default no need to check for nullptr.
-		math::float3 scale_parent = owner_parent->Transform()->GetScale();
-
-		scale_local = scale.Div(scale_parent);
-	}
-	else
-	{
-		scale_local = scale;
-	}
-}
-
-void ComponentTransform::CalculateMatrix(bool marked_as_dirty_by_parent)
-{
-	// If this transform was marked as dirty by parent entity's
-	// transform, recalculate position, rotation & scale
-	// using local_position, local_rotation & local_scale along
-	// with parent's position, rotation & scale:
-	if (marked_as_dirty_by_parent)
-	{
-		CalculatePositionFromLocalPosition();
-		CalculateRotationFromLocalRotation();
-		CalculateScaleFromLocalScale();
-	}
-
-	//matrix = math::float4x4::FromTRS(position, rotation.ToFloat4x4(), scale);
-
-	math::float4x4 translation_matrix = math::float4x4::identity;
-	math::float4x4 rotation_matrix = math::float4x4::identity;
-	math::float4x4 scaling_matrix = math::float4x4::identity;
-
-	// Setup the translation matrix:
-	translation_matrix[0][3] = position.x;
-	translation_matrix[1][3] = position.y;
-	translation_matrix[2][3] = position.z;
-
-	// Setup the rotation matrix:
-	rotation_matrix = rotation * rotation_matrix;
-
-	// Setup the scaling matrix:
-	scaling_matrix[0][0] = scale.x;
-	scaling_matrix[1][1] = scale.y;
-	scaling_matrix[2][2] = scale.z;
-
-	// Calculate transform matrix:
-	matrix = translation_matrix * rotation_matrix * scaling_matrix;
-
-	// Set the front up and right:
-	front = -float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]).Normalized();
-	up = float3(rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2]).Normalized();
-	right = float3(rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2]).Normalized();
+	right = matrix.WorldX();
+	up = matrix.WorldY();
+	front = matrix.WorldZ();
 
 	LOG("%s: front: %f, %f, %f rotation: %f, %f, %f", owner->Name().c_str(), front.x, front.y, front.z, rotation_euler.x, rotation_euler.y, rotation_euler.z);
 }
 
-void ComponentTransform::UpdateTransformOfHierarchy(bool marked_as_dirty_by_parent)
+void ComponentTransform::UpdateTransformOfHierarchy(transform_matrix_calculation_mode mode)
 {
-	CalculateMatrix(marked_as_dirty_by_parent);
+	CalculateTransform(mode);
 
 	// NOTE(Baran): This event must be invoked after new matrix is calculated.
 	owner->InvokeComponentsChangedEvents(Type());
 
 	const std::vector<Entity*>& owner_children = owner->GetChildren();
 
+	// As their parent transform is changed only, only updating
+	// the global transform matrix of children will suffice.
 	for (Entity* owner_child : owner_children)
 	{
-		owner_child->Transform()->UpdateTransformOfHierarchy(true);
+		owner_child->Transform()->UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 	}
 }

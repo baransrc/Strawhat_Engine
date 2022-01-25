@@ -5,6 +5,12 @@
 
 #include "Component.h"
 
+enum class transform_matrix_calculation_mode
+{
+	LOCAL_FROM_GLOBAL,
+	GLOBAL_FROM_LOCAL
+};
+
 class ComponentTransform : public Component
 {
 private:
@@ -20,6 +26,7 @@ private:
 	math::float3	up;
 	math::float3	front;
 	math::float4x4	matrix;
+	math::float4x4  matrix_local;
 
 public:
 	ComponentTransform();
@@ -60,12 +67,6 @@ protected:
 	void DrawInspectorContent() override;
 
 private: 
-	void CalculatePositionFromLocalPosition();
-	void CalculateLocalPositionFromPosition();
-	void CalculateRotationFromLocalRotation();
-	void CalculateLocalRotationFromRotation();
-	void CalculateScaleFromLocalScale();
-	void CalculateLocalScaleFromScale();
-	void CalculateMatrix(bool marked_as_dirty_by_parent);
-	void UpdateTransformOfHierarchy(bool marked_as_dirty_by_parent);
+	void CalculateTransform(transform_matrix_calculation_mode mode);
+	void UpdateTransformOfHierarchy(transform_matrix_calculation_mode mode);
 };
