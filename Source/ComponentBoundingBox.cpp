@@ -62,6 +62,8 @@ void ComponentBoundingBox::Load()
 
     std::vector<ComponentMesh*> mesh_components = owner->GetComponentsInChildren<ComponentMesh>();
 
+    // TODO(Baran): Refactor this code to remove duplicate code here.
+
     ComponentMesh* owner_mesh_component = owner->GetComponent<ComponentMesh>();
     if (owner->GetComponent<ComponentMesh>() != nullptr && mesh_components.size() > 0)
     {
