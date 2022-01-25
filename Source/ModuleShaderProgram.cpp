@@ -155,6 +155,11 @@ void ModuleShaderProgram::SetUniformVariable(const char* name, int value) const
     glUniform1i(glGetUniformLocation(program_id, name), value);
 }
 
+void ModuleShaderProgram::SetUniformVariable(const char* name, float value) const
+{
+    glUniform1f(glGetUniformLocation(program_id, name), value);
+}
+
 void ModuleShaderProgram::SetUniformVariable(const char* name, const float3& value) const
 {
     glUniform3fv(glGetUniformLocation(program_id, name), 1, value.ptr());

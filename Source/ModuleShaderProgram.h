@@ -22,6 +22,7 @@ class ModuleShaderProgram : public Module
 	void Use() const;
 
 	void SetUniformVariable(const char* name, int value) const;
+	void SetUniformVariable(const char* name, float value) const;
 	void SetUniformVariable(const char* name, const float3& value) const;
 	void SetUniformVariable(const char* name, const float4& value) const;
 	void SetUniformVariable(const char* name, const float4x4& value, const bool transpose) const;
