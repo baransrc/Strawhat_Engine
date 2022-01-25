@@ -46,9 +46,9 @@ void ComponentTransform::Update()
 
 void ComponentTransform::DrawGizmo()
 {
-	App->debug_draw->DrawArrow(position, position + 5.0f * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
-	App->debug_draw->DrawArrow(position, position + 5.0f * right, float3(1.0f, 0.0f, 0.0f), 0.1f);
-	App->debug_draw->DrawArrow(position, position + 5.0f * up, float3(0.0f, 1.0f, 0.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + position.Length() * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + 20.0f * right, float3(1.0f, 0.0f, 0.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + 20.0f * up, float3(0.0f, 1.0f, 0.0f), 0.1f);
 }
 
 component_type ComponentTransform::Type() const
@@ -204,6 +204,31 @@ void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
+void ComponentTransform::LookAt(const math::float3& world_up, const math::float3& direction)
+{
+	math::float3 right_temp = world_up.Cross(direction).Normalized();
+	math::float3 up_temp = direction.Cross(right_temp).Normalized();
+
+	math::float3x3 rotation_matrix_temp = math::float3x3::identity;
+
+	// Set up -front/direction part:
+	rotation_matrix_temp[2][0] = direction.x;
+	rotation_matrix_temp[2][1] = direction.y;
+	rotation_matrix_temp[2][2] = direction.z;
+
+	// Set up part:
+	rotation_matrix_temp[1][0] = up_temp.x;
+	rotation_matrix_temp[1][1] = up_temp.y;
+	rotation_matrix_temp[1][2] = up_temp.z;
+
+	// Set right part:
+	rotation_matrix_temp[0][0] = right_temp.x;
+	rotation_matrix_temp[0][1] = right_temp.y;
+	rotation_matrix_temp[0][2] = right_temp.z;
+	
+	SetRotation(math::Quat(rotation_matrix_temp));
+}
+
 void ComponentTransform::DrawInspectorContent()
 {
 	math::float3 position_local_editor = position_local;
@@ -234,6 +259,13 @@ void ComponentTransform::DrawInspectorContent()
 	}
 	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetScale(scale_editor);
+	}
+
+	ImGui::NewLine();
+
+	if (ImGui::Button("LookAt 0,0,0"))
+	{
+		LookAt(math::float3::unitY, (float3::zero - position).Normalized());
 	}
 }
 

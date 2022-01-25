@@ -25,9 +25,13 @@ enum class camera_mouse_input_state
 	IDLE,
 };
 
+class Entity;
+
 class ModuleCamera : public Module
 {
 private:
+	Entity* camera;
+
 	Frustum frustum;
 
 	// Main Matrices:
