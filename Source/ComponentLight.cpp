@@ -5,6 +5,8 @@
 
 #include "Application.h"
 #include "ModuleShaderProgram.h"
+#include "ModuleDebugDraw.h"
+#include "ModuleRender.h"
 #include "ModuleCamera.h"
 
 #include "GLEW/include/GL/glew.h"
@@ -12,9 +14,11 @@
 ComponentLight::ComponentLight() : Component(),
 												type(light_type::SPOT),
 												position(0,0,0),
-												//rotation(0,0,0,0),
+												rotation(0,0,0,0),
 												scale(1,1,1),
+												radius(0),
 												shininess(0),
+												intensity(0),
 												color(1,1,1),
 												is_currently_loaded(false)
 
@@ -36,17 +40,21 @@ void ComponentLight::Initialize(Entity* new_owner)
 	Component::Initialize(new_owner);
 }
 
-void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_rotation,*/ float3 new_scale, float3 new_color)
+void ComponentLight::Load(light_type new_type, float3 new_position, Quat new_rotation, float3 new_scale, float3 new_color)
 {
 	type = new_type;
-	position = new_position;
-	owner->Transform()->SetPosition(position);
-	//rotation = new_rotation;
-	scale = new_scale;
-	//owner->Transform()->SetScale(scale);
+	
+	position = owner->Transform()->GetPosition();;
+	
+	rotation = owner->Transform()->GetRotation();
+	
+	scale = owner->Transform()->GetScale();
+	
 	color = new_color;
 
-	shininess = 0.0f;
+	radius = 100.0f;
+	shininess = 25.0f;
+	intensity = 1.0f;
 
 	// If Load was called before this call, clear 
 	// all the previous mesh data and load afterwards:
@@ -66,9 +74,12 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 
 		// Pass position of the directional light
 		float3 aux_pos = owner->Transform()->GetPosition();
-		App->shader_program->SetUniformVariable("light.position", aux_pos);
+		App->shader_program->SetUniformVariable("light.position", aux_pos);		
+		App->shader_program->SetUniformVariable("light.radius", radius);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
+		App->shader_program->SetUniformVariable("shininess", shininess);
+		App->shader_program->SetUniformVariable("light.intensity", intensity);
 
 		break;
 	}
@@ -95,7 +106,7 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 
 		float3 aux_pos = App->camera->GetPosition();
 		App->shader_program->SetUniformVariable("light.position", aux_pos);
-		float3 aux_front = App->camera->GetFront();
+		float3 aux_front = owner->Transform()->GetFront();
 		App->shader_program->SetUniformVariable("light.direction", aux_front);
 		float aux_angle = math::Cos(math::DegToRad(12.5f));
 		App->shader_program->SetUniformVariable("light.cutOff", aux_angle);
@@ -105,6 +116,7 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 		App->shader_program->SetUniformVariable("light.constant", 1.0f);
 		App->shader_program->SetUniformVariable("light.linear", 0.9f);
 		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
+		App->shader_program->SetUniformVariable("shininess", shininess);
 
 		break;
 	}
@@ -127,10 +139,15 @@ void ComponentLight::Update()
 	case light_type::POINT:
 	{
 		// Pass position of the point light
-		float3 aux_pos = owner->Transform()->GetPosition();
-		App->shader_program->SetUniformVariable("light.position", aux_pos);
+		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
+		App->shader_program->SetUniformVariable("light.radius", radius);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-		App->shader_program->SetUniformVariable("light.diffuse", color);
+		App->shader_program->SetUniformVariable("light.constant", 1.0f);
+		App->shader_program->SetUniformVariable("light.linear", 0.9f);
+		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
+
+		App->shader_program->SetUniformVariable("shininess", shininess);
+		App->shader_program->SetUniformVariable("light.intensity", intensity);
 
 		break;
 	}
@@ -144,6 +161,7 @@ void ComponentLight::Update()
 		App->shader_program->SetUniformVariable("light.direction", aux_pos);
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
+		App->shader_program->SetUniformVariable("shininess", shininess);
 
 		break;
 	}
@@ -154,14 +172,16 @@ void ComponentLight::Update()
 
 		// Pass position of the directional light
 		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
-		App->shader_program->SetUniformVariable("light.direction", App->camera->GetFront());
+		App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), float3(0.8f, 0.6f, 1.0f));
+		App->shader_program->SetUniformVariable("light.direction", owner->Transform()->GetFront());
 		App->shader_program->SetUniformVariable("light.cutOff", math::Cos(math::DegToRad(12.5f)));
-		App->shader_program->SetUniformVariable("light.ambient", (0.2, 0.2, 0.2));
-		App->shader_program->SetUniformVariable("light.diffuse", (0.8f, 0.8f, 0.8f));
-		App->shader_program->SetUniformVariable("light.specular", (1.0f, 1.0f, 1.0f));
+		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
+		App->shader_program->SetUniformVariable("light.diffuse", float3(0.8f, 0.8f, 0.8f));
+		App->shader_program->SetUniformVariable("light.specular", float3(1.0f, 1.0f, 1.0f));
 		App->shader_program->SetUniformVariable("light.constant", 1.0f);
 		App->shader_program->SetUniformVariable("light.linear", 0.9f);
 		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
+		App->shader_program->SetUniformVariable("shininess", shininess);
 
 		break;
 	}
@@ -199,8 +219,8 @@ void ComponentLight::DrawInspectorContent()
 		ImGui::EndCombo();
 	}
 
-	float shiny = shininess;
+	ImGui::DragFloat("Shininess", &shininess, 0.1f, -inf, inf);
+	ImGui::DragFloat("Radius", &radius, 0.1f, -inf, inf);
+	ImGui::DragFloat("Intensity", &intensity, 0.1f, -inf, inf);
 
-	if (ImGui::DragFloat("Shininess", &shiny, 0.1f, -inf, inf))
-		shininess = shiny;
 }

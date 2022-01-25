@@ -18,10 +18,12 @@ private:
 	light_type type;
 
 	float3 position;
-	//Quat rotation;
+	Quat rotation;
 	float3 scale;
 
+	float radius;
 	float shininess;
+	float intensity;
 
 	float3 color;
 
@@ -36,7 +38,7 @@ public:
 	void Load(
 		light_type new_type, 
 		float3 new_position, 
-		//Quat new_rotation, 
+		Quat new_rotation, 
 		float3 new_scale, 
 		float3 new_color
 	);
