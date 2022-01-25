@@ -645,3 +645,13 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+
+void ModuleDebugDraw::DrawCone(vec position, vec direction, vec color)
+{
+    dd::cone(position, direction, color, 0.7f, 0.01f);
+
+    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
