@@ -44,7 +44,9 @@ void ComponentTransform::Update()
 
 void ComponentTransform::DrawGizmo()
 {
-	App->debug_draw->DrawArrow(position, position + 5.0f * front, float3(1.0f, 1.0f, 0.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + 5.0f * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + 5.0f * right, float3(1.0f, 0.0f, 0.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + 5.0f * up, float3(0.0f, 1.0f, 0.0f), 0.1f);
 }
 
 component_type ComponentTransform::Type() const
@@ -140,12 +142,22 @@ void ComponentTransform::SetEulerRotation(const math::float3& new_rotation_euler
 	math::float3 delta_eulers = (new_rotation_euler - rotation_euler).Mul(DEG_TO_RAD);
 	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
 
-	rotation = rotation * delta_rotation;
 	rotation_euler = new_rotation_euler;
-
-	CalculateLocalRotationFromRotation();
+	rotation = delta_rotation.Mul(rotation).Normalized();
+	rotation_local = delta_rotation.Mul(rotation_local).Normalized();
+	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
 
 	UpdateTransformOfHierarchy(false);
+
+	/*math::float3 delta_eulers = (new_rotation_euler_local - rotation_euler_local).Mul(DEG_TO_RAD);
+	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
+
+	rotation = delta_rotation.Mul(rotation);
+	rotation_local = delta_rotation.Mul(rotation_local);
+	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
+	rotation_euler_local = new_rotation_euler_local;
+
+	UpdateTransformOfHierarchy(false);*/
 }
 
 void ComponentTransform::SetRotation(const math::Quat& new_rotation)
@@ -181,8 +193,8 @@ void ComponentTransform::SetLocalEulerRotation(const math::float3& new_rotation_
 	math::float3 delta_eulers = (new_rotation_euler_local - rotation_euler_local).Mul(DEG_TO_RAD);
 	math::Quat delta_rotation = Quat::FromEulerXYZ(delta_eulers.x, delta_eulers.y, delta_eulers.z);
 	
-	rotation = rotation * delta_rotation;
-	rotation_local = rotation_local * delta_rotation;
+	rotation = delta_rotation.Mul(rotation).Normalized();
+	rotation_local = delta_rotation.Mul(rotation_local).Normalized();
 	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
 	rotation_euler_local = new_rotation_euler_local;
 	
@@ -195,6 +207,16 @@ void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
 	rotation_euler_local = rotation_local.ToEulerXYZ().Mul(RAD_TO_DEG);
 
 	CalculateRotationFromLocalRotation();
+
+	UpdateTransformOfHierarchy(false);
+}
+
+void ComponentTransform::Rotate(const math::Quat& rotate_by)
+{
+	rotation = rotate_by.Mul(rotation);
+	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
+
+	CalculateLocalRotationFromRotation();
 
 	UpdateTransformOfHierarchy(false);
 }
@@ -223,8 +245,10 @@ void ComponentTransform::LookAt(const math::float3& world_up, const math::float3
 	rotation_matrix[0][1] = right_temp.y;
 	rotation_matrix[0][2] = right_temp.z;
 
+	/*matrix.SetRotatePart(rotation_matrix);*/
+
 	// Set Quaternion from rotation:
-	SetRotation(math::Quat(rotation_matrix));
+	//SetRotation(math::Quat(rotation_matrix));
 }
 
 void ComponentTransform::DrawInspectorContent()
@@ -258,6 +282,7 @@ void ComponentTransform::DrawInspectorContent()
 	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetScale(scale_editor);
 	}
+
 }
 
 void ComponentTransform::CalculatePositionFromLocalPosition()
