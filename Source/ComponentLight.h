@@ -36,11 +36,7 @@ public:
 	component_type Type() const override;
 	void Initialize(Entity* new_owner) override;
 	void Load(
-		light_type new_type, 
-		float3 new_position, 
-		Quat new_rotation, 
-		float3 new_scale, 
-		float3 new_color
+		light_type new_type
 	);
 	void Update() override;
 	void Reset();
