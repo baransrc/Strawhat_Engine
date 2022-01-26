@@ -67,6 +67,7 @@ void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_num
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
 
+
 	//// Activate Texture Unit 3:
 	//glActiveTexture(GL_TEXTURE3);
 	//// Bind Texture Unit 3:
@@ -109,6 +110,8 @@ void ComponentMaterial::Use()
 	glBindTexture(GL_TEXTURE_2D, texture_ids[2]); // Occlusion texture
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
+
+
 }
 
 void ComponentMaterial::Reset()
@@ -121,7 +124,10 @@ void ComponentMaterial::Reset()
 
 void ComponentMaterial::DrawInspectorContent()
 {
-	ImGui::Image((void*)(intptr_t)texture_ids[0], ImVec2(150, 150));
-	ImGui::Image((void*)(intptr_t)texture_ids[1], ImVec2(150, 150));
-	ImGui::Image((void*)(intptr_t)texture_ids[2], ImVec2(150, 150));
+	if ((intptr_t)texture_ids[0] > 0)
+		ImGui::Image((void*)(intptr_t)texture_ids[0], ImVec2(150, 150));
+	if((intptr_t)texture_ids[1] > 0)
+		ImGui::Image((void*)(intptr_t)texture_ids[1], ImVec2(150, 150));
+	if ((intptr_t)texture_ids[2] > 0)
+		ImGui::Image((void*)(intptr_t)texture_ids[2], ImVec2(150, 150));
 }
