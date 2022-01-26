@@ -25,6 +25,8 @@ public:
 
     void DrawCuboid(vec* points, vec color);
     void DrawCone(vec position, vec direction, vec color);
+    void DrawFrustum(float4x4 matrix, vec color);
+
 private:
 
     static DDRenderInterfaceCoreGL* implementation;

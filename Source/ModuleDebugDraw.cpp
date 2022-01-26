@@ -655,3 +655,13 @@ void ModuleDebugDraw::DrawCone(vec position, vec direction, vec color)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+
+void ModuleDebugDraw::DrawFrustum(float4x4 matrix, vec color)
+{
+    dd::frustum(matrix, color);
+
+    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
