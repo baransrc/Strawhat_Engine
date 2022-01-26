@@ -266,7 +266,7 @@ namespace ModelImporter
 		/// <param name="scene_name">Name of model</param>
 		/// <param name="texture_ids">An array consisting of texture ids</param>
 		/// <returns>Entity with child entities having mesh components.</returns>
-		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name, unsigned int* texture_ids)
+		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name/*, unsigned int* texture_ids*/)
 		{
 			Entity* model_entity = new Entity();
 			model_entity->Initialize(scene_name);
@@ -292,8 +292,12 @@ namespace ModelImporter
 			{
 				current_mesh_data = scene->mMeshes[i];
 
+				// Get the parent directory path from full file path:
+				char* path_to_parent_directory = util::ConcatCStrings("", scene_name);
+				util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
+
 				// Get Texture IDs:
-				//unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory, name_of_file);
+				unsigned int* texture_ids = ModelImporter_LoadTextureIds(scene, path_to_parent_directory, current_mesh_data->mName.C_Str());
 
 				Entity* current_node = new Entity();
 				current_node->Initialize((current_mesh_data->mName.C_Str()));
@@ -316,6 +320,7 @@ namespace ModelImporter
 				number_of_indices += current_component_mesh->GetNumberOfIndices();
 				number_of_vertices += current_component_mesh->GetNumberOfVertices();
 				++number_of_loaded_meshes;
+				free(path_to_parent_directory);
 			}
 
 			LOG("Loaded model as entity named %s:\n\tNumber of child meshes: %zu\n\tNumber of triangles: %zu\n\tNumber of indices: %zu\n\tNumber of vertices: %zu",
@@ -358,31 +363,31 @@ namespace ModelImporter
 		}
 
 		// Get the parent directory path from full file path:
-		char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
-		util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
+		//char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
+		//util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
 
 		//Get only the name of the file
-		char* name_of_file = util::ConcatCStrings("", path_to_file);
-		name_of_file = util::GetStringBetween(name_of_file, "\\", ".");
-		util::SubstrBeforeCharFromEnd(&name_of_file, '\\');
+		//char* name_of_file = util::ConcatCStrings("", path_to_file);
+		//name_of_file = util::GetStringBetween(name_of_file, "\\", ".");
+		//util::SubstrBeforeCharFromEnd(&name_of_file, '\\');
 
 		// Get Texture IDs:
-		unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory, name_of_file);
+		//unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory, name_of_file);
 
 		char* model_name = util::ConcatCStrings("", path_to_file);
 		util::SubstrBeforeCharFromEnd(&model_name, '\\');
 
 		Entity* loaded_model = ModelImporter_LoadMeshesAsEntity(
 			model,
-			model_name,
-			texture_ids
+			model_name
+			//texture_ids
 		);
 
 		// Deallocate resources:
 		free(model_name);
-		free(texture_ids);
-		free(path_to_parent_directory);
-		free(name_of_file);
+		//free(texture_ids);
+		//free(path_to_parent_directory);
+		//free(name_of_file);
 
 		return loaded_model;
 	}
