@@ -5,6 +5,8 @@
 #include "MATH_GEO_LIB/Math/float3.h"
 #include "Event.h"
 
+class Entity;
+
 enum class vector_mode
 {
 	DIRECTION,
@@ -35,13 +37,7 @@ private:
 	Frustum frustum;
 
 	// Main Matrices:
-	float4x4 model_matrix;
-	float4x4 view_matrix;
 	float4x4 projection_matrix;
-
-	// Matrices that construct view_matrix:
-	float4x4 rotation_matrix;
-	float4x4 translation_matrix;
 
 	// Current state of camera:
 	camera_state state;
@@ -81,8 +77,7 @@ public:
 	bool CleanUp();
 
 	float GetAspectRatio() const { return frustum.AspectRatio(); };
-	float4x4 GetModelMatrix() const { return model_matrix; };
-	float4x4 GetViewMatrix() const { return view_matrix; };
+	float4x4 GetViewMatrix() const;
 	float4x4 GetProjectionMatrix() const { return projection_matrix; };
 	float3 GetPosition() const;
 	float3 GetRotation() const;
@@ -91,22 +86,22 @@ public:
 	float3 GetDirection() const;
 	float3 GetRight() const;
 
-	void SetUp(float3 new_up);
+	/*void SetUp(float3 new_up);
 	void SetFront(float3 new_front);
 	void SetDirection(float3 new_direction);
-	void SetRight(float3 new_right);
+	void SetRight(float3 new_right);*/
 	void SetHorizontalFOV(float new_horizontal_fov);
 	void SetAspectRatio(float new_aspect_ratio);
 	void SetFarPlaneDistance(float new_far_plane_distance);
 	void SetNearPlaneDistance(float new_near_plane_distance);
 	void SetPlaneDistances(float new_near_plane_distance, float new_far_plane_distance);
 	void SetPosition(float3 new_position);
-	void SetRotation(float3 new_orientation);
+	//void SetRotation(float3 new_orientation);
 	void SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio);
 	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
 
 	void LookAt(float3 look_at, vector_mode interpret_as = vector_mode::POSITION, bool calculate_rotation = true);
-	void ComputeViewMatrix();
+	//void ComputeViewMatrix();
 	void AutoRotateAround(float3 position);
 	void HandleWindowResized(unsigned int width, unsigned int height);
 
@@ -117,7 +112,7 @@ public:
 	update_status PostUpdate();
 
 private:
-	void CalculateRotationFromDirection();
+	//void CalculateRotationFromDirection();
 	void CalculateProjectionMatrix();
 
 	void Move();

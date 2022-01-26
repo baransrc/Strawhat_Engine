@@ -9,6 +9,7 @@
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
 #include "ComponentBoundingBox.h"
 #include "Entity.h"
+#include "ComponentTransform.h"
 
 ModuleCamera::ModuleCamera()
 {
@@ -20,6 +21,10 @@ ModuleCamera::~ModuleCamera()
 
 bool ModuleCamera::Init()
 {
+	// Initialize Camera:
+	camera = new Entity();
+	camera->Initialize("Editor Camera");
+
 	// Initialize the frustum:
 	frustum.SetKind(FrustumSpaceGL, FrustumRightHanded);
 
@@ -38,12 +43,6 @@ bool ModuleCamera::Init()
 	}
 
 	SetPlaneDistances(0.1f, 200.0f);
-
-	// Set model matrix to identity as we are staying still:
-	model_matrix = float4x4::identity;
-
-	translation_matrix = float4x4::identity;
-	rotation_matrix = float4x4::identity;
 
 	SetPosition(float3(10.0f, 10.0f, 10.0f));
 
@@ -69,11 +68,6 @@ bool ModuleCamera::Init()
 	// Look at focus_target_position from our position:
 	LookAt(focus_target_position, vector_mode::POSITION, true);
 
-	// Get view matrix after new calculations:
-	ComputeViewMatrix();
-
-	// No need to calculate projection matrix as it will be calculated in the PreUpdate method.
-
 	// Initialize window resized event lister:
 	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
@@ -84,6 +78,8 @@ bool ModuleCamera::Init()
 
 bool ModuleCamera::CleanUp()
 {
+	delete camera;
+
 	// TODO(baran): Move this into a private method.
 	// Unsubscribe from window resized if it's not null:
 	Event<unsigned int, unsigned int>* window_resized_event = App->input->GetWindowResizedEvent();
@@ -93,6 +89,11 @@ bool ModuleCamera::CleanUp()
 	}
 
 	return true;
+}
+
+float4x4 ModuleCamera::GetViewMatrix() const 
+{ 
+	return camera->Transform()->GetMatrix().Inverted();
 }
 
 void ModuleCamera::SetHorizontalFOV(float new_horizontal_fov)
@@ -129,16 +130,7 @@ void ModuleCamera::SetPosition(float3 new_position)
 {
 	frustum.SetPos(new_position);
 
-	translation_matrix[0][3] = -new_position.x;
-	translation_matrix[1][3] = -new_position.y;
-	translation_matrix[2][3] = -new_position.z;
-}
-
-void ModuleCamera::SetRotation(float3 new_orientation)
-{
-	Quat rotation = Quat::FromEulerXYZ(new_orientation.x, new_orientation.y, new_orientation.z);
-
-	rotation_matrix = rotation * float4x4::identity;
+	camera->Transform()->SetPosition(new_position);
 }
 
 void ModuleCamera::SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio)
@@ -150,58 +142,32 @@ void ModuleCamera::SetAsPerspective(float new_horizontal_fov, float new_aspect_r
 
 float3 ModuleCamera::GetUp() const
 {
-	return float3(rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2]);
+	return camera->Transform()->GetUp();
 }
 
 float3 ModuleCamera::GetFront() const
 {
-	return -GetDirection();
+	return camera->Transform()->GetFront();
 }
 
 float3 ModuleCamera::GetDirection() const
 {
-	return float3(rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2]);
+	return (-1.0f * camera->Transform()->GetFront()).Normalized();
 }
 
 float3 ModuleCamera::GetRight() const
 {
-	return float3(rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2]);
+	return camera->Transform()->GetRight();
 }
 
 float3 ModuleCamera::GetPosition() const
 {
-	return float3(-translation_matrix[0][3], -translation_matrix[1][3], -translation_matrix[2][3]);
+	return camera->Transform()->GetPosition();
 }
 
 float3 ModuleCamera::GetRotation() const
 {
 	return rotation_euler;
-}
-
-void ModuleCamera::SetUp(float3 new_up)
-{
-	rotation_matrix[1][0] = new_up.x;
-	rotation_matrix[1][1] = new_up.y; 
-	rotation_matrix[1][2] = new_up.z;
-}
-
-void ModuleCamera::SetFront(float3 new_front)
-{
-	SetDirection(-new_front);
-}
-
-void ModuleCamera::SetDirection(float3 new_direction)
-{
-	rotation_matrix[2][0] = new_direction.x;
-	rotation_matrix[2][1] = new_direction.y;
-	rotation_matrix[2][2] = new_direction.z;
-}
-
-void ModuleCamera::SetRight(float3 new_right)
-{
-	rotation_matrix[0][0] = new_right.x;
-	rotation_matrix[0][1] = new_right.y;
-	rotation_matrix[0][2] = new_right.z;
 }
 
 void ModuleCamera::SetAsOrthographic(float new_orthographic_width, float new_orthographic_height)
@@ -223,31 +189,14 @@ void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as, bool calcula
 
 	if (interpret_as == vector_mode::POSITION)
 	{
-		new_direction = (GetPosition() - look_at).Normalized();
+		new_direction = (look_at - GetPosition()).Normalized();
 	}
 	else if (interpret_as == vector_mode::DIRECTION)
 	{
 		new_direction = look_at.Normalized();
 	}
 
-	SetDirection(new_direction);
-
-	SetRight((float3::unitY.Cross(GetDirection())).Normalized());
-	
-	SetUp(((GetDirection()).Cross(GetRight())).Normalized());
-
-	if (calculate_rotation)
-	{
-		CalculateRotationFromDirection();
-	}
-}
-
-/// <summary>
-/// Computes view matrix using current position, right, up and direction.
-/// </summary>
-void ModuleCamera::ComputeViewMatrix()
-{
-	view_matrix = Quat(rotation_matrix).Normalized() * (translation_matrix);
+	camera->Transform()->LookAt(new_direction);
 }
 
 void ModuleCamera::AutoRotateAround(float3 position)
@@ -296,11 +245,6 @@ void ModuleCamera::OnModelChanged()
 
 update_status ModuleCamera::PreUpdate()
 {
-	if (should_auto_rotate_around_target)
-	{
-		AutoRotateAround(focus_destination_position);
-	}
-
 	Move();
 	Focus();
 	Zoom();
@@ -315,16 +259,14 @@ update_status ModuleCamera::PreUpdate()
 		should_recalculate_projection_matrix = false;
 		CalculateProjectionMatrix();
 	}
-	
-	ComputeViewMatrix();
 
 	// Make sure we are using the true shader before passing the arguments:
 	App->shader_program->Use();
 
 	// Pass transposed model view projection matrices to the shader, as MathGeoLib is row major
 	// and OpenGL is column major:
-	App->shader_program->SetUniformVariable("model_matrix", model_matrix, true);
-	App->shader_program->SetUniformVariable("view_matrix", view_matrix, true);
+	App->shader_program->SetUniformVariable("model_matrix", camera->Transform()->GetMatrix(), true);
+	App->shader_program->SetUniformVariable("view_matrix", GetViewMatrix(), true);
 	App->shader_program->SetUniformVariable("projection_matrix", projection_matrix, true);
 
 	return update_status::UPDATE_CONTINUE;
@@ -338,15 +280,6 @@ update_status ModuleCamera::Update()
 update_status ModuleCamera::PostUpdate()
 {
 	return update_status::UPDATE_CONTINUE;
-}
-
-void ModuleCamera::CalculateRotationFromDirection()
-{
-	float3 direction = GetDirection().Normalized();
-
-	rotation_euler.x = acos(direction.x);
-	rotation_euler.y = acos(direction.y);
-	rotation_euler.z = acos(direction.z);
 }
 
 void ModuleCamera::CalculateProjectionMatrix()
@@ -384,12 +317,12 @@ void ModuleCamera::Move()
 
 	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
 	{
-		new_position += GetFront() * velocity.z;
+		new_position += -GetFront() * velocity.z;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_S, key_state::REPEAT))
 	{
-		new_position -= GetFront() * velocity.z;
+		new_position -= -GetFront() * velocity.z;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
@@ -454,26 +387,13 @@ void ModuleCamera::Rotate()
 	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
 	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
 
-	// Store rotations in rotation_euler:
-	rotation_euler.x += x_delta;
-	rotation_euler.y += y_delta;
+	math::float3 look_at_direction = -camera->Transform()->GetFront();
 
-	// NOTE: The following calculations may be done by rotating an identity matrix
-	// with current rotations of camera, and then assigning the formed matrix to 
-	// rotation_matrix. Current solution seems a lot more smoother, and it basically
-	// ignores roll a.k.a rotation around z-axis.
+	look_at_direction = Quat(camera->Transform()->GetRight(), -y_delta) * look_at_direction;
+	look_at_direction = Quat(camera->Transform()->GetUp(), -x_delta) * look_at_direction;
 
-	// Rotate around x axis:
-	Quat rotation_quaternion = Quat(float3::unitX, y_delta);
-	// Rotate around y axis and combine with the previous rotation around x axis:
-	rotation_quaternion = rotation_quaternion * Quat(float3::unitY, x_delta);
-
-	// Apply rotation to rotation_matrix:
-	rotation_matrix = rotation_quaternion * rotation_matrix;
-
-	// Recalculate up and right of camera according to new direction, but no need 
-	// to recalculate stored rotation angles:
-	LookAt(GetDirection(), vector_mode::DIRECTION, false);
+	// Look At the look_at_direction:
+	LookAt(look_at_direction, vector_mode::DIRECTION, false);
 
 	// Unfocus the camera since a movement was made:
 	state = camera_state::UNFOCUSED;
@@ -497,8 +417,8 @@ void ModuleCamera::Orbit()
 	float2 mouse_delta = App->input->GetMouseDisplacement();
 
 	// Store smoothened and adjusted displacements of mouse as radians:
-	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
-	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
+	float x_delta = math::DegToRad(-mouse_delta.x * sensitivity * Time->DeltaTime());
+	float y_delta = math::DegToRad(-mouse_delta.y * sensitivity * Time->DeltaTime());
 
 	// Get orbit center:
 	const float3 center_position = focus_target_position;
@@ -638,7 +558,7 @@ void ModuleCamera::ExecuteUnfocus()
 	}
 
 	focus_lerp_position = 1.0f;
-	focus_target_position = GetPosition() + 10.0f * GetFront();
+	focus_target_position = GetPosition() + 10.0f * -GetFront();
 	focus_destination_position = GetPosition();
 	focus_target_direction = GetFront();
 	focus_target_radius = 0.0f;
@@ -732,10 +652,10 @@ void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 	focus_target_radius = bounding_sphere_radius;
 
 	// Get target direction (Actually it's direction from target to camera):
-	focus_target_direction = (GetPosition() - focus_target_position).Normalized();
+	focus_target_direction = (focus_target_position - GetPosition()).Normalized();
 
 	// Set Focus destination position to the position away from target's position by desired_distance:
-	focus_destination_position = focus_target_position + desired_distance * focus_target_direction;
+	focus_destination_position = focus_target_position - desired_distance * focus_target_direction;
 
 	// Set focus_lerp_position to 0:
 	focus_lerp_position = 0.0f;
