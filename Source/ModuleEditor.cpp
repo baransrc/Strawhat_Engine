@@ -46,10 +46,7 @@ bool ModuleEditor::Init()
 	light_entity->SetParent(base_entity);
 	ComponentLight* component_light = new ComponentLight();
 	component_light->Initialize(light_entity);
-	float3 pos = float3(0.5, 0, 0.5);
-	float3 scale = float3(1, 1, 1);
-	float3 color = float3(1, 1, 1);
-	component_light->Load(light_type::DIRECTIONAL, pos, scale, color);
+	component_light->Load(light_type::SPOT);
 
 	return true;
 }
@@ -315,6 +312,14 @@ void ModuleEditor::DrawInspector()
 				if (ImGui::Selectable("Transform")) // TODO: For testing purposes, delete this.
 				{
 					selected_entity->AddComponent(component_type::TRANSFORM);
+				}
+				if (ImGui::Selectable("Material"))
+				{
+					selected_entity->AddComponent(component_type::MATERIAL);
+				}
+				if (ImGui::Selectable("Light"))
+				{
+					selected_entity->AddComponent(component_type::LIGHT);
 				}
 
 				ImGui::EndMenu();
