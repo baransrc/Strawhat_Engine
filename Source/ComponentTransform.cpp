@@ -46,7 +46,8 @@ void ComponentTransform::Update()
 
 void ComponentTransform::DrawGizmo()
 {
-	App->debug_draw->DrawArrow(position, position + position.Length() * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + position.Length() * front, float3(1.0f, 0.0f, 1.0f), 0.1f);
+	App->debug_draw->DrawArrow(position, position + 20.0f * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
 	App->debug_draw->DrawArrow(position, position + 20.0f * right, float3(1.0f, 0.0f, 0.0f), 0.1f);
 	App->debug_draw->DrawArrow(position, position + 20.0f * up, float3(0.0f, 1.0f, 0.0f), 0.1f);
 }
@@ -124,7 +125,6 @@ const math::float3& ComponentTransform::GetFront() const
 void ComponentTransform::SetPosition(const math::float3& new_position)
 {
 	position = new_position;
-	matrix.SetTranslatePart(position);
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
@@ -132,8 +132,6 @@ void ComponentTransform::SetPosition(const math::float3& new_position)
 void ComponentTransform::SetScale(const math::float3& new_scale)
 {
 	scale = new_scale;
-	matrix.RemoveScale();
-	matrix.Scale(scale);
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
@@ -141,22 +139,19 @@ void ComponentTransform::SetScale(const math::float3& new_scale)
 void ComponentTransform::SetEulerRotation(const math::float3& new_rotation_euler)
 {
 	math::float3 delta = (new_rotation_euler - rotation_euler).Abs() * DEG_TO_RAD;
-	math::Quat rotation_amount = math::Quat::FromEulerXYZ(delta.x, delta.y, delta.z);
+	math::Quat rotation_amount = math::Quat::FromEulerXYZ(delta.x, delta.y, delta.z).Normalized();
 
 	rotation = rotation_amount * (rotation);
+	rotation.Normalize();
 	rotation_euler = new_rotation_euler;
-
-	matrix.SetRotatePart(rotation);
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::SetRotation(const math::Quat& new_rotation)
 {
-	rotation = new_rotation;
+	rotation = new_rotation.Normalized();
 	rotation_euler = rotation.ToEulerXYZ().Mul(RAD_TO_DEG);
-
-	matrix.SetRotatePart(rotation);
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
@@ -165,18 +160,12 @@ void ComponentTransform::SetLocalPosition(const math::float3& new_position_local
 {
 	position_local = new_position_local;
 
-	matrix_local.SetTranslatePart(position_local);
-	
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
 void ComponentTransform::SetLocalScale(const math::float3& new_scale_local)
 {
 	scale_local = new_scale_local;
-
-	matrix_local.RemoveScale();
-
-	matrix_local.Scale(new_scale_local);
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
@@ -189,8 +178,6 @@ void ComponentTransform::SetLocalEulerRotation(const math::float3& new_rotation_
 	rotation_local = rotation_amount * (rotation_local);
 	rotation_euler_local = new_rotation_euler_local;
 
-	matrix_local.SetRotatePart(rotation_local);
-
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
@@ -199,34 +186,20 @@ void ComponentTransform::SetLocalRotation(const math::Quat& new_rotation_local)
 	rotation_local = new_rotation_local;
 	rotation_euler_local = rotation_local.ToEulerXYZ() * RAD_TO_DEG;
 
-	matrix_local.SetRotatePart(rotation_local);
-
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL);
 }
 
-void ComponentTransform::LookAt(const math::float3& world_up, const math::float3& direction)
+void ComponentTransform::Rotate(const math::Quat& rotate_by)
 {
-	math::float3 right_temp = world_up.Cross(direction).Normalized();
+	SetRotation(rotate_by * rotation);
+}
+
+void ComponentTransform::LookAt(const math::float3& direction)
+{
+	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
 	math::float3 up_temp = direction.Cross(right_temp).Normalized();
 
-	math::float3x3 rotation_matrix_temp = math::float3x3::identity;
-
-	// Set up -front/direction part:
-	rotation_matrix_temp[2][0] = direction.x;
-	rotation_matrix_temp[2][1] = direction.y;
-	rotation_matrix_temp[2][2] = direction.z;
-
-	// Set up part:
-	rotation_matrix_temp[1][0] = up_temp.x;
-	rotation_matrix_temp[1][1] = up_temp.y;
-	rotation_matrix_temp[1][2] = up_temp.z;
-
-	// Set right part:
-	rotation_matrix_temp[0][0] = right_temp.x;
-	rotation_matrix_temp[0][1] = right_temp.y;
-	rotation_matrix_temp[0][2] = right_temp.z;
-	
-	SetRotation(math::Quat(rotation_matrix_temp));
+	SetRotation(math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY));
 }
 
 void ComponentTransform::DrawInspectorContent()
@@ -265,7 +238,7 @@ void ComponentTransform::DrawInspectorContent()
 
 	if (ImGui::Button("LookAt 0,0,0"))
 	{
-		LookAt(math::float3::unitY, (float3::zero - position).Normalized());
+		LookAt((position - float3::zero).Normalized());
 	}
 }
 
@@ -277,6 +250,8 @@ void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mo
 	{
 		case transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL:
 		{
+			matrix = float4x4::FromTRS(position, rotation, scale);
+
 			matrix_local = owners_parent == nullptr ? 
 				matrix : 
 				owners_parent->Transform()->GetMatrix().Inverted() * matrix;
@@ -289,6 +264,8 @@ void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mo
 
 		case transform_matrix_calculation_mode::GLOBAL_FROM_LOCAL:
 		{
+			matrix_local = float4x4::FromTRS(position_local, rotation_local, scale_local);
+
 			matrix = owners_parent == nullptr ? 
 				matrix_local : 
 				owners_parent->Transform()->GetMatrix() * matrix_local;
@@ -303,8 +280,6 @@ void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mo
 	right = matrix.WorldX();
 	up = matrix.WorldY();
 	front = matrix.WorldZ();
-
-	LOG("%s: front: %f, %f, %f rotation: %f, %f, %f", owner->Name().c_str(), front.x, front.y, front.z, rotation_euler.x, rotation_euler.y, rotation_euler.z);
 }
 
 void ComponentTransform::UpdateTransformOfHierarchy(transform_matrix_calculation_mode mode)

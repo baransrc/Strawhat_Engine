@@ -61,7 +61,7 @@ public:
 	void SetLocalEulerRotation(const math::float3& new_rotation_euler_local);
 	void SetLocalRotation(const math::Quat& new_rotation_local);
 	void Rotate(const math::Quat& rotate_by);
-	void LookAt(const math::float3& world_up, const math::float3& direction);
+	void LookAt(const math::float3& direction);
 
 protected:
 	void DrawInspectorContent() override;
