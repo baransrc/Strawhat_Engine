@@ -36,6 +36,7 @@ Application* App = NULL;
 
 int main(int argc, char ** argv)
 {
+	//_CrtSetBreakAlloc(493);
 	atexit(DumpLeaks);
 	
 	int main_return = EXIT_FAILURE;
