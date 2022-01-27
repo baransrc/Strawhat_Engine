@@ -1,4 +1,5 @@
 #include "ComponentLight.h"
+#include "ComponentTransform.h"
 
 #include "ComponentTransform.h"
 #include "Entity.h"
@@ -11,6 +12,7 @@
 
 #include "GLEW/include/GL/glew.h"
 
+// TODO: MRG.
 ComponentLight::ComponentLight() : Component(),
 												type(light_type::SPOT),
 												position(0,0,0),
@@ -103,11 +105,13 @@ void ComponentLight::Load(light_type new_type)
 		App->shader_program->Use();
 
 		// Pass position of the directional light
-
-		float3 aux_pos = owner->Transform()->GetPosition();
+    
+    // TODO: MRG.
+    float3 aux_pos = owner->Transform()->GetPosition();
 		App->shader_program->SetUniformVariable("light.position", aux_pos);
 		float3 aux_front = owner->Transform()->GetFront();
-		App->shader_program->SetUniformVariable("light.direction", aux_front);
+		
+    App->shader_program->SetUniformVariable("light.direction", aux_front);
 		float aux_angle = math::Cos(math::DegToRad(radius));
 		App->shader_program->SetUniformVariable("light.radius", radius);
 		App->shader_program->SetUniformVariable("light.inner", radius);
@@ -174,6 +178,7 @@ void ComponentLight::Update()
 		//App->shader_program->Use();
 
 		// Pass position of the directional light
+    // TODO: MRG.
 		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
 		App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), float3(0.8f, 0.6f, 1.0f));
 		App->shader_program->SetUniformVariable("light.direction", owner->Transform()->GetFront());
@@ -183,6 +188,7 @@ void ComponentLight::Update()
 		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", color);
 		App->shader_program->SetUniformVariable("light.specular", float3(1.0f, 1.0f, 1.0f));
+  
 		App->shader_program->SetUniformVariable("light.constant", 1.0f);
 		App->shader_program->SetUniformVariable("light.linear", 0.9f);
 		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);

@@ -198,8 +198,12 @@
     </ClCompile>
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Components</Filter>
+      </ClCompile>
+      <ClCompile Include="ComponentCamera.cpp">
+      <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentMaterial.cpp">
+    </ClCompile>
+      <ClCompile Include="ComponentMaterial.cpp">
       <Filter>Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -779,8 +783,11 @@
     </ClInclude>
     <ClInclude Include="ComponentTransform.h">
       <Filter>Components</Filter>
-    </ClInclude>
+      </ClInclude>
     <ClInclude Include="ComponentMaterial.h">
+       </ClInclude>
+    </ClInclude>
+    <ClInclude Include="ComponentCamera.h">
       <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
@@ -868,5 +875,6 @@
     <None Include="..\Game\Shaders\vertex.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

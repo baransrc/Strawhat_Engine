@@ -11,6 +11,7 @@
 #include "Entity.h"
 #include "Component.h"
 #include "ComponentLight.h"
+#include "ComponentMesh.h"
 
 ModuleEditor::ModuleEditor()
 {
@@ -303,23 +304,20 @@ void ModuleEditor::DrawInspector()
 
 				if (ImGui::Selectable("Camera"))
 				{
-					selected_entity->AddComponent(component_type::CAMERA);
+					/*selected_entity->AddComponent<Component>();*/
 				}
 				if (ImGui::Selectable("Mesh"))
 				{
-					selected_entity->AddComponent(component_type::MESH);
+					selected_entity->AddComponent<ComponentMesh>();
 				}
-				if (ImGui::Selectable("Transform")) // TODO: For testing purposes, delete this.
+        // TODO: MRG.
+        if (ImGui::Selectable("Material"))
 				{
-					selected_entity->AddComponent(component_type::TRANSFORM);
-				}
-				if (ImGui::Selectable("Material"))
-				{
-					selected_entity->AddComponent(component_type::MATERIAL);
+					selected_entity->AddComponent<ComponentMaterial>();
 				}
 				if (ImGui::Selectable("Light"))
 				{
-					selected_entity->AddComponent(component_type::LIGHT);
+					selected_entity->AddComponent<ComponentLight>();
 				}
 
 				ImGui::EndMenu();
@@ -334,7 +332,7 @@ void ModuleEditor::DrawInspector()
 			ImGui::EndPopup();
 		}
 
-		for (Component* component : selected_entity->GetComponents())
+		for (Component* component : selected_entity->Components())
 		{
 			component->DrawInspector();
 		}
