@@ -210,10 +210,7 @@ void ComponentTransform::Rotate(const math::Quat& rotate_by)
 
 void ComponentTransform::LookAt(const math::float3& direction)
 {
-	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
-	math::float3 up_temp = direction.Cross(right_temp).Normalized();
-
-	SetRotation(math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY));
+	SetRotation(SimulateLookAt(direction));
 }
 
 void ComponentTransform::DrawInspectorContent()
