@@ -199,6 +199,9 @@
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\ImGuizmo.cpp">
+      <Filter>Libraries\DearImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -776,6 +779,9 @@
     </ClInclude>
     <ClInclude Include="ComponentTransform.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\ImGuizmo.h">
+      <Filter>Libraries\DearImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

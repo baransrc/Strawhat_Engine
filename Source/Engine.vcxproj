@@ -156,6 +156,7 @@
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_sdl.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui.cpp" />
+    <ClCompile Include="DEAR_IMGUI\include\ImGuizmo.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui_demo.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui_draw.cpp" />
     <ClCompile Include="DEAR_IMGUI\include\imgui_tables.cpp" />
@@ -306,6 +307,7 @@
     <ClInclude Include="DEAR_IMGUI\backends\imgui_impl_sdl.h" />
     <ClInclude Include="DEAR_IMGUI\include\imconfig.h" />
     <ClInclude Include="DEAR_IMGUI\include\imgui.h" />
+    <ClInclude Include="DEAR_IMGUI\include\ImGuizmo.h" />
     <ClInclude Include="DEAR_IMGUI\include\imgui_internal.h" />
     <ClInclude Include="DEAR_IMGUI\include\imstb_rectpack.h" />
     <ClInclude Include="DEAR_IMGUI\include\imstb_textedit.h" />
