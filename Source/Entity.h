@@ -31,7 +31,9 @@ public:
 	~Entity();
 
 	void Initialize(std::string new_name);
+	void PreUpdate();
 	void Update();
+	void PostUpdate();
 
 	void DrawGizmos();
 
@@ -42,16 +44,12 @@ public:
 
 	template <class COMPONENT_TYPE>
 	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) AddComponent();
-
 	template <class COMPONENT_TYPE> 
 	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) GetComponent() const;
-
 	template <class COMPONENT_TYPE>
 	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponents() const;
-
 	template <class COMPONENT_TYPE>
 	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponentsInChildren() const;
-	
 	template <class COMPONENT_TYPE>
 	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponentsIncludingChildren() const;
 
@@ -71,7 +69,6 @@ public:
 	void DrawEditor();
 
 	void InvokeComponentsChangedEvents(component_type type) const;
-
 	Event<component_type>* const GetComponentsChangedEvent() const;
 	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;
 

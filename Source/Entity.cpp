@@ -59,7 +59,25 @@ void Entity::Initialize(std::string new_name)
 	// NOTE: Initialize adds transform to components list of this entity.
 	// So, no additional need to delete it separately, as it gets deleted
 	// along with other components. Same goes with Update as well.
+}
 
+void Entity::PreUpdate()
+{
+	if (components.size() > 0)
+	{
+		for (Component* component : components)
+		{
+			component->PreUpdate();
+		}
+	}
+
+	if (children.size() > 0)
+	{
+		for (Entity* child : children)
+		{
+			child->PreUpdate();
+		}
+	}
 }
 
 /// <summary>
@@ -81,6 +99,25 @@ void Entity::Update()
 		for (Entity* child : children)
 		{
 			child->Update();
+		}
+	}
+}
+
+void Entity::PostUpdate()
+{
+	if (components.size() > 0)
+	{
+		for (Component* component : components)
+		{
+			component->PostUpdate();
+		}
+	}
+
+	if (children.size() > 0)
+	{
+		for (Entity* child : children)
+		{
+			child->PostUpdate();
 		}
 	}
 }
@@ -126,6 +163,8 @@ bool Entity::AddComponent(Component* component)
 
 	// Trigger components changed events:
 	InvokeComponentsChangedEvents(component->Type());
+
+	return true;
 }
 
 

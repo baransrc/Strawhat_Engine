@@ -11,7 +11,7 @@
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
 
-ComponentBoundingBox::ComponentBoundingBox() : minimal_enclosing_sphere_radius(10.0f)
+ComponentBoundingBox::ComponentBoundingBox() : Component(), minimal_enclosing_sphere_radius(10.0f)
 {
 
 }
