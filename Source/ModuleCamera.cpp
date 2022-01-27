@@ -97,7 +97,7 @@ bool ModuleCamera::Init()
 
 bool ModuleCamera::CleanUp()
 {
-	delete camera;
+	delete camera_entity;
 
 	// TODO(baran): Move this into a private method.
 	// Unsubscribe from window resized if it's not null:
