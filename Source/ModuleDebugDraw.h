@@ -4,7 +4,6 @@
 #include "Module.h"
 
 #include "Math/float4x4.h"
-#include <WinUser.h>
 
 class DDRenderInterfaceCoreGL;
 class Camera;
