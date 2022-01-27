@@ -51,6 +51,7 @@ public:
 	const math::float3& GetRight() const;
 	const math::float3& GetUp() const;
 	const math::float3& GetFront() const;
+	const math::float3& GetDirection() const;
 	
 	void SetPosition(const math::float3& new_position);
 	void SetScale(const math::float3& new_scale);

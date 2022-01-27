@@ -11,6 +11,7 @@
 #define RAD_TO_DEG (180.0 / PI)
 
 ComponentTransform::ComponentTransform() :
+Component(),
 position(math::float3::zero),
 position_local(math::float3::zero),
 scale(math::float3::one),
@@ -120,6 +121,11 @@ const math::float3& ComponentTransform::GetUp() const
 const math::float3& ComponentTransform::GetFront() const
 {
 	return front;
+}
+
+const math::float3& ComponentTransform::GetDirection() const
+{
+	return (-front).Normalized();
 }
 
 void ComponentTransform::SetPosition(const math::float3& new_position)
