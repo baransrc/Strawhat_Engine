@@ -128,6 +128,14 @@ const math::float3& ComponentTransform::GetDirection() const
 	return (-front).Normalized();
 }
 
+const math::Quat& ComponentTransform::SimulateLookAt(const math::float3& direction)
+{
+	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
+	math::float3 up_temp = direction.Cross(right_temp).Normalized();
+
+	return math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+}
+
 void ComponentTransform::SetPosition(const math::float3& new_position)
 {
 	position = new_position;
