@@ -4,6 +4,7 @@
 #include "ModuleRender.h"
 #include "ModuleCamera.h"
 #include "ComponentCamera.h"
+#include "ComponentTransform.h"
 
 #define DEBUG_DRAW_IMPLEMENTATION
 #include "DebugDraw.h"     // Debug Draw API. Notice that we need the DEBUG_DRAW_IMPLEMENTATION macro here!
@@ -610,10 +611,10 @@ bool ModuleDebugDraw::CleanUp()
     return true;
 }
 
-update_status  ModuleDebugDraw::Update()
+update_status  ModuleDebugDraw::PreUpdate()
 {
     dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
-    dd::xzSquareGrid(-32, 32, 0.0f, 1.0f, dd::colors::DimGray);
+    dd::xzSquareGrid(-100, 100, 0.0f, 1.0f, vec(0.3f, 0.3f, 0.3f), false);
 
     Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -638,12 +639,12 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
 {
     dd::box(points, color);
 
-    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+    // Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 void ModuleDebugDraw::DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size)
 {
     dd::arrow(from, to, color, arrow_head_size);
     
-    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+    // Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
 }

@@ -18,7 +18,7 @@ public:
     ~ModuleDebugDraw() override;
 
 	bool            Init();
-	update_status   Update();
+	update_status   PreUpdate();
     update_status   PostUpdate();
 	bool            CleanUp();
 
