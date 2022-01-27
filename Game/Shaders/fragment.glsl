@@ -79,7 +79,7 @@ vec3 PBRDirectional()
 vec3 PBRPoint()
 {
     vec3 N  = normalize(fragment_normal);
-    vec3 L = normalize(fragment_position - light.position);
+    vec3 L = normalize(light.position - fragment_position);
 
     float NdotL = max(dot(N,L), 0.0001);
 
@@ -139,8 +139,8 @@ vec3 PBRSpot()
 void main()
 {
     //vec3 PBR = PBRDirectional();
-    //vec3 PBR = PBRPoint();
-    vec3 PBR = PBRSpot();
+    vec3 PBR = PBRPoint();
+    //vec3 PBR = PBRSpot();
     //vec3 PBR = PBRSpot() + PBRPoint() + PBRDirectional();
     
     PBR += light.ambient*texture(material.diffuse, fragment_texture_coordinate).rgb;

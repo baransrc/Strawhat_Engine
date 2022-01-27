@@ -1,17 +1,22 @@
-#include "ModuleEditor.h"
 #include "Application.h"
+#include "ModuleEditor.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleRenderExercise.h"
+
 #include "Util.h"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
 #include "Globals.h"
+
 #include "Entity.h"
 #include "Component.h"
 #include "ComponentLight.h"
 #include "ComponentMesh.h"
+#include "ComponentMaterial.h"
+#include "ComponentCamera.h"
+
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
 
 ModuleEditor::ModuleEditor()
 {
@@ -47,7 +52,7 @@ bool ModuleEditor::Init()
 	light_entity->SetParent(base_entity);
 	ComponentLight* component_light = new ComponentLight();
 	component_light->Initialize(light_entity);
-	component_light->Load(light_type::SPOT);
+	component_light->Load(light_type::POINT);
 
 	return true;
 }
@@ -301,17 +306,15 @@ void ModuleEditor::DrawInspector()
 
 			if (ImGui::BeginMenu("Add Component"))
 			{
-
 				if (ImGui::Selectable("Camera"))
 				{
-					/*selected_entity->AddComponent<Component>();*/
+					selected_entity->AddComponent<ComponentCamera>();
 				}
 				if (ImGui::Selectable("Mesh"))
 				{
 					selected_entity->AddComponent<ComponentMesh>();
 				}
-        // TODO: MRG.
-        if (ImGui::Selectable("Material"))
+				if (ImGui::Selectable("Material"))
 				{
 					selected_entity->AddComponent<ComponentMaterial>();
 				}

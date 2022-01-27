@@ -638,44 +638,38 @@ void ModuleDebugDraw::Draw(const float4x4& view, const float4x4& proj, unsigned 
     dd::flush();
 }
 
-// TODO: MRG.
-
 void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
 {
     dd::box(points, color);
 
-    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
- 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    MakeDrawCall();
 }
 
 void ModuleDebugDraw::DrawCone(vec position, vec direction, vec color)
 {
     dd::cone(position, direction, color, 0.7f, 0.01f);
 
-    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
-  
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    MakeDrawCall();
 }
 
 void ModuleDebugDraw::DrawFrustum(float4x4 matrix, vec color)
 {
     dd::frustum(matrix, color);
 
-    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
-  
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    MakeDrawCall();
 }
 
 void ModuleDebugDraw::DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size)
 {
     dd::arrow(from, to, color, arrow_head_size);
-    
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::MakeDrawCall()
+{
     Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
- 
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

@@ -198,12 +198,11 @@
     </ClCompile>
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Components</Filter>
-      </ClCompile>
-      <ClCompile Include="ComponentCamera.cpp">
+    </ClCompile>
+    <ClCompile Include="ComponentCamera.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    </ClCompile>
-      <ClCompile Include="ComponentMaterial.cpp">
+    <ClCompile Include="ComponentMaterial.cpp">
       <Filter>Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -783,11 +782,11 @@
     </ClInclude>
     <ClInclude Include="ComponentTransform.h">
       <Filter>Components</Filter>
-      </ClInclude>
-    <ClInclude Include="ComponentMaterial.h">
-       </ClInclude>
     </ClInclude>
     <ClInclude Include="ComponentCamera.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentMaterial.h">
       <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>

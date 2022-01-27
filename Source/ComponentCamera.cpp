@@ -63,6 +63,8 @@ void ComponentCamera::PreUpdate()
 		App->shader_program->SetUniformVariable("model_matrix", owner->Transform()->GetMatrix(), true);
 		App->shader_program->SetUniformVariable("view_matrix", view_matrix, true);
 		App->shader_program->SetUniformVariable("projection_matrix", projection_matrix, true);
+
+		App->shader_program->SetUniformVariable("camera_position", owner->Transform()->GetPosition());
 	}
 }
 
