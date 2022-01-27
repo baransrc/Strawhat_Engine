@@ -18,8 +18,12 @@ private:
 	light_type type;
 
 	float3 position;
-	//Quat rotation;
+	Quat rotation;
 	float3 scale;
+
+	float radius;
+	float shininess;
+	float intensity;
 
 	float3 color;
 
@@ -32,11 +36,7 @@ public:
 	component_type Type() const override;
 	void Initialize(Entity* new_owner) override;
 	void Load(
-		light_type new_type, 
-		float3 new_position, 
-		//Quat new_rotation, 
-		float3 new_scale, 
-		float3 new_color
+		light_type new_type
 	);
 	void Update() override;
 	void Reset();
@@ -51,4 +51,27 @@ public:
 protected:
 	void DrawInspectorContent() override;
 };
+
+inline const char* component_light_type_to_string(light_type type)
+{
+	switch (type)
+	{
+	case light_type::SPOT:
+	{
+		return "Spot";
+	}
+	case light_type::DIRECTIONAL:
+	{
+		return "Directrional";
+	}
+	case light_type::POINT:
+	{
+		return "Point";
+	}
+	default:
+	{
+		return "Refer to ComponentLight.h and add this component to the function.";
+	}
+	}
+}
 

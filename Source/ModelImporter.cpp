@@ -2,6 +2,7 @@
 #include "Entity.h"
 #include "ComponentBoundingBox.h"
 #include "ComponentMesh.h"
+#include "ComponentMaterial.h"
 #include "ASSIMP/scene.h"
 #include "Globals.h"							// For LOG
 #include "Util.h"								// For String functions
@@ -135,9 +136,11 @@ namespace ModelImporter
 		/// <param name="scene">Model</param>
 		/// <param name="path_to_parent_directory">Path to model directory</param>
 		/// <returns>Array of texture ids.</returns>
-		unsigned int* ModelImporter_LoadTextureIds(const aiScene* scene, const char* path_to_parent_directory)
+		unsigned int* ModelImporter_LoadTextureIds(const aiScene* scene, const char* path_to_parent_directory, const char* file_name)
 		{
-			size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
+			//size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
+			//TODO: How are we supposed to know how many texture materials has the fbx if it's broken
+			size_t number_of_textures = 3; 
 
 			// Allocate memory for all the textures in scene:
 			unsigned int* texture_ids = (unsigned int*)calloc(number_of_textures, sizeof(unsigned int));
@@ -145,28 +148,54 @@ namespace ModelImporter
 			// For storing file name of textures of each iteration of the below loop:
 			aiString texture_file_path;
 
-			for (size_t i = 0; i < number_of_textures; ++i)
+			char* diffuse = util::ConcatCStrings(file_name, "Diffuse.png");;
+			char* specular = util::ConcatCStrings(file_name, "Specular.tif");;
+			char* occlusion = util::ConcatCStrings(file_name, "Occlusion.png");;
+			
+			unsigned int texture_id = 0;
+			bool loaded = ModelImporter_LoadTexture(texture_id, diffuse, path_to_parent_directory);
+			if (loaded)
 			{
-				// Get texture file name:
-				aiReturn is_diffuse_texture = scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texture_file_path);
-
-				// If couldn't load the diffuse texture file name from material,
-				// continue to the next material:
-				if (is_diffuse_texture != aiReturn_SUCCESS)
-				{
-					continue;
-				}
-
-				unsigned int texture_id = 0;
-				bool loaded = ModelImporter_LoadTexture(texture_id, texture_file_path.C_Str(), path_to_parent_directory);
-
-				// Since calloc defaults to 0, don't assign if not successful:
-				// TODO: Make sure texture with id 0 is the default texture.
-				if (loaded)
-				{
-					texture_ids[i] = texture_id;
-				}
+				texture_ids[0] = texture_id;
 			}
+			loaded = ModelImporter_LoadTexture(texture_id, specular, path_to_parent_directory);
+			if (loaded)
+			{
+				texture_ids[1] = texture_id;
+			}
+			loaded = ModelImporter_LoadTexture(texture_id, occlusion, path_to_parent_directory);
+			if (loaded)
+			{
+				texture_ids[2] = texture_id;
+			}
+
+			//for (size_t i = 0; i < number_of_textures; ++i)
+			//{
+			//	// Get texture file name:
+			//	/*aiReturn is_diffuse_texture = scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texture_file_path);
+			//	std::string model_texture_path(texture_file_path.data);
+			//	// If couldn't load the diffuse texture file name from material,
+			//	// continue to the next material:
+			//	if (is_diffuse_texture != aiReturn_SUCCESS)
+			//	{
+			//		continue;
+			//	}*/
+
+			//	unsigned int texture_id = i;
+			//	bool loaded = ModelImporter_LoadTexture(texture_id, texture_file_path.C_Str(), path_to_parent_directory);
+
+			//	// Since calloc defaults to 0, don't assign if not successful:
+			//	// TODO: Make sure texture with id 0 is the default texture.
+			//	if (loaded)
+			//	{
+			//		texture_ids[i] = texture_id;
+			//	}
+			//}
+
+			// Deallocate resources:
+			free(diffuse);
+			free(specular);
+			free(occlusion);
 
 			return texture_ids;
 		}
@@ -237,7 +266,7 @@ namespace ModelImporter
 		/// <param name="scene_name">Name of model</param>
 		/// <param name="texture_ids">An array consisting of texture ids</param>
 		/// <returns>Entity with child entities having mesh components.</returns>
-		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name, unsigned int* texture_ids)
+		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name/*, unsigned int* texture_ids*/)
 		{
 			Entity* model_entity = new Entity();
 			model_entity->Initialize(scene_name);
@@ -246,7 +275,8 @@ namespace ModelImporter
 			bounding_box->Initialize(model_entity);
 
 			size_t number_of_meshes = scene->mNumMeshes;
-			size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
+			//size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
+			size_t number_of_textures = 3; // For now we assume we have three texture for each material.
 
 			// For logging purposes:
 			size_t number_of_loaded_meshes = 0;
@@ -262,6 +292,13 @@ namespace ModelImporter
 			{
 				current_mesh_data = scene->mMeshes[i];
 
+				// Get the parent directory path from full file path:
+				char* path_to_parent_directory = util::ConcatCStrings("", scene_name);
+				util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
+
+				// Get Texture IDs:
+				unsigned int* texture_ids = ModelImporter_LoadTextureIds(scene, path_to_parent_directory, current_mesh_data->mName.C_Str());
+
 				Entity* current_node = new Entity();
 				current_node->Initialize((current_mesh_data->mName.C_Str()));
 				current_node->SetParent(model_entity);
@@ -269,6 +306,11 @@ namespace ModelImporter
 				ComponentBoundingBox* component_bounding_box = new ComponentBoundingBox();
 
 				component_bounding_box->Initialize(current_node);
+
+				ComponentMaterial* component_material = new ComponentMaterial();
+				component_material->Initialize(current_node);
+				component_material->Load(texture_ids, number_of_textures);
+
 
 				ComponentMesh* current_component_mesh = 
 					ModelImporter_LoadComponentMeshFromMeshData(current_mesh_data, current_node, texture_ids, number_of_textures);
@@ -278,6 +320,7 @@ namespace ModelImporter
 				number_of_indices += current_component_mesh->GetNumberOfIndices();
 				number_of_vertices += current_component_mesh->GetNumberOfVertices();
 				++number_of_loaded_meshes;
+				free(path_to_parent_directory);
 			}
 
 			LOG("Loaded model as entity named %s:\n\tNumber of child meshes: %zu\n\tNumber of triangles: %zu\n\tNumber of indices: %zu\n\tNumber of vertices: %zu",
@@ -320,25 +363,31 @@ namespace ModelImporter
 		}
 
 		// Get the parent directory path from full file path:
-		char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
-		util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
+		//char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
+		//util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
+
+		//Get only the name of the file
+		//char* name_of_file = util::ConcatCStrings("", path_to_file);
+		//name_of_file = util::GetStringBetween(name_of_file, "\\", ".");
+		//util::SubstrBeforeCharFromEnd(&name_of_file, '\\');
 
 		// Get Texture IDs:
-		unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory);
+		//unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory, name_of_file);
 
 		char* model_name = util::ConcatCStrings("", path_to_file);
 		util::SubstrBeforeCharFromEnd(&model_name, '\\');
 
 		Entity* loaded_model = ModelImporter_LoadMeshesAsEntity(
 			model,
-			model_name,
-			texture_ids
+			model_name
+			//texture_ids
 		);
 
 		// Deallocate resources:
 		free(model_name);
-		free(texture_ids);
-		free(path_to_parent_directory);
+		//free(texture_ids);
+		//free(path_to_parent_directory);
+		//free(name_of_file);
 
 		return loaded_model;
 	}

@@ -7,6 +7,7 @@ enum class component_type
 	CAMERA,
 	MESH,
 	BOUNDING_BOX,
+	MATERIAL,
 	LIGHT,
 };
 
@@ -33,6 +34,10 @@ inline const char* component_type_to_string(component_type type)
 	case component_type::BOUNDING_BOX:
 	{
 		return "Bounding Box";
+	}
+	case component_type::MATERIAL:
+	{
+		return "Material";
 	}
 	case component_type::LIGHT:
 	{

@@ -152,6 +152,7 @@
     <ClCompile Include="ComponentBoundingBox.cpp" />
     <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentLight.cpp" />
+    <ClCompile Include="ComponentMaterial.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="DEAR_IMGUI\backends\imgui_impl_opengl3.cpp" />
@@ -299,6 +300,7 @@
     <ClInclude Include="ComponentBoundingBox.h" />
     <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentLight.h" />
+    <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="ComponentType.h" />
