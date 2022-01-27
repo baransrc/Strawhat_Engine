@@ -26,7 +26,9 @@ public:
 	virtual void Initialize(Entity* new_owner);
 	virtual void Enable();
 	virtual void Disable();
+	virtual void PreUpdate();
 	virtual void Update();
+	virtual void PostUpdate();
 	virtual void DrawGizmo();
 	void DrawInspector();
 

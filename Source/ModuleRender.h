@@ -22,7 +22,7 @@ private:
 	Entity* loaded_entity;
 	EventListener<const char*> file_dropped_event_listener;
 	EventListener<unsigned int, unsigned int> window_resized_event_listener;
-	float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	float clear_color[4] = {0.176f, 0.176f, 0.176f, 1.0f};
 
 public:
 	ModuleRender();

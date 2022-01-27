@@ -11,7 +11,7 @@
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
 
-ComponentBoundingBox::ComponentBoundingBox() : minimal_enclosing_sphere_radius(10.0f)
+ComponentBoundingBox::ComponentBoundingBox() : Component(), minimal_enclosing_sphere_radius(10.0f)
 {
 
 }
@@ -60,30 +60,69 @@ void ComponentBoundingBox::Load()
     math::AABB aabb;
     aabb.SetNegativeInfinity();
 
-    std::vector<Component*> mesh_components = owner->GetComponentsIncludingChildren(component_type::MESH);
+    std::vector<ComponentMesh*> mesh_components = owner->GetComponentsInChildren<ComponentMesh>();
 
-    ComponentMesh* mesh_component = (ComponentMesh*)owner->GetComponent(component_type::MESH);
+    // TODO(Baran): Refactor this code to remove duplicate code here.
 
-    for (Component* mesh_component : mesh_components)
+    ComponentMesh* owner_mesh_component = owner->GetComponent<ComponentMesh>();
+    if (owner->GetComponent<ComponentMesh>() != nullptr && mesh_components.size() > 0)
     {
-        ComponentMesh* mesh = (ComponentMesh*)mesh_component;
-        const math::AABB& mesh_aabb = mesh->GetAABB();
+        mesh_components.push_back(owner_mesh_component);
+
+        for (ComponentMesh* mesh_component : mesh_components)
+        {
+            const math::AABB& mesh_aabb = mesh_component->GetAABB();
+            math::OBB local_obb;
+
+            local_obb.SetFrom(mesh_aabb);
+            local_obb.Scale(math::float3::zero, mesh_component->Owner()->Transform()->GetScale());
+            local_obb.Transform(mesh_component->Owner()->Transform()->GetRotation());
+            local_obb.Translate(mesh_component->Owner()->Transform()->GetPosition());
+
+            aabb.Enclose(local_obb);
+        }
+    }
+    else if (owner->GetComponent<ComponentMesh>() != nullptr && mesh_components.size() <= 0)
+    {
+        const math::AABB& mesh_aabb = owner_mesh_component->GetAABB();
         math::OBB local_obb;
 
-        local_obb.SetFrom(mesh_aabb);
-        local_obb.Scale(mesh->Owner()->Transform()->GetPosition(), mesh->Owner()->Transform()->GetScale());
-        local_obb.Translate(-mesh->Owner()->Transform()->GetPosition());
-        local_obb.Transform(mesh->Owner()->Transform()->GetRotation());
+        obb.SetFrom(mesh_aabb);
+        obb.Scale(math::float3::zero, Owner()->Transform()->GetScale());
+        obb.Transform(Owner()->Transform()->GetRotation());
+        obb.Translate(Owner()->Transform()->GetPosition());
+    }
+    else if (owner->GetComponent<ComponentMesh>() == nullptr && mesh_components.size() > 0)
+    {
+        for (ComponentMesh* mesh_component : mesh_components)
+        {
+            const math::AABB& mesh_aabb = mesh_component->GetAABB();
+            math::OBB local_obb;
 
-        aabb.Enclose(local_obb);
+            local_obb.SetFrom(mesh_aabb);
+
+            local_obb.Scale(math::float3::zero, mesh_component->Owner()->Transform()->GetScale());
+            local_obb.Transform(mesh_component->Owner()->Transform()->GetRotation());
+            local_obb.Translate(mesh_component->Owner()->Transform()->GetPosition());
+
+
+            aabb.Enclose(local_obb);
+        }
+        obb.SetFrom(aabb);
+    }
+    else
+    {
+        obb.SetFrom(math::AABB(math::float3(-0.5f, -0.5f, -0.5f), math::float3(0.5f, 0.5f, 0.5f)));
+        obb.Transform(Owner()->Transform()->GetRotation());
+        obb.Translate(Owner()->Transform()->GetPosition());
     }
 
     // NOTE: For now this is not a true obb, it's just an obb that acts like aabb,
     // rotations are not truly captured to be more precise. Maybe using child bound
     // ing boxes would give a better result.
 
-    // Form OBB from temp aabb:
-    obb.SetFrom(aabb);
+    //// Form OBB from temp aabb:
+    //obb.SetFrom(aabb);
 
     // Get Minimal enclosing sphere radius:
     const math::Sphere minimal_enclosing_sphere = obb.MinimalEnclosingSphere();
@@ -97,7 +136,6 @@ void ComponentBoundingBox::Update()
 
 void ComponentBoundingBox::DrawGizmo()
 {
-
     static const int order[8] = { 0, 1, 5, 4, 2, 3, 7, 6 };
     float3 vertices[8];
     for (int i = 0; i < 8; ++i)

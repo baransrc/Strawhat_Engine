@@ -13,7 +13,10 @@ Entity::Entity() :
 	active(false), 
 	id(0), 
 	parent(nullptr), 
-	being_renamed(false)
+	being_renamed(false),
+	components_changed(nullptr),
+	components_changed_in_descendants(nullptr),
+	transform(nullptr)
 {
 }
 
@@ -56,7 +59,25 @@ void Entity::Initialize(std::string new_name)
 	// NOTE: Initialize adds transform to components list of this entity.
 	// So, no additional need to delete it separately, as it gets deleted
 	// along with other components. Same goes with Update as well.
+}
 
+void Entity::PreUpdate()
+{
+	if (components.size() > 0)
+	{
+		for (Component* component : components)
+		{
+			component->PreUpdate();
+		}
+	}
+
+	if (children.size() > 0)
+	{
+		for (Entity* child : children)
+		{
+			child->PreUpdate();
+		}
+	}
 }
 
 /// <summary>
@@ -78,6 +99,25 @@ void Entity::Update()
 		for (Entity* child : children)
 		{
 			child->Update();
+		}
+	}
+}
+
+void Entity::PostUpdate()
+{
+	if (components.size() > 0)
+	{
+		for (Component* component : components)
+		{
+			component->PostUpdate();
+		}
+	}
+
+	if (children.size() > 0)
+	{
+		for (Entity* child : children)
+		{
+			child->PostUpdate();
 		}
 	}
 }
@@ -123,28 +163,10 @@ bool Entity::AddComponent(Component* component)
 
 	// Trigger components changed events:
 	InvokeComponentsChangedEvents(component->Type());
+
+	return true;
 }
 
-/// <summary>
-/// For now since there is no other Component type, this function will add an empty 
-/// component to the Entity, which has a unique id. For now, if component with same
-/// id is already inside the Entity, this function will not add that component to the 
-/// Entity.
-/// </summary>
-/// <param name="component"></param>
-void Entity::AddComponent(component_type type)
-{
-	Component* component = CreateComponent(type);
-
-	if (component == nullptr)
-	{
-		return;
-	}
-
-	component->Initialize(this);
-
-	AddComponent(component);
-}
 
 /// <summary>
 /// Removes component from Entity and deletes it if such component with id exists in the Entity.
@@ -197,11 +219,12 @@ Component* Entity::CreateComponent(component_type type) const
 }
 
 /// <summary>
-/// Get the first component of type type.
+/// Get the first component of type type. Prefer using GetComponent<>() if
+/// the type is known beforehand to keep your code clean.
 /// </summary>
 /// <param name="type">Type of component</param>
 /// <returns>First Component found in given type if it exists, nullptr if not.</returns>
-Component* Entity::GetComponent(component_type type)
+Component* const Entity::GetComponent(component_type type)
 {
 	for (Component* component : components)
 	{
@@ -219,67 +242,7 @@ const std::vector<Entity*>& Entity::GetChildren() const
 	return children;
 }
 
-std::vector<Component*> Entity::GetComponents(component_type type) const
-{
-	std::vector<Component*> components_of_type;
-	
-	components_of_type.reserve(components.size());
-
-	for (Component* component : components)
-	{
-		if (component->Type() == type)
-		{
-			components_of_type.push_back(component);
-
-			// If there is meant to be only one Component of this type
-			// in the Entity, break out of the loop once a Component of
-			// this type is found:
-			if (!Component::CanBeMoreThanOne(type))
-			{
-				break;
-			}
-
-		}
-	}
-
-	return components_of_type;
-}
-
-std::vector<Component*> Entity::GetComponentsInChildren(component_type type) const
-{
-	std::vector<Component*> components_in_children;
-
-	for (Entity* child : children)
-	{
-		std::vector<Component*> components_in_child = child->GetComponents(type);
-
-		for (Component* component : components_in_child)
-		{
-			components_in_children.push_back(component);
-		}
-	}
-
-	return components_in_children;
-}
-
-std::vector<Component*> Entity::GetComponentsIncludingChildren(component_type type) const
-{
-	std::vector<Component*> components_in_children = GetComponents(type);
-	
-	for (Entity* child : children)
-	{
-		std::vector<Component*> components_in_child = child->GetComponents(type);
-
-		for (Component* component : components_in_child)
-		{
-			components_in_children.push_back(component);
-		}
-	}
-
-	return components_in_children;
-}
-
-const std::vector<Component*>& Entity::GetComponents() const
+const std::vector<Component*>& Entity::Components() const
 {
 	return components;
 }

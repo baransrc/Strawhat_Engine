@@ -150,6 +150,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentBoundingBox.cpp" />
+    <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentLight.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
@@ -296,6 +297,7 @@
     <ClInclude Include="ASSIMP\include\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentBoundingBox.h" />
+    <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentLight.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentTransform.h" />
@@ -426,6 +428,7 @@
     <None Include="ASSIMP\include\assimp\SmoothingGroups.inl" />
     <None Include="ASSIMP\include\assimp\vector2.inl" />
     <None Include="ASSIMP\include\assimp\vector3.inl" />
+    <None Include="cpp.hint" />
     <None Include="MATH_GEO_LIB\Geometry\KDTree.inl" />
     <None Include="MATH_GEO_LIB\Geometry\QuadTree.inl" />
     <None Include="MATH_GEO_LIB\Math\float2.inl" />

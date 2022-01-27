@@ -5,6 +5,12 @@
 
 #include "Component.h"
 
+enum class transform_matrix_calculation_mode
+{
+	LOCAL_FROM_GLOBAL,
+	GLOBAL_FROM_LOCAL
+};
+
 class ComponentTransform : public Component
 {
 private:
@@ -20,6 +26,7 @@ private:
 	math::float3	up;
 	math::float3	front;
 	math::float4x4	matrix;
+	math::float4x4  matrix_local;
 
 public:
 	ComponentTransform();
@@ -44,7 +51,9 @@ public:
 	const math::float3& GetRight() const;
 	const math::float3& GetUp() const;
 	const math::float3& GetFront() const;
-	
+	const math::float3& GetDirection() const;
+	static const math::Quat& SimulateLookAt(const math::float3& direction);
+
 	void SetPosition(const math::float3& new_position);
 	void SetScale(const math::float3& new_scale);
 	void SetEulerRotation(const math::float3& new_rotation_euler);
@@ -53,17 +62,13 @@ public:
 	void SetLocalScale(const math::float3& new_scale_local);
 	void SetLocalEulerRotation(const math::float3& new_rotation_euler_local);
 	void SetLocalRotation(const math::Quat& new_rotation_local);
+	void Rotate(const math::Quat& rotate_by);
+	void LookAt(const math::float3& direction);
 
 protected:
 	void DrawInspectorContent() override;
 
 private: 
-	void CalculatePositionFromLocalPosition();
-	void CalculateLocalPositionFromPosition();
-	void CalculateRotationFromLocalRotation();
-	void CalculateLocalRotationFromRotation();
-	void CalculateScaleFromLocalScale();
-	void CalculateLocalScaleFromScale();
-	void CalculateMatrix(bool marked_as_dirty_by_parent);
-	void UpdateTransformOfHierarchy(bool marked_as_dirty_by_parent);
+	void CalculateTransform(transform_matrix_calculation_mode mode);
+	void UpdateTransformOfHierarchy(transform_matrix_calculation_mode mode);
 };
