@@ -61,7 +61,7 @@ void ComponentCamera::PreUpdate()
 		// Pass transposed model view projection matrices to the shader, as MathGeoLib is row major
 		// and OpenGL is column major:
 		App->shader_program->SetUniformVariable("model_matrix", owner->Transform()->GetMatrix(), true);
-		App->shader_program->SetUniformVariable("view_matrix", owner->Transform()->GetMatrix().Inverted(), true);
+		App->shader_program->SetUniformVariable("view_matrix", view_matrix, true);
 		App->shader_program->SetUniformVariable("projection_matrix", projection_matrix, true);
 	}
 }
