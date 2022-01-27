@@ -199,6 +199,9 @@
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentCamera.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -775,6 +778,9 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="ComponentTransform.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentCamera.h">
       <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>

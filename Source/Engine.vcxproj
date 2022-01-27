@@ -150,6 +150,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentBoundingBox.cpp" />
+    <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentLight.cpp" />
     <ClCompile Include="ComponentMesh.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
@@ -296,6 +297,7 @@
     <ClInclude Include="ASSIMP\include\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentBoundingBox.h" />
+    <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentLight.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentTransform.h" />
