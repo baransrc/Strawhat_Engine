@@ -1,5 +1,5 @@
 #pragma once
-#include "OPTICK/include/optick.h"
+//#include "OPTICK/include/optick.h"
 #include <windows.h>
 #include <stdio.h>
 #include "Console.h"
