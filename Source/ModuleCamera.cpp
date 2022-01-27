@@ -1,18 +1,43 @@
+#include "Globals.h"
 #include "Application.h"
 #include "ModuleCamera.h"
 #include "ModuleInput.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleShaderProgram.h"
-#include "Globals.h"
-#include "MathGeoLib.h"
-#include "MATH_GEO_LIB/Geometry/Sphere.h"
-#include "ComponentBoundingBox.h"
+
 #include "Entity.h"
+#include "ComponentBoundingBox.h"
 #include "ComponentTransform.h"
 #include "ComponentCamera.h"
 
-ModuleCamera::ModuleCamera() : camera_entity(nullptr), transform(nullptr), camera(nullptr)
+#include "MATH_GEO_LIB/Geometry/Sphere.h"
+
+ModuleCamera::ModuleCamera() : 
+	state(camera_state::UNFOCUSED),
+	mouse_input_state(camera_mouse_input_state::IDLE),
+	sensitivity(0.0f),
+	orbit_speed(0.0f),
+	zoom_speed(0.0f),
+	zoom_velocity(0.0f),
+	zoom_drag(0.0f),
+	movement_speed(0.0f),
+	fast_movement_speed(0.0f),
+	focus_on_model_changed(false),
+	focus_start_position(math::float3::zero),
+	focus_start_direction(math::float3::zero),
+	focus_start_orientation(),
+	focus_target_orientation(),
+	focus_target_position(math::float3::zero),
+	focus_destination_position(math::float3::zero),
+	focus_target_direction(math::float3::zero),
+	focus_duration(0.0f),
+	focus_lerp_position(0.0f),
+	focus_target_radius(0.0f),
+	window_resized_event_listener(EventListener<unsigned int, unsigned int>()),
+	camera_entity(nullptr), 
+	transform(nullptr), 
+	camera(nullptr)
 {
 }
 
@@ -25,32 +50,31 @@ bool ModuleCamera::Init()
 	// Initialize Camera:
 	camera_entity = new Entity();
 	camera_entity->Initialize("Editor Camera");
-
-	transform = camera_entity->Transform();
-
-	// Set initial position:
-	transform->SetPosition(float3(10.0f, 10.0f, 10.0f));
-
 	camera_entity->AddComponent<ComponentCamera>();
 
 	// Cache camera and transform components in variables
 	// to have easy access:
+	transform = camera_entity->Transform();
 	camera = camera_entity->GetComponent<ComponentCamera>();
 
+	// Set initial position:
+	transform->SetPosition(float3(30.0f, 30.0f, 30.0f));
 
 	// Set camera as the main camera:
 	camera->SetIsMainCamera(true);
 
+	// Set focus related variables:
 	state = camera_state::UNFOCUSED;
-
-	focus_on_model_changed = true;
+	sensitivity = 10.0f;
+	focus_on_model_changed = false;
 	focus_target_position = -float3::unitX;
 	focus_destination_position = float3::zero;
+	focus_target_orientation = math::Quat::identity;
+	focus_start_orientation = math::Quat::identity;
+	focus_target_direction = float3::zero;
 	focus_duration = 0.4f;
 	focus_lerp_position = 0.0f;
-	focus_target_direction = float3::zero;
 	focus_target_radius = 0.0f;
-
 	movement_speed = float3::one * 20.f;
 	fast_movement_speed = float3::one * 40.f;
 	orbit_speed = 1.0f;
@@ -60,8 +84,8 @@ bool ModuleCamera::Init()
 	zoom_drag = 0.05;
 	zoom_speed = 1.5f;
 
-	//// Look at focus_target_position from our position:
-	//camera->LookAt(transform->GetPosition() - focus_target_position);
+	// Look at focus_target_position from our position:
+	camera->LookAt(focus_target_position - transform->GetPosition());
 
 	// Initialize window resized event lister:
 	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
@@ -84,6 +108,39 @@ bool ModuleCamera::CleanUp()
 	}
 
 	return true;
+}
+
+update_status ModuleCamera::PreUpdate()
+{
+	Move();
+
+	Focus();
+
+	Zoom();
+
+	DetermineMouseInputState();
+
+	Rotate();
+
+	Orbit();
+
+	camera_entity->PreUpdate();
+
+	return update_status::UPDATE_CONTINUE;
+}
+
+update_status ModuleCamera::Update()
+{
+	camera_entity->Update();
+
+	return update_status::UPDATE_CONTINUE;
+}
+
+update_status ModuleCamera::PostUpdate()
+{
+	camera_entity->PostUpdate();
+
+	return update_status::UPDATE_CONTINUE;
 }
 
 ComponentCamera* const ModuleCamera::GetCamera() const
@@ -122,35 +179,6 @@ void ModuleCamera::OnModelChanged()
 	camera->SetFarPlaneDistance(new_far_plane_distance);
 
 	focus_on_model_changed = true;
-}
-
-update_status ModuleCamera::PreUpdate()
-{
-	Move();
-	Focus();
-	Zoom();
-
-	DetermineMouseInputState();
-	Rotate();
-	//Orbit();
-
-	camera->PreUpdate();
-
-	return update_status::UPDATE_CONTINUE;
-}
-
-update_status ModuleCamera::Update()
-{
-	//camera_entity->Update();
-
-	return update_status::UPDATE_CONTINUE;
-}
-
-update_status ModuleCamera::PostUpdate()
-{
-	//camera_entity->PostUpdate();
-
-	return update_status::UPDATE_CONTINUE;
 }
 
 void ModuleCamera::Move()
@@ -266,8 +294,8 @@ void ModuleCamera::Rotate()
 
 void ModuleCamera::Orbit()
 {
-	// If the camera is focusing on a target right now, ignore orbiting through mouse movement:
-	if (state == camera_state::FOCUSING)
+	// If the camera is not focused on a target right now, ignore orbiting through mouse movement:
+	if (state != camera_state::FOCUSED)
 	{
 		return;
 	}
@@ -282,26 +310,23 @@ void ModuleCamera::Orbit()
 	float2 mouse_delta = App->input->GetMouseDisplacement();
 
 	// Store smoothened and adjusted displacements of mouse as radians:
-	float x_delta = math::DegToRad(-mouse_delta.x * sensitivity * Time->DeltaTime());
-	float y_delta = math::DegToRad(-mouse_delta.y * sensitivity * Time->DeltaTime());
+	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
+	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
 
 	// Get orbit center:
 	const float3 center_position = focus_target_position;
 
 	// Calculate direction from position to orbit center:
-	float3 direction = transform->GetPosition() - center_position;
-
+	float3 direction = center_position - transform->GetPosition();
 	// Rotate around camera's up by x_delta:
-	Quat rotate_up = Quat::RotateAxisAngle(transform->GetUp(), x_delta);
+	Quat rotate_up = Quat::RotateAxisAngle(transform->GetUp(), -x_delta);
 	// Rotate around camera's right by y_delta:
-	Quat rotate_right = Quat::RotateAxisAngle(transform->GetRight(), y_delta);
+	Quat rotate_right = Quat::RotateAxisAngle(transform->GetRight(), -y_delta);
 
 	// Apply rotations to direction:
 	direction = (rotate_up * rotate_right).Transform(direction);
-
 	// Update position:
-	transform->SetPosition(center_position + direction);
-
+	transform->SetPosition(center_position - direction);
 	// Look at selected target:
 	transform->LookAt(direction);
 
@@ -381,7 +406,6 @@ void ModuleCamera::Focus()
 {
 	DetectFocus();
 	ExecuteFocus();
-	ExecuteUnfocus();
 }
 
 void ModuleCamera::DetermineMouseInputState()
@@ -408,27 +432,6 @@ void ModuleCamera::DetermineMouseInputState()
 
 	// If none of the modes are detected, set mouse_input_state to idle:
 	mouse_input_state = camera_mouse_input_state::IDLE;
-}
-
-void ModuleCamera::ExecuteUnfocus()
-{
-	if (mouse_input_state == camera_mouse_input_state::ORBIT)
-	{
-		return;
-	}
-
-	if (state != camera_state::UNFOCUSED)
-	{
-		return;
-	}
-
-	focus_lerp_position = 1.0f;
-	focus_target_position = transform->GetPosition() + 10.0f * transform->GetDirection();
-	focus_destination_position = transform->GetPosition();
-	focus_target_direction = transform->GetFront();
-	focus_target_radius = 0.0f;
-
-	LOG("EXECUTE UNFOCUSED");
 }
 
 void ModuleCamera::DetectFocus()
@@ -511,34 +514,22 @@ void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 
 	// Set state of camera to FOCUSING:
 	state = camera_state::FOCUSING;
-
 	// Set starting position:
 	focus_start_position = transform->GetPosition();
-
 	// Set starting direction:
 	focus_start_direction = transform->GetDirection();
-
 	// Set starting orientation:
 	focus_start_orientation = transform->GetRotation();
-
 	// Set target position:
 	focus_target_position = position;
-
 	// Set focus_target_radius to given bounding_sphere_radius:
 	focus_target_radius = bounding_sphere_radius;
-
 	// Get target direction (Actually it's direction from target to camera):
 	focus_target_direction = (focus_target_position - focus_start_position).Normalized();
-
 	// Get target orientation:
 	focus_target_orientation = transform->SimulateLookAt(focus_target_direction);
-
 	// Set Focus destination position to the position away from target's position by desired_distance:
 	focus_destination_position = focus_target_position - desired_distance * focus_target_direction;
-
 	// Set focus_lerp_position to 0:
 	focus_lerp_position = 0.0f;
-
-
-	LOG("SETUP FOCUS");
 }
