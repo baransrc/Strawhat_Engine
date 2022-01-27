@@ -10,8 +10,9 @@
 #include "ComponentBoundingBox.h"
 #include "Entity.h"
 #include "ComponentTransform.h"
+#include "ComponentCamera.h"
 
-ModuleCamera::ModuleCamera()
+ModuleCamera::ModuleCamera() : camera_entity(nullptr), transform(nullptr), camera(nullptr)
 {
 }
 
@@ -22,57 +23,51 @@ ModuleCamera::~ModuleCamera()
 bool ModuleCamera::Init()
 {
 	// Initialize Camera:
-	camera = new Entity();
-	camera->Initialize("Editor Camera");
+	camera_entity = new Entity();
+	camera_entity->Initialize("Editor Camera");
 
-	// Initialize the frustum:
-	frustum.SetKind(FrustumSpaceGL, FrustumRightHanded);
+	transform = camera_entity->Transform();
 
-	// TODO: Make this switchable inside the editor:
-	if (is_perspective)
-	{
-		SetAsPerspective
-		(
-			math::DegToRad(45.0f), // Horizontal field of view
-			(float)App->window->window_width / (float)App->window->window_height // Aspect ratio
-		);
-	}
-	else
-	{
-		SetAsOrthographic(5.f, 5.f);
-	}
+	// Set initial position:
+	transform->SetPosition(float3(10.0f, 10.0f, 10.0f));
 
-	SetPlaneDistances(0.1f, 200.0f);
+	camera_entity->AddComponent<ComponentCamera>();
 
-	SetPosition(float3(10.0f, 10.0f, 10.0f));
+	// Cache camera and transform components in variables
+	// to have easy access:
+	camera = camera_entity->GetComponent<ComponentCamera>();
+
+
+	// Set camera as the main camera:
+	camera->SetIsMainCamera(true);
 
 	state = camera_state::UNFOCUSED;
-	
+
 	focus_on_model_changed = true;
 	focus_target_position = -float3::unitX;
 	focus_destination_position = float3::zero;
-	focus_duration = 0.65f;
-	focus_lerp_position = 1.0f;
+	focus_duration = 0.4f;
+	focus_lerp_position = 0.0f;
 	focus_target_direction = float3::zero;
 	focus_target_radius = 0.0f;
 
 	movement_speed = float3::one * 20.f;
 	fast_movement_speed = float3::one * 40.f;
 	orbit_speed = 1.0f;
-	
+
 	// Set zoom related variables:
 	zoom_velocity = 0.0f;
 	zoom_drag = 0.05;
 	zoom_speed = 1.5f;
 
-	// Look at focus_target_position from our position:
-	LookAt(focus_target_position, vector_mode::POSITION, true);
+	//// Look at focus_target_position from our position:
+	//camera->LookAt(transform->GetPosition() - focus_target_position);
 
 	// Initialize window resized event lister:
 	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleCamera::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
 	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
-	
+
 	return true;
 }
 
@@ -91,133 +86,19 @@ bool ModuleCamera::CleanUp()
 	return true;
 }
 
-float4x4 ModuleCamera::GetViewMatrix() const 
-{ 
-	return camera->Transform()->GetMatrix().Inverted();
+ComponentCamera* const ModuleCamera::GetCamera() const
+{
+	return camera;
 }
 
-void ModuleCamera::SetHorizontalFOV(float new_horizontal_fov)
+ComponentTransform* const ModuleCamera::GetTransform() const
 {
-	frustum.SetHorizontalFovAndAspectRatio(new_horizontal_fov, GetAspectRatio());
-	should_recalculate_projection_matrix = true;
-}
-
-void ModuleCamera::SetAspectRatio(float new_aspect_ratio)
-{
-	frustum.SetHorizontalFovAndAspectRatio(frustum.HorizontalFov(), new_aspect_ratio);
-	should_recalculate_projection_matrix = true;
-}
-
-void ModuleCamera::SetFarPlaneDistance(float new_far_plane_distance)
-{
-	frustum.SetViewPlaneDistances(frustum.NearPlaneDistance(), new_far_plane_distance);
-	should_recalculate_projection_matrix = true; // NOTE: Should far plane effect projection matrix?
-}
-
-void ModuleCamera::SetNearPlaneDistance(float new_near_plane_distance)
-{
-	frustum.SetViewPlaneDistances(new_near_plane_distance, frustum.FarPlaneDistance());
-	should_recalculate_projection_matrix = true; // NOTE: Should near plane effect projection matrix?
-}
-
-void ModuleCamera::SetPlaneDistances(float new_near_plane_distance, float new_far_plane_distance)
-{
-	frustum.SetViewPlaneDistances(new_near_plane_distance, new_far_plane_distance); 
-	should_recalculate_projection_matrix = true; // NOTE: Should near and far plane effect projection matrix?
-}
-
-void ModuleCamera::SetPosition(float3 new_position)
-{
-	frustum.SetPos(new_position);
-
-	camera->Transform()->SetPosition(new_position);
-}
-
-void ModuleCamera::SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio)
-{
-	frustum.SetPerspective(new_horizontal_fov, 2 * math::Atan(math::Tan(new_horizontal_fov * 0.5f) * new_aspect_ratio));
-	SetAspectRatio(new_aspect_ratio);
-	should_recalculate_projection_matrix = true;
-}
-
-float3 ModuleCamera::GetUp() const
-{
-	return camera->Transform()->GetUp();
-}
-
-float3 ModuleCamera::GetFront() const
-{
-	return camera->Transform()->GetFront();
-}
-
-float3 ModuleCamera::GetDirection() const
-{
-	return (-1.0f * camera->Transform()->GetFront()).Normalized();
-}
-
-float3 ModuleCamera::GetRight() const
-{
-	return camera->Transform()->GetRight();
-}
-
-float3 ModuleCamera::GetPosition() const
-{
-	return camera->Transform()->GetPosition();
-}
-
-float3 ModuleCamera::GetRotation() const
-{
-	return rotation_euler;
-}
-
-void ModuleCamera::SetAsOrthographic(float new_orthographic_width, float new_orthographic_height)
-{
-	frustum.SetOrthographic(new_orthographic_width, new_orthographic_height);
-	should_recalculate_projection_matrix = true;
-}
-
-/// <summary>
-/// This method only computes direction, front, right and up according to specified position/direction.
-/// Actual Computation of view matrix according to those properties are done in ComputeViewMatrix method.
-/// </summary>
-/// <param name="look_at">: Position/Direction to look at.</param>
-/// <param name="interpret_as">: Interpret look_at as either DIRECTION or POSITION</param>
-/// <param name="calculate_rotation">: Should camera recalculate it's stored rotation angles according to the calculated direction vector?</param>
-void ModuleCamera::LookAt(float3 look_at, vector_mode interpret_as, bool calculate_rotation)
-{
-	float3 new_direction = float3::zero;
-
-	if (interpret_as == vector_mode::POSITION)
-	{
-		new_direction = (look_at - GetPosition()).Normalized();
-	}
-	else if (interpret_as == vector_mode::DIRECTION)
-	{
-		new_direction = look_at.Normalized();
-	}
-
-	camera->Transform()->LookAt(new_direction);
-}
-
-void ModuleCamera::AutoRotateAround(float3 position)
-{
-	const float radius = 10.0f;
-	static float angle = 0.0f;
-
-	angle += Time->DeltaTime() * orbit_speed;
-
-	float cam_x = sin(angle) * radius;
-	float cam_z = cos(angle) * radius;
-	float cam_y = GetPosition().y;
-
-	SetPosition(float3(cam_x, cam_y, cam_z));
-
-	LookAt(position);
+	return transform;
 }
 
 void ModuleCamera::HandleWindowResized(unsigned int width, unsigned int height)
 {
-	SetAspectRatio((float)width / (float)height);
+	camera->SetAspectRatio((float)width / (float)height);
 }
 
 void ModuleCamera::OnModelChanged()
@@ -234,11 +115,11 @@ void ModuleCamera::OnModelChanged()
 		size = bounding_box->GetMinimalEnclosingSphereRadius();
 	}
 
-	float new_far_plane_distance = frustum.FarPlaneDistance();
+	float new_far_plane_distance = camera->GetFarPlaneDistance();
 
 	new_far_plane_distance = math::Max(size * 10, new_far_plane_distance);
 
-	SetFarPlaneDistance(new_far_plane_distance);
+	camera->SetFarPlaneDistance(new_far_plane_distance);
 
 	focus_on_model_changed = true;
 }
@@ -248,44 +129,28 @@ update_status ModuleCamera::PreUpdate()
 	Move();
 	Focus();
 	Zoom();
-	
+
 	DetermineMouseInputState();
 	Rotate();
-	Orbit();
-	
-	// Recalculate projection matrix if necessary:
-	if (should_recalculate_projection_matrix)
-	{
-		should_recalculate_projection_matrix = false;
-		CalculateProjectionMatrix();
-	}
+	//Orbit();
 
-	// Make sure we are using the true shader before passing the arguments:
-	App->shader_program->Use();
-
-	// Pass transposed model view projection matrices to the shader, as MathGeoLib is row major
-	// and OpenGL is column major:
-	App->shader_program->SetUniformVariable("model_matrix", camera->Transform()->GetMatrix(), true);
-	App->shader_program->SetUniformVariable("view_matrix", GetViewMatrix(), true);
-	App->shader_program->SetUniformVariable("projection_matrix", projection_matrix, true);
+	camera->PreUpdate();
 
 	return update_status::UPDATE_CONTINUE;
 }
 
 update_status ModuleCamera::Update()
 {
+	//camera_entity->Update();
+
 	return update_status::UPDATE_CONTINUE;
 }
 
 update_status ModuleCamera::PostUpdate()
 {
-	return update_status::UPDATE_CONTINUE;
-}
+	//camera_entity->PostUpdate();
 
-void ModuleCamera::CalculateProjectionMatrix()
-{
-	frustum.ComputeProjectionMatrix();
-	projection_matrix = frustum.ProjectionMatrix();
+	return update_status::UPDATE_CONTINUE;
 }
 
 void ModuleCamera::Move()
@@ -310,48 +175,48 @@ void ModuleCamera::Move()
 	const float3 velocity = Time->DeltaTime() * current_movement_speed /** App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius()*0.1f*/;
 
 	// Store and Cache Position:
-	float3 new_position = GetPosition();
+	float3 new_position = transform->GetPosition();
 
 	bool moved_this_frame = false;
 	bool should_unfocus = false;
 
 	if (App->input->GetKey(SDL_SCANCODE_W, key_state::REPEAT))
 	{
-		new_position += -GetFront() * velocity.z;
+		new_position += -transform->GetFront() * velocity.z;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_S, key_state::REPEAT))
 	{
-		new_position -= -GetFront() * velocity.z;
+		new_position -= -transform->GetFront() * velocity.z;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_D, key_state::REPEAT))
 	{
-		new_position += GetRight() * velocity.x;
+		new_position += transform->GetRight() * velocity.x;
 		moved_this_frame = true;
 		should_unfocus = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_A, key_state::REPEAT))
 	{
-		new_position -= GetRight() * velocity.x;
+		new_position -= transform->GetRight() * velocity.x;
 		moved_this_frame = true;
 		should_unfocus = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_UP, key_state::REPEAT))
 	{
-		new_position += GetUp() * velocity.y;
+		new_position += transform->GetUp() * velocity.y;
 		moved_this_frame = true;
 	}
 	if (App->input->GetKey(SDL_SCANCODE_DOWN, key_state::REPEAT))
 	{
-		new_position -= GetUp() * velocity.y;
+		new_position -= transform->GetUp() * velocity.y;
 		moved_this_frame = true;
 	}
-	
+
 	if (moved_this_frame)
 	{
 		// Apply position changes:
-		SetPosition(new_position);
+		transform->SetPosition(new_position);
 	}
 
 	if (should_unfocus)
@@ -387,13 +252,13 @@ void ModuleCamera::Rotate()
 	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
 	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
 
-	math::float3 look_at_direction = -camera->Transform()->GetFront();
+	math::float3 look_at_direction = -transform->GetFront();
 
-	look_at_direction = Quat(camera->Transform()->GetRight(), -y_delta) * look_at_direction;
-	look_at_direction = Quat(camera->Transform()->GetUp(), -x_delta) * look_at_direction;
+	look_at_direction = Quat(transform->GetRight(), -y_delta) * look_at_direction;
+	look_at_direction = Quat(transform->GetUp(), -x_delta) * look_at_direction;
 
 	// Look At the look_at_direction:
-	LookAt(look_at_direction, vector_mode::DIRECTION, false);
+	transform->LookAt(look_at_direction);
 
 	// Unfocus the camera since a movement was made:
 	state = camera_state::UNFOCUSED;
@@ -424,32 +289,32 @@ void ModuleCamera::Orbit()
 	const float3 center_position = focus_target_position;
 
 	// Calculate direction from position to orbit center:
-	float3 direction = GetPosition() - center_position;
+	float3 direction = transform->GetPosition() - center_position;
 
 	// Rotate around camera's up by x_delta:
-	Quat rotate_up = Quat::RotateAxisAngle(GetUp(), x_delta);
+	Quat rotate_up = Quat::RotateAxisAngle(transform->GetUp(), x_delta);
 	// Rotate around camera's right by y_delta:
-	Quat rotate_right = Quat::RotateAxisAngle(GetRight(), y_delta);
-	
+	Quat rotate_right = Quat::RotateAxisAngle(transform->GetRight(), y_delta);
+
 	// Apply rotations to direction:
 	direction = (rotate_up * rotate_right).Transform(direction);
-	
+
 	// Update position:
-	SetPosition(center_position + direction);
-	
+	transform->SetPosition(center_position + direction);
+
 	// Look at selected target:
-	LookAt(center_position);
+	transform->LookAt(direction);
 
 	// Update focus_target_direction to be the direction camera currently 
 	// facing:
-	focus_target_direction = GetDirection();
+	focus_target_direction = transform->GetDirection();
 }
 
 void ModuleCamera::Zoom()
 {
 	// Calculate new speed by mouse wheel input:
 	float input_velocity = App->input->GetMouseWheelDisplacement().y * zoom_speed * Time->DeltaTime();
-	
+
 	// If there is no mouse wheel input, dont touch the current zoom_velocity,
 	// if there is a mouse input, override the zoom_velocity if the input_velocity
 	// is bigger in size at the same direction, or input_velocity is to the opposite
@@ -500,7 +365,7 @@ void ModuleCamera::Zoom()
 	}
 
 	// Set new_horizontal_fov to the current horizontal fov + zoom_velocity:
-	float new_horizontal_fov = frustum.HorizontalFov() + zoom_velocity;
+	float new_horizontal_fov = camera->GetHorizontalFOV() + zoom_velocity;
 
 	static const float DEGREE_120_RADIANS = math::DegToRad(120.0f);
 	static const float DEGREE_1_RADIANS = math::DegToRad(1.0f);
@@ -509,7 +374,7 @@ void ModuleCamera::Zoom()
 	new_horizontal_fov = math::Clamp(new_horizontal_fov, DEGREE_1_RADIANS, DEGREE_120_RADIANS);
 
 	// Set new horizontal fov value:
-	SetHorizontalFOV(new_horizontal_fov);
+	camera->SetHorizontalFOV(new_horizontal_fov);
 }
 
 void ModuleCamera::Focus()
@@ -558,10 +423,12 @@ void ModuleCamera::ExecuteUnfocus()
 	}
 
 	focus_lerp_position = 1.0f;
-	focus_target_position = GetPosition() + 10.0f * -GetFront();
-	focus_destination_position = GetPosition();
-	focus_target_direction = GetFront();
+	focus_target_position = transform->GetPosition() + 10.0f * transform->GetDirection();
+	focus_destination_position = transform->GetPosition();
+	focus_target_direction = transform->GetFront();
 	focus_target_radius = 0.0f;
+
+	LOG("EXECUTE UNFOCUSED");
 }
 
 void ModuleCamera::DetectFocus()
@@ -590,7 +457,7 @@ void ModuleCamera::ExecuteFocus()
 		return;
 	}
 
-	focus_lerp_position += Time->DeltaTime() / focus_duration; // TODO: Create setter for focus_duration and cache 1/focus_duration.
+	focus_lerp_position += Time->DeltaTime() / focus_duration;
 
 	// Stop Executing focus next frame if the lerp ended 
 	// and clamp focus_lerp_position to be 1.0f at max:
@@ -600,15 +467,15 @@ void ModuleCamera::ExecuteFocus()
 		state = camera_state::FOCUSED;
 	}
 
-	// Lerp to target direction:
-	float3 direction = float3::Lerp(GetDirection(), focus_target_direction, focus_lerp_position).Normalized();
 	// Look at the lerped direction:
-	LookAt(direction, vector_mode::DIRECTION);
-
-	// Lerp to target position:
-	float3 position = float3::Lerp(GetPosition(), focus_destination_position, focus_lerp_position);
+	math::Quat orientation = math::Quat::Lerp(focus_start_orientation, focus_target_orientation, focus_lerp_position);
 	// Set position to lerped position:
-	SetPosition(position);
+	transform->SetRotation(orientation);
+	
+	// Lerp to target position:
+	float3 position = float3::Lerp(focus_start_position, focus_destination_position, focus_lerp_position);
+	// Set position to lerped position:
+	transform->SetPosition(position);
 }
 
 void ModuleCamera::SetupFocus(float3 position, float3 size)
@@ -628,7 +495,7 @@ void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 	}
 
 	// Get minimum of horizontal fov and vertical fov and divide it to half:
-	float fov_min = math::Min(frustum.HorizontalFov(), frustum.VerticalFov());
+	float fov_min = math::Min(camera->GetHorizontalFOV(), camera->GetVerticalFOV());
 	float fov_min_half = fov_min * 0.5f;
 
 	// Calculate desired distance from center of the sphere to the camera:
@@ -645,6 +512,15 @@ void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 	// Set state of camera to FOCUSING:
 	state = camera_state::FOCUSING;
 
+	// Set starting position:
+	focus_start_position = transform->GetPosition();
+
+	// Set starting direction:
+	focus_start_direction = transform->GetDirection();
+
+	// Set starting orientation:
+	focus_start_orientation = transform->GetRotation();
+
 	// Set target position:
 	focus_target_position = position;
 
@@ -652,11 +528,17 @@ void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
 	focus_target_radius = bounding_sphere_radius;
 
 	// Get target direction (Actually it's direction from target to camera):
-	focus_target_direction = (focus_target_position - GetPosition()).Normalized();
+	focus_target_direction = (focus_target_position - focus_start_position).Normalized();
+
+	// Get target orientation:
+	focus_target_orientation = transform->SimulateLookAt(focus_target_direction);
 
 	// Set Focus destination position to the position away from target's position by desired_distance:
 	focus_destination_position = focus_target_position - desired_distance * focus_target_direction;
 
 	// Set focus_lerp_position to 0:
 	focus_lerp_position = 0.0f;
+
+
+	LOG("SETUP FOCUS");
 }

@@ -1,4 +1,5 @@
 #include "ComponentLight.h"
+#include "ComponentTransform.h"
 
 #include "Application.h"
 #include "ModuleShaderProgram.h"
@@ -6,13 +7,14 @@
 
 #include "GLEW/include/GL/glew.h"
 
-ComponentLight::ComponentLight() : Component(),
-												type(light_type::SPOT),
-												position(0,0,0),
-												//rotation(0,0,0,0),
-												scale(1,1,1),
-												color(1,1,1),
-												is_currently_loaded(false)
+ComponentLight::ComponentLight() : 
+	Component(),
+	type(light_type::SPOT),
+	position(0,0,0),
+	//rotation(0,0,0,0),
+	scale(1,1,1),
+	color(1,1,1),
+	is_currently_loaded(false)
 
 {
 }
@@ -72,12 +74,10 @@ void ComponentLight::Load(light_type new_type, float3 new_position, /*Quat new_r
 
 		// Pass position of the directional light
 
-		float3 aux_pos = App->camera->GetPosition();
+		float3 aux_pos = App->camera->GetTransform()->GetPosition();
 		LOG("Output camera getPosition: %f, %f, %f\n", aux_pos.x, aux_pos.y, aux_pos.z);
 		App->shader_program->SetUniformVariable("light.position", aux_pos);
-		LOG("Output camera getPosition: %f, %f, %f\n", App->camera->GetPosition().x, App->camera->GetPosition().y, App->camera->GetPosition().z);
-		LOG("Output camera getFront: %f, %f, %f\n", App->camera->GetFront().x, App->camera->GetFront().y, App->camera->GetFront().z);
-		float3 aux_front = App->camera->GetFront();
+		float3 aux_front = App->camera->GetTransform()->GetFront();
 		App->shader_program->SetUniformVariable("light.direction", aux_front);
 		float aux_angle = math::Cos(math::DegToRad(12.5f));
 		App->shader_program->SetUniformVariable("light.cutOff", aux_angle);
@@ -127,8 +127,8 @@ void ComponentLight::Update()
 		//App->shader_program->Use();
 
 		// Pass position of the directional light
-		App->shader_program->SetUniformVariable("light.position", App->camera->GetPosition());
-		App->shader_program->SetUniformVariable("light.direction", App->camera->GetFront());
+		App->shader_program->SetUniformVariable("light.position", App->camera->GetTransform()->GetPosition());
+		App->shader_program->SetUniformVariable("light.direction", App->camera->GetTransform()->GetFront());
 		App->shader_program->SetUniformVariable("light.cutOff", math::Cos(math::DegToRad(12.5f)));
 		App->shader_program->SetUniformVariable("light.ambient", (0.2, 0.2, 0.2));
 		App->shader_program->SetUniformVariable("light.diffuse", (0.8f, 0.8f, 0.8f));
