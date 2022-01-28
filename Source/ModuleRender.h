@@ -17,6 +17,8 @@ public:
 private:
 	unsigned int viewport_width = SCREEN_WIDTH;
 	unsigned int viewport_height = SCREEN_HEIGHT;
+	unsigned int framebuffer_scene_id = 0;
+	unsigned int framebuffer_scene_texture_id = 0;
 	// TODO(baran): Delete these after moving into scene.
 	Entity* default_entity;
 	Entity* loaded_entity;
@@ -39,6 +41,7 @@ public:
 	Entity* GetLoadedModel() const { return loaded_entity == nullptr ? default_entity : loaded_entity; };
 	float GetRequiredAxisTriadLength() const;
 	const void* GetContext() const { return context; };
+	unsigned int GetFramebufferTextureId() const { return framebuffer_scene_texture_id; };
 
 	void OnEditor();
 	void OnPerformanceWindow() const;

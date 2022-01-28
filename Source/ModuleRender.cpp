@@ -13,6 +13,9 @@
 #include "GLEW/include/GL/glew.h"
 #include "ComponentBoundingBox.h"
 #include "Entity.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
 
 
 ModuleRender::ModuleRender()
@@ -29,8 +32,39 @@ bool ModuleRender::Init()
 {
 	LOG("Creating Renderer context");
 
+	viewport_height = App->window->window_height;
+	viewport_width = App->window->window_width;
+
 	// Initialize GLEW and OpenGL:
 	InitializeGLEW();
+
+	//Generate Framebuffer:
+	glGenFramebuffers(1, &framebuffer_scene_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_scene_id);
+
+	//Generate Texture for Draw Scene
+	glGenTextures(1, &framebuffer_scene_texture_id);
+	glBindTexture(GL_TEXTURE_2D, framebuffer_scene_texture_id);
+	glTexImage2D
+	(
+		GL_TEXTURE_2D,					// Target texture
+		0,								// Level of detail number
+		GL_RGB,							// Number of color components in the texture, il defines it as bytes per pixel
+		viewport_width,					// Width of texture image
+		viewport_height,				// Height of texture image
+		0,								// Border of texture image, in docs of Khronos, it says this must be zero
+		GL_RGB,							// Format of the image 
+		GL_UNSIGNED_BYTE,				// Data type of pixel data
+		NULL							// Pointer to the image data in memory
+	);
+
+	// Configure Magnification filter:
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Configure Minification filter:
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebuffer_scene_texture_id, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Log Hardware Details:
 	LogHardware();
@@ -59,9 +93,6 @@ bool ModuleRender::Init()
 	// Subscribe to window resized event of ModuleInput:
 	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
 
-	viewport_height = App->window->window_height;
-	viewport_width = App->window->window_width;
-
 	// Delete model_file_name:
 	free(default_model_file_name);
 
@@ -72,6 +103,18 @@ update_status ModuleRender::PreUpdate()
 {
 	//OPTICK_CATEGORY("ModuleRender::PreUpdate", Optick::Category::Rendering);
 	
+	// Resize the viewport to the newly resized window:
+	glViewport(0, 0, viewport_width, viewport_height);
+
+	// Clear to clear color:
+	glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
+
+	// Clear to the selected Clear color:
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//Bind Framebuffer Scene
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_scene_id);
+
 	// Resize the viewport to the newly resized window:
 	glViewport(0, 0, viewport_width, viewport_height);
 
@@ -96,6 +139,9 @@ update_status ModuleRender::Update()
 
 	// Update loaded model:
 	GetLoadedModel()->Update();
+
+	//Bind Framebuffer UI
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -132,6 +178,9 @@ bool ModuleRender::CleanUp()
 	{
 		window_resized_event->RemoveListener(&window_resized_event_listener);
 	}
+
+	//Delete the framebuffer to draw scene on imgui
+	glDeleteFramebuffers(1, &framebuffer_scene_texture_id);
 
 	delete default_entity;
 	delete loaded_entity;

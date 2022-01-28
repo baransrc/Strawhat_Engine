@@ -3,7 +3,9 @@
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleRenderExercise.h"
+#include "ModuleCamera.h"
 #include "Util.h"
+//#include "ImGuizmo.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
@@ -366,12 +368,19 @@ update_status ModuleEditor::PreUpdate()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
+	//ImGuizmo::BeginFrame();
+	//ImGuizmo::Enable(true);
+
+
 
 	return update_status::UPDATE_CONTINUE;
 }
 
 update_status ModuleEditor::Update()
 {
+
+
+
 	DrawMainMenuBar();
 
 	if (show_about_window)
@@ -391,8 +400,49 @@ update_status ModuleEditor::Update()
 
 	DrawInspector();
 
+	//ImGuiWindowFlags frameWindow_flags =
+	//	ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+	//	ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+	//	ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+	//ImGuiViewport* viewport = ImGui::GetMainViewport();
+	//ImGuiWindowClass* frameWindowClass = nullptr;
+	//ImGui::SetNextWindowPos(viewport->WorkPos);
+	//ImGui::SetNextWindowSize(viewport->WorkSize);
+	//ImGui::SetNextWindowViewport(viewport->ID);
+
+	//
+	//// DockSpace
+	//ImGuiIO& io = ImGui::GetIO();
+	//if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	//{
+
+
+
+	//	ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+	//	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
+
+	//	ImGui::Begin("Test", nullptr, frameWindow_flags);
+	//	float4x4 view = App->camera->GetViewMatrix();
+	//	float4x4 proj = App->camera->GetProjectionMatrix();
+	//	float4x4 asdasd = float4x4::identity;
+
+	//	view.Transpose();
+	//	proj.Transpose();
+	//	ImGuizmo::DrawGrid((float*)&view, (float*)&proj, (float*)&asdasd, 100.f);
+	//	ImGuizmo::SetRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	//	ImGuizmo::SetDrawlist();
+	//	ImGui::End();
+	//}
+
+	ImGui::Begin("Test");
+	ImGui::Image((void*)(intptr_t)App->renderer->GetFramebufferTextureId(), ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+	ImGui::End();
+
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	//SDL_GL_MakeCurrent(App->window->window, App->renderer->context);
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -412,6 +462,10 @@ void ModuleEditor::InitializeDearImGui()
 {
 	// Create Dear ImGui context:
 	ImGui::CreateContext();
+
+	//Activate docking feature
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	// Initialize Dear ImGui for SDL2 and OpenGL3:
 	ImGui_ImplSDL2_InitForOpenGL(App->window->window, App->renderer->context);
