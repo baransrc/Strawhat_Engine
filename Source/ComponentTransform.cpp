@@ -221,17 +221,20 @@ void ComponentTransform::LookAt(const math::float3& direction)
 
 void ComponentTransform::DrawInspectorContent()
 {
+	// This controls the sensitivity of sliders inside the transform editor:
+	static float variable_sensitivity = 1.0f;
+
 	math::float3 position_local_editor = position_local;
 	math::float3 rotation_local_editor = rotation_euler_local;
 	math::float3 scale_local_editor = scale_local;
 
-	if (ImGui::DragFloat3("Local Position", position_local_editor.ptr(), 1.0f, -inf, inf)) {
+	if (ImGui::DragFloat3("Local Position", position_local_editor.ptr(), variable_sensitivity, -inf, inf)) {
 		SetLocalPosition(position_local_editor);
 	}
-	if (ImGui::DragFloat3("Local Rotation", rotation_local_editor.ptr(), 1.0f, 0.0f, 360.f)) {
+	if (ImGui::DragFloat3("Local Rotation", rotation_local_editor.ptr(), variable_sensitivity, 0.0f, 360.f)) {
 		SetLocalEulerRotation(rotation_local_editor);
 	}
-	if (ImGui::DragFloat3("Local Scale", scale_local_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
+	if (ImGui::DragFloat3("Local Scale", scale_local_editor.ptr(), variable_sensitivity, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetLocalScale(scale_local_editor);
 	}
 
@@ -241,13 +244,13 @@ void ComponentTransform::DrawInspectorContent()
 	math::float3 rotation_editor = rotation_euler;
 	math::float3 scale_editor = scale;
 
-	if (ImGui::DragFloat3("Position", position_editor.ptr(), 1.0f, -inf, inf)) {
+	if (ImGui::DragFloat3("Position", position_editor.ptr(), variable_sensitivity, -inf, inf)) {
 		SetPosition(position_editor);
 	}
-	if (ImGui::DragFloat3("Rotation", rotation_editor.ptr(), 1.0f, 0.0f, 360.f)) {
+	if (ImGui::DragFloat3("Rotation", rotation_editor.ptr(), variable_sensitivity, 0.0f, 360.f)) {
 		SetEulerRotation(rotation_editor);
 	}
-	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
+	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), variable_sensitivity, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetScale(scale_editor);
 	}
 
@@ -257,6 +260,10 @@ void ComponentTransform::DrawInspectorContent()
 	{
 		LookAt((position - float3::zero).Normalized());
 	}
+
+	ImGui::NewLine();
+
+	ImGui::DragFloat("Sensitivity", &variable_sensitivity, 0.001f, 0.000001f, inf, "%.3f");
 }
 
 void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mode)
