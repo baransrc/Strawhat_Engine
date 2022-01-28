@@ -344,7 +344,7 @@ namespace ModelImporter
 	Entity* Import(const char* path_to_file)
 	{
 		Assimp::Importer importer;
-		const aiScene* model = importer.ReadFile(path_to_file, aiProcess_Triangulate | aiProcess_FlipUVs);
+		const aiScene* model = importer.ReadFile(path_to_file, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GlobalScale);
 
 		// aiProcess_Triangulate: If the model is not entirely consisting of triangles, transform all the
 		// primitive to triangles.
