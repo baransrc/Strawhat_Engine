@@ -78,8 +78,8 @@ public:
 
 	float GetAspectRatio() const { return frustum.AspectRatio(); };
 	float4x4 GetModelMatrix() const { return model_matrix; };
-	float4x4 GetViewMatrix() const { return view_matrix; };
-	float4x4 GetProjectionMatrix() const { return projection_matrix; };
+	float4x4 GetViewMatrix() { return view_matrix; };
+	float4x4 GetProjectionMatrix() { return projection_matrix; };
 	float3 GetPosition() const;
 	float3 GetRotation() const;
 	float3 GetUp() const;
