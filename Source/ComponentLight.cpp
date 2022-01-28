@@ -53,8 +53,8 @@ void ComponentLight::Load(light_type new_type)
 	
 	color = float3(1, 1, 1);
 
-	radius = 50.0f;
-	shininess = 25.0f;
+	radius = 10.0f;
+	shininess = 10.0f;
 	intensity = 1.0f;
 
 	switch (type)
@@ -133,6 +133,8 @@ void ComponentLight::Update()
 	{
 	case light_type::POINT:
 	{
+
+		//App->debug_draw->DrawSphere(owner->Transform()->GetPosition(), float3(0.8f, 0.6f, 1.0f), radius);
 		// Pass position of the point light
 		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
 		App->shader_program->SetUniformVariable("light.radius", radius);
@@ -143,6 +145,9 @@ void ComponentLight::Update()
 
 		App->shader_program->SetUniformVariable("shininess", shininess);
 		App->shader_program->SetUniformVariable("light.intensity", intensity);
+
+		//Draw UI Sphere
+		App->debug_draw->DrawSphere(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), float3(0.8f, 0.6f, 1.0f), radius);
 
 		break;
 	}
@@ -167,7 +172,6 @@ void ComponentLight::Update()
 
 		// Pass position of the directional light
 		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
-		App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), float3(0.8f, 0.6f, 1.0f));
 		App->shader_program->SetUniformVariable("light.direction", owner->Transform()->GetFront());
 		App->shader_program->SetUniformVariable("light.radius", radius);
 		App->shader_program->SetUniformVariable("light.inner", radius);
@@ -181,6 +185,9 @@ void ComponentLight::Update()
 		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
 		App->shader_program->SetUniformVariable("shininess", shininess);
 		App->shader_program->SetUniformVariable("light.intensity", intensity);
+
+		//Draw UI Cone
+		App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), float3(0.8f, 0.6f, 1.0f));
 
 		break;
 	}

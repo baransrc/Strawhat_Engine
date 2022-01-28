@@ -652,6 +652,15 @@ void ModuleDebugDraw::DrawCone(vec position, vec direction, vec color)
     MakeDrawCall();
 }
 
+void ModuleDebugDraw::DrawSphere(vec position, vec direction, vec color, float radius)
+{
+    dd::circle(position, direction, color, radius, 25);
+    dd::circle(position, vec (0,1,0), color, radius, 25);
+    dd::circle(position, vec (1,0,0), color, radius, 25);
+
+    MakeDrawCall();
+}
+
 void ModuleDebugDraw::DrawFrustum(float4x4 matrix, vec color)
 {
     dd::frustum(matrix, color);
