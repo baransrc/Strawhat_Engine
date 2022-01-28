@@ -19,6 +19,7 @@ private:
 	unsigned int viewport_height = SCREEN_HEIGHT;
 	unsigned int framebuffer_scene_id = 0;
 	unsigned int framebuffer_scene_texture_id = 0;
+	unsigned int stencil_depth_buffer = 0;
 	// TODO(baran): Delete these after moving into scene.
 	Entity* default_entity;
 	Entity* loaded_entity;

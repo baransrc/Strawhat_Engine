@@ -64,6 +64,13 @@ bool ModuleRender::Init()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebuffer_scene_texture_id, 0);
+
+	//Stencil and Depth buffer
+	glGenRenderbuffers(1, &stencil_depth_buffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, stencil_depth_buffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, viewport_width, viewport_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencil_depth_buffer);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Log Hardware Details:
