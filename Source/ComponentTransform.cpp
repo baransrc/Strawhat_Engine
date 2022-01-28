@@ -11,22 +11,21 @@
 #define RAD_TO_DEG (180.0 / PI)
 
 ComponentTransform::ComponentTransform() :
-Component(),
-position(math::float3::zero),
-position_local(math::float3::zero),
-scale(math::float3::one),
-scale_local(math::float3::one),
-rotation_euler(math::float3::zero),
-rotation_euler_local(math::float3::zero),
-rotation(math::Quat::identity),
-rotation_local(math::Quat::identity),
-matrix(math::float4x4::identity),
-matrix_local(math::float4x4::identity),
-right(math::float3::zero),
-up(math::float3::zero),
-front(math::float3::zero)
+	Component(),
+	position(math::float3::zero),
+	position_local(math::float3::zero),
+	scale(math::float3::one),
+	scale_local(math::float3::one),
+	rotation_euler(math::float3::zero),
+	rotation_euler_local(math::float3::zero),
+	rotation(math::Quat::identity),
+	rotation_local(math::Quat::identity),
+	matrix(math::float4x4::identity),
+	matrix_local(math::float4x4::identity),
+	right(math::float3::unitX),
+	up(math::float3::unitY),
+	front(math::float3::unitZ)
 {
-
 }
 
 ComponentTransform::~ComponentTransform()
@@ -128,12 +127,15 @@ const math::float3& ComponentTransform::GetDirection() const
 	return (-front).Normalized();
 }
 
-const math::Quat& ComponentTransform::SimulateLookAt(const math::float3& direction)
+math::Quat ComponentTransform::SimulateLookAt(const math::float3& direction)
 {
 	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
+	
 	math::float3 up_temp = direction.Cross(right_temp).Normalized();
 
-	return math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+	math::Quat orientation = math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+
+	return orientation;
 }
 
 void ComponentTransform::SetPosition(const math::float3& new_position)
@@ -152,11 +154,10 @@ void ComponentTransform::SetScale(const math::float3& new_scale)
 
 void ComponentTransform::SetEulerRotation(const math::float3& new_rotation_euler)
 {
-	math::float3 delta = (new_rotation_euler - rotation_euler).Abs() * DEG_TO_RAD;
+	math::float3 delta = (new_rotation_euler - rotation_euler) * DEG_TO_RAD;
 	math::Quat rotation_amount = math::Quat::FromEulerXYZ(delta.x, delta.y, delta.z).Normalized();
 
 	rotation = rotation_amount * (rotation);
-	rotation.Normalize();
 	rotation_euler = new_rotation_euler;
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
@@ -210,6 +211,11 @@ void ComponentTransform::Rotate(const math::Quat& rotate_by)
 
 void ComponentTransform::LookAt(const math::float3& direction)
 {
+	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
+	math::float3 up_temp = direction.Cross(right_temp).Normalized();
+
+	math::Quat orientation = math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+
 	SetRotation(SimulateLookAt(direction));
 }
 

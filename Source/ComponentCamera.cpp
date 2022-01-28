@@ -8,9 +8,13 @@
 
 ComponentCamera::ComponentCamera() : 
 	Component(),
-	is_main_camera(false),
+	frustum(math::Frustum()),
+	projection_matrix(math::float4x4::identity),
+	view_matrix(math::float4x4::identity),
 	projection_mode(camera_projection_mode::ORTHOGRAPHIC),
-	should_calculate_projection_matrix(false)
+	should_calculate_projection_matrix(false),
+	is_main_camera(false),
+	component_changed_event_listener(EventListener<component_type>())
 {
 }
 
