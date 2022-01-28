@@ -4,8 +4,9 @@
 #include "stdio.h"
 #include "Globals.h"
 
-Component::Component() : enabled(false), owner(nullptr), id(0)
+Component::Component() : enabled(false), owner(nullptr)
 {
+	id = GetCurrentId();
 }
 
 /// <summary>
@@ -56,7 +57,6 @@ void Component::Initialize(Entity* new_owner)
 {
 	enabled = true;
 	owner = new_owner;
-	id = GetCurrentId();
 	owner->AddComponent(this);
 }
 
@@ -77,9 +77,23 @@ void Component::Disable()
 }
 
 /// <summary>
+/// Called on each pre-update of the owner Entity.
+/// </summary>
+void Component::PreUpdate()
+{
+}
+
+/// <summary>
 /// Called on each update of the owner Entity.
 /// </summary>
 void Component::Update()
+{
+}
+
+/// <summary>
+/// Called on each post-update of the owner Entity.
+/// </summary>
+void Component::PostUpdate()
 {
 }
 

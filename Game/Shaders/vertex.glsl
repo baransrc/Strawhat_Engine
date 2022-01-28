@@ -11,11 +11,15 @@ out vec3 interpolated_colorNORMALS;
 out vec2 interpolated_texture_coordinate;
 out vec3 world_normal;
 out vec3 fragment_position;
+out vec3 fragment_normal;
+out vec2 fragment_texture_coordinate;
 
 void main()
 {
     world_normal = transpose(inverse(mat3(projection_matrix)))*vertex_normal;
     fragment_position = vec3(model_matrix * vec4(vertex_position, 1.0));
+    fragment_normal = transpose(inverse(mat3(model_matrix))) * vertex_normal;
+    fragment_texture_coordinate = vertex_texture_coordinate;
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vertex_position, 1.0);
     interpolated_colorNORMALS = vertex_normal;
     interpolated_texture_coordinate = vertex_texture_coordinate;

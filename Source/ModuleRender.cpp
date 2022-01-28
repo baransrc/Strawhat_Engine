@@ -76,7 +76,7 @@ bool ModuleRender::Init()
 	InitializeOpenGL();
 
 	// Get Model File Name:
-	char* default_model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), BAKER_HOUSE_MODEL_PATH);
+	char* default_model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), ROBOT_MODEL_PATH);
 
 	// Load Default Model:
 	// For now, this model is loaded inside ModuleRenderer, but it makes more sense to have a scene

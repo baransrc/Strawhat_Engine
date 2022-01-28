@@ -1,18 +1,22 @@
-#include "ModuleEditor.h"
 #include "Application.h"
+#include "ModuleEditor.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleRenderExercise.h"
-#include "ModuleCamera.h"
+
 #include "Util.h"
-//#include "ImGuizmo.h"
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
 #include "Globals.h"
+
 #include "Entity.h"
 #include "Component.h"
 #include "ComponentLight.h"
+#include "ComponentMesh.h"
+#include "ComponentMaterial.h"
+#include "ComponentCamera.h"
+
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
 
 ModuleEditor::ModuleEditor()
 {
@@ -48,10 +52,7 @@ bool ModuleEditor::Init()
 	light_entity->SetParent(base_entity);
 	ComponentLight* component_light = new ComponentLight();
 	component_light->Initialize(light_entity);
-	float3 pos = float3(0.5, 0, 0.5);
-	float3 scale = float3(1, 1, 1);
-	float3 color = float3(1, 1, 1);
-	component_light->Load(light_type::SPOT, pos, scale, color);
+	component_light->Load(light_type::POINT);
 
 	return true;
 }
@@ -305,18 +306,21 @@ void ModuleEditor::DrawInspector()
 
 			if (ImGui::BeginMenu("Add Component"))
 			{
-
 				if (ImGui::Selectable("Camera"))
 				{
-					selected_entity->AddComponent(component_type::CAMERA);
+					selected_entity->AddComponent<ComponentCamera>();
 				}
 				if (ImGui::Selectable("Mesh"))
 				{
-					selected_entity->AddComponent(component_type::MESH);
+					selected_entity->AddComponent<ComponentMesh>();
 				}
-				if (ImGui::Selectable("Transform")) // TODO: For testing purposes, delete this.
+				if (ImGui::Selectable("Material"))
 				{
-					selected_entity->AddComponent(component_type::TRANSFORM);
+					selected_entity->AddComponent<ComponentMaterial>();
+				}
+				if (ImGui::Selectable("Light"))
+				{
+					selected_entity->AddComponent<ComponentLight>();
 				}
 
 				ImGui::EndMenu();
@@ -331,7 +335,7 @@ void ModuleEditor::DrawInspector()
 			ImGui::EndPopup();
 		}
 
-		for (Component* component : selected_entity->GetComponents())
+		for (Component* component : selected_entity->Components())
 		{
 			component->DrawInspector();
 		}

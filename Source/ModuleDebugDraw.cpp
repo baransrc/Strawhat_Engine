@@ -3,6 +3,8 @@
 #include "ModuleDebugDraw.h"
 #include "ModuleRender.h"
 #include "ModuleCamera.h"
+#include "ComponentCamera.h"
+#include "ComponentTransform.h"
 
 #define DEBUG_DRAW_IMPLEMENTATION
 #include "DebugDraw.h"     // Debug Draw API. Notice that we need the DEBUG_DRAW_IMPLEMENTATION macro here!
@@ -609,12 +611,15 @@ bool ModuleDebugDraw::CleanUp()
     return true;
 }
 
-update_status  ModuleDebugDraw::Update()
+update_status  ModuleDebugDraw::PreUpdate()
 {
-    //dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
-    //dd::xzSquareGrid(-32, 32, 0.0f, 1.0f, dd::colors::DimGray);
+    dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
+    dd::xzSquareGrid(-150, 150, 0.0f, 1.0f ,vec(0.3f, 0.3f, 0.3f), false);
 
-    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); // TODO: Get screen width and height, or camera render width and height?
+    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -637,5 +642,34 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
 {
     dd::box(points, color);
 
-    Draw(App->camera->GetViewMatrix(), App->camera->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT); 
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::DrawCone(vec position, vec direction, vec color)
+{
+    dd::cone(position, direction, color, 0.7f, 0.01f);
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::DrawFrustum(float4x4 matrix, vec color)
+{
+    dd::frustum(matrix, color);
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size)
+{
+    dd::arrow(from, to, color, arrow_head_size);
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::MakeDrawCall()
+{
+    Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

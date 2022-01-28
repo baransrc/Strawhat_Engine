@@ -199,8 +199,11 @@
     <ClCompile Include="ComponentTransform.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="DEAR_IMGUI\include\ImGuizmo.cpp">
-      <Filter>Libraries\DearImGui</Filter>
+    <ClCompile Include="ComponentCamera.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentMaterial.cpp">
+      <Filter>Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -780,8 +783,11 @@
     <ClInclude Include="ComponentTransform.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="DEAR_IMGUI\include\ImGuizmo.h">
-      <Filter>Libraries\DearImGui</Filter>
+    <ClInclude Include="ComponentCamera.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentMaterial.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -868,5 +874,6 @@
     <None Include="..\Game\Shaders\vertex.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
