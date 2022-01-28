@@ -26,8 +26,8 @@ ModuleCamera::ModuleCamera() :
 	focus_on_model_changed(false),
 	focus_start_position(math::float3::zero),
 	focus_start_direction(math::float3::zero),
-	focus_start_orientation(),
-	focus_target_orientation(),
+	focus_start_orientation(math::Quat::identity),
+	focus_target_orientation(math::Quat::identity),
 	focus_target_position(math::float3::zero),
 	focus_destination_position(math::float3::zero),
 	focus_target_direction(math::float3::zero),
@@ -67,16 +67,16 @@ bool ModuleCamera::Init()
 	state = camera_state::UNFOCUSED;
 	sensitivity = 10.0f;
 	focus_on_model_changed = false;
-	focus_target_position = -float3::unitX;
-	focus_destination_position = float3::zero;
+	focus_target_position = -math::float3::unitX;
+	focus_destination_position = math::float3::zero;
 	focus_target_orientation = math::Quat::identity;
 	focus_start_orientation = math::Quat::identity;
-	focus_target_direction = float3::zero;
+	focus_target_direction = math::float3::zero;
 	focus_duration = 0.4f;
 	focus_lerp_position = 0.0f;
 	focus_target_radius = 0.0f;
-	movement_speed = float3::one * 20.f;
-	fast_movement_speed = float3::one * 40.f;
+	movement_speed = math::float3::one * 20.f;
+	fast_movement_speed = math::float3::one * 40.f;
 	orbit_speed = 1.0f;
 
 	// Set zoom related variables:
@@ -177,8 +177,6 @@ void ModuleCamera::OnModelChanged()
 	new_far_plane_distance = math::Max(size * 10, new_far_plane_distance);
 
 	camera->SetFarPlaneDistance(new_far_plane_distance);
-
-	focus_on_model_changed = true;
 }
 
 void ModuleCamera::Move()
@@ -195,15 +193,15 @@ void ModuleCamera::Move()
 		return;
 	}
 
-	const float3 current_movement_speed =
+	const math::float3 current_movement_speed =
 		App->input->GetKey(SDL_SCANCODE_LSHIFT, key_state::REPEAT) ?
 		fast_movement_speed :
 		movement_speed;
 
-	const float3 velocity = Time->DeltaTime() * current_movement_speed /** App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius()*0.1f*/;
+	const math::float3 velocity = Time->DeltaTime() * current_movement_speed /** App->renderer->GetLoadedModel()->GetMinimalEnclosingSphereRadius()*0.1f*/;
 
 	// Store and Cache Position:
-	float3 new_position = transform->GetPosition();
+	math::float3 new_position = transform->GetPosition();
 
 	bool moved_this_frame = false;
 	bool should_unfocus = false;
@@ -268,10 +266,10 @@ void ModuleCamera::Rotate()
 	}
 
 	// Get mouse displacement from ModuleInput:
-	float2 mouse_delta = App->input->GetMouseDisplacement();
+	math::float2 mouse_delta = App->input->GetMouseDisplacement();
 
 	// Don't rotate if no mouse movement were made:
-	if (mouse_delta.Equals(float2::zero))
+	if (mouse_delta.Equals(math::float2::zero))
 	{
 		return;
 	}
@@ -282,11 +280,11 @@ void ModuleCamera::Rotate()
 
 	math::float3 look_at_direction = -transform->GetFront();
 
-	look_at_direction = Quat(transform->GetRight(), -y_delta) * look_at_direction;
-	look_at_direction = Quat(transform->GetUp(), -x_delta) * look_at_direction;
+	look_at_direction = math::Quat(transform->GetUp(), -x_delta) * look_at_direction;
+	look_at_direction = math::Quat(transform->GetRight(), -y_delta) * look_at_direction;
 
 	// Look At the look_at_direction:
-	transform->LookAt(look_at_direction);
+	transform->LookAt(look_at_direction.Normalized());
 
 	// Unfocus the camera since a movement was made:
 	state = camera_state::UNFOCUSED;
@@ -307,21 +305,21 @@ void ModuleCamera::Orbit()
 	}
 
 	// Get mouse displacement from ModuleInput:
-	float2 mouse_delta = App->input->GetMouseDisplacement();
+	math::float2 mouse_delta = App->input->GetMouseDisplacement();
 
 	// Store smoothened and adjusted displacements of mouse as radians:
 	float x_delta = math::DegToRad(mouse_delta.x * sensitivity * Time->DeltaTime());
 	float y_delta = math::DegToRad(mouse_delta.y * sensitivity * Time->DeltaTime());
 
 	// Get orbit center:
-	const float3 center_position = focus_target_position;
+	const math::float3 center_position = focus_target_position;
 
 	// Calculate direction from position to orbit center:
-	float3 direction = center_position - transform->GetPosition();
+	math::float3 direction = center_position - transform->GetPosition();
 	// Rotate around camera's up by x_delta:
-	Quat rotate_up = Quat::RotateAxisAngle(transform->GetUp(), -x_delta);
+	math::Quat rotate_up = math::Quat::RotateAxisAngle(transform->GetUp(), -x_delta);
 	// Rotate around camera's right by y_delta:
-	Quat rotate_right = Quat::RotateAxisAngle(transform->GetRight(), -y_delta);
+	math::Quat rotate_right = math::Quat::RotateAxisAngle(transform->GetRight(), -y_delta);
 
 	// Apply rotations to direction:
 	direction = (rotate_up * rotate_right).Transform(direction);
@@ -439,13 +437,21 @@ void ModuleCamera::DetectFocus()
 	if (App->input->GetKey(SDL_SCANCODE_F, key_state::DOWN) ||  focus_on_model_changed)
 	{
 		focus_on_model_changed = false;
+
+		if (Entity::selected_entity_in_hierarchy == nullptr)
+		{
+			return;
+		}
 		
 		// Get Bounding Box component of the Entity:
-		ComponentBoundingBox* bounding_box = App->renderer->GetLoadedModel()->GetComponent<ComponentBoundingBox>();
-		
-		// If Entity has no bounding box component attached to it, don't focus:
+		ComponentBoundingBox* bounding_box = Entity::selected_entity_in_hierarchy->GetComponent<ComponentBoundingBox>();
+			
+		// If Entity has no bounding box component attached to it, focus to it's position with arbitrary
+		// radius such as 1.0f:
 		if (bounding_box == nullptr)
 		{
+			SetupFocus(Entity::selected_entity_in_hierarchy->Transform()->GetPosition(), 1.0f);
+			
 			return;
 		}
 
@@ -476,12 +482,12 @@ void ModuleCamera::ExecuteFocus()
 	transform->SetRotation(orientation);
 	
 	// Lerp to target position:
-	float3 position = float3::Lerp(focus_start_position, focus_destination_position, focus_lerp_position);
+	math::float3 position = math::float3::Lerp(focus_start_position, focus_destination_position, focus_lerp_position);
 	// Set position to lerped position:
 	transform->SetPosition(position);
 }
 
-void ModuleCamera::SetupFocus(float3 position, float3 size)
+void ModuleCamera::SetupFocus(math::float3 position, math::float3 size)
 {
 	// Calculate a radius from max extent of given size:
 	float bounding_sphere_radius = math::Max(size.x, math::Max(size.y, size.z)) * 0.5f;
@@ -490,7 +496,7 @@ void ModuleCamera::SetupFocus(float3 position, float3 size)
 	SetupFocus(position, bounding_sphere_radius);
 }
 
-void ModuleCamera::SetupFocus(float3 position, float bounding_sphere_radius)
+void ModuleCamera::SetupFocus(math::float3 position, float bounding_sphere_radius)
 {
 	if ((state == camera_state::FOCUSING || state == camera_state::FOCUSED) && position.Equals(focus_destination_position) && focus_target_radius == bounding_sphere_radius)
 	{
