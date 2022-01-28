@@ -321,6 +321,7 @@ namespace ModelImporter
 				number_of_vertices += current_component_mesh->GetNumberOfVertices();
 				++number_of_loaded_meshes;
 				free(path_to_parent_directory);
+				free(texture_ids);
 			}
 
 			LOG("Loaded model as entity named %s:\n\tNumber of child meshes: %zu\n\tNumber of triangles: %zu\n\tNumber of indices: %zu\n\tNumber of vertices: %zu",
