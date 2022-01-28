@@ -2,6 +2,7 @@
 #include "ModuleEditor.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
+#include "ModuleCamera.h"
 #include "ModuleRenderExercise.h"
 
 #include "Util.h"
@@ -14,6 +15,7 @@
 #include "ComponentMaterial.h"
 #include "ComponentCamera.h"
 
+#include "ImGuizmo.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
@@ -372,9 +374,8 @@ update_status ModuleEditor::PreUpdate()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
-	//ImGuizmo::BeginFrame();
-	//ImGuizmo::Enable(true);
-
+	ImGuizmo::BeginFrame();
+	ImGuizmo::Enable(true);
 
 
 	return update_status::UPDATE_CONTINUE;
@@ -415,32 +416,43 @@ update_status ModuleEditor::Update()
 	//ImGui::SetNextWindowSize(viewport->WorkSize);
 	//ImGui::SetNextWindowViewport(viewport->ID);
 
-	//
+	//ImGui::Begin("Test", nullptr, frameWindow_flags);
 	//// DockSpace
 	//ImGuiIO& io = ImGui::GetIO();
 	//if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	//{
-
-
-
 	//	ImGuiID dockspace_id = ImGui::GetID("DockSpace");
 	//	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
 
-	//	ImGui::Begin("Test", nullptr, frameWindow_flags);
-	//	float4x4 view = App->camera->GetViewMatrix();
-	//	float4x4 proj = App->camera->GetProjectionMatrix();
+	//	
+	//	float4x4 view = App->camera->GetCamera()->GetViewMatrix();
+	//	float4x4 proj = App->camera->GetCamera()->GetProjectionMatrix();
 	//	float4x4 asdasd = float4x4::identity;
 
+	//	ImGuizmo::Enable(true);
 	//	view.Transpose();
 	//	proj.Transpose();
 	//	ImGuizmo::DrawGrid((float*)&view, (float*)&proj, (float*)&asdasd, 100.f);
+
+
 	//	ImGuizmo::SetRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	//	ImGuizmo::SetDrawlist();
-	//	ImGui::End();
-	//}
+	//	ImGuizmo::Manipulate(App->camera->GetCamera()->GetViewMatrix().Inverted().ptr(), App->camera->GetCamera()->GetProjectionMatrix().Inverted().ptr(), ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, App->, NULL, NULL);
 
+	//	ImGui::Image((void*)(intptr_t)App->renderer->GetFramebufferTextureId(), ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+	//	
+
+	//}
+	//ImGui::End();
+
+	
+	ImGuizmo::Enable(true);
 	ImGui::Begin("Test");
+	ImGuizmo::Enable(true);
+	ImGuizmo::SetRect(0, 0, 10, 10);
+	ImGuizmo::SetDrawlist();
 	ImGui::Image((void*)(intptr_t)App->renderer->GetFramebufferTextureId(), ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+	ImGuizmo::SetRect(0, 0, 10, 10);
 	ImGui::End();
 
 	ImGui::Render();
