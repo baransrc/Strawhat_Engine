@@ -422,27 +422,36 @@ update_status ModuleEditor::Update()
 		ImGuizmo::Manipulate(App->camera->GetCamera()->GetViewMatrix().Transposed().ptr(),
 			App->camera->GetCamera()->GetProjectionMatrix().Transposed().ptr(),
 			mCurrentGizmoOperation == ImGuizmo::TRANSLATE ? ImGuizmo::TRANSLATE : mCurrentGizmoOperation == ImGuizmo::ROTATE ? ImGuizmo::ROTATE : ImGuizmo::SCALE,
-			ImGuizmo::LOCAL,
+			ImGuizmo::WORLD,
 			(float*)&model_matrix, (float*)&delta, NULL);
 
 		if (ImGuizmo::IsUsing() && !delta.IsIdentity())
 		{
+			math::float3 translation = model_matrix.Transposed().TranslatePart();
+			math::Quat rotation = math::Quat(model_matrix.Transposed().RotatePart());
+			math::float3 scaling = model_matrix.ExtractScale();
 			switch (mCurrentGizmoOperation)
 			{
 			case ImGuizmo::TRANSLATE:
 				//Transform with Translate
-				model_matrix.Transpose();
-				Entity::selected_entity_in_hierarchy->Transform()->SetPosition(model_matrix.TranslatePart());
+				//model_matrix.Transpose();
+				//Entity::selected_entity_in_hierarchy->Transform()->SetPosition(model_matrix.TranslatePart());
+				
+				Entity::selected_entity_in_hierarchy->Transform()->SetPosition(translation);
 				break;
 			case ImGuizmo::ROTATE:
 				//Transform with Rotate
-				model_matrix.Transpose();
-				Entity::selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(model_matrix.RotatePart()));
+				//model_matrix.Transpose();
+				//Entity::selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(model_matrix.RotatePart()));
+				
+				Entity::selected_entity_in_hierarchy->Transform()->SetRotation(rotation);
 				break;
 			case ImGuizmo::SCALE:
 				//Transform with Scale
-				model_matrix.Transpose();
-				Entity::selected_entity_in_hierarchy->Transform()->SetScale(model_matrix.ExtractScale());
+				//model_matrix.Transpose();
+				//Entity::selected_entity_in_hierarchy->Transform()->SetScale(model_matrix.ExtractScale());
+				
+				Entity::selected_entity_in_hierarchy->Transform()->SetScale(scaling);
 				break;
 			default:
 				LOG("Imguizmo style of transform has an error");
