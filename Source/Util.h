@@ -120,6 +120,18 @@ namespace util
 		}
 	}
 
+	inline void CopyIntoBuffer(char* buffer, const char* to_copy, size_t buffer_size, size_t copy_size)
+	{
+		size_t size_to_copy = min(buffer_size - 1, copy_size);
+
+		for (size_t i = 0; i < size_to_copy; ++i)
+		{
+			buffer[i] = to_copy[i];
+		}
+
+		buffer[size_to_copy] = '\0';
+	}
+
 	// User is responsible for deallocation.
 	inline void SubstrBeforeCharFromEnd(char** source, char before)
 	{
