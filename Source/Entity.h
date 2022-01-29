@@ -66,7 +66,6 @@ public:
 	void AddChild(Entity* child);
 	void RemoveChild(Entity* child);
 	Entity* FindChild(unsigned int child_entity_id) const;
-	void DrawEditor();
 
 	void InvokeComponentsChangedEvents(component_type type) const;
 	Event<component_type>* const GetComponentsChangedEvent() const;

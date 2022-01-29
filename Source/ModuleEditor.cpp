@@ -360,7 +360,6 @@ void ModuleEditor::DrawModuleSettings()
 
 	if (ImGui::CollapsingHeader("Entity Experiment"))
 	{
-		base_entity->DrawEditor();
 	}
 
 	ImGui::End();
