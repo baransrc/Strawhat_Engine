@@ -1,19 +1,18 @@
+#include "ModuleSceneManager.h"
+
+#include "Scene.h"
 #include "Entity.h"
+
 #include "Component.h"
-#include "DEAR_IMGUI/include/imgui.h"
-#include "Globals.h"
 #include "ComponentTransform.h"
 
-// This is for experiments on component addition and viewing for now. 
-// and will be deleted when ModuleSceneManager is added:
-Entity* Entity::selected_entity_in_hierarchy = nullptr;
+#include "Globals.h"
 
 Entity::Entity() : 
 	name(""), 
 	active(false), 
 	id(0), 
 	parent(nullptr), 
-	being_renamed(false),
 	components_changed(nullptr),
 	components_changed_in_descendants(nullptr),
 	transform(nullptr)

@@ -21,11 +21,7 @@ private:
 	std::string name;
 	unsigned int id;
 	bool active;
-	bool being_renamed;
 
-public:
-	static Entity* selected_entity_in_hierarchy; // This is for experiments on component addition and viewing for now. 
-												 // and will be deleted when ModuleSceneManager is added.
 public:
 	Entity();
 	~Entity();
