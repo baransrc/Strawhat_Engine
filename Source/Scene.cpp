@@ -103,6 +103,11 @@ void Scene::PreUpdate()
 void Scene::Update()
 {
     root_entity->Update();
+
+    if (selected_entity != nullptr)
+    {
+        selected_entity->DrawGizmos();
+    }
 }
 
 void Scene::PostUpdate()
