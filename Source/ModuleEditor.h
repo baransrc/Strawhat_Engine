@@ -1,5 +1,9 @@
 #pragma once
+
 #include "Module.h"
+
+#include "ImGuizmo.h"
+
 #include <vector>
 
 class Entity;
@@ -19,6 +23,9 @@ private:
 	bool show_exit_popup = false;
 	bool should_exit_application = false;
 	bool should_draw_inspector_window = true;
+
+	ImGuizmo::OPERATION current_imguizmo_operation;
+	ImGuizmo::MODE current_imguizmo_transform_mode;
 
 	char* license_buffer = nullptr;
 	std::vector<float> ms_data;
@@ -44,10 +51,13 @@ public:
 	void DrawRenderExerciseTextureInfoWindow();
 	void DrawPerformanceWindow();
 	void DrawInspector();
-
+	void DrawImGuizmoModeWindow();
+	void DrawSceneWindow();
 	void DrawModuleSettings();
 
 private:
+	void SwitchImGuizmoOperationModeWithKeyboard();
+	void TransformSelectedEntityWithImGuizmo();
 	void InitializeDearImGui();
 	void UninitializeDearImGui();
 };
