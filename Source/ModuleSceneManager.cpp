@@ -94,7 +94,7 @@ void ModuleSceneManager::HandleFileDropped(const char* file_name)
 		return;
 	}
 
-	loaded_entity->SetParent(loaded_entity);
+	loaded_entity->SetParent(current_scene->GetRootEntity());
 }
 
 Scene* const ModuleSceneManager::GetCurrentScene() const
