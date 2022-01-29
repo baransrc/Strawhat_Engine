@@ -10,6 +10,7 @@
 
 #include "Entity.h"
 #include "Component.h"
+#include "ComponentTransform.h"
 #include "ComponentLight.h"
 #include "ComponentMesh.h"
 #include "ComponentMaterial.h"
@@ -19,6 +20,12 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+
+#include "MATH_GEO_LIB/Math/Quat.h"
+#include "MATH_GEO_LIB/Math/float3x3.h"
+
+#define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+#define RAD_TO_DEG (180.0 / PI)
 
 ModuleEditor::ModuleEditor()
 {
@@ -357,8 +364,6 @@ void ModuleEditor::DrawModuleSettings()
 
 	ImGui::Begin("Module Settings", &show_module_settings_window);
 
-	App->renderer->OnEditor();
-
 
 	if (ImGui::CollapsingHeader("Entity Experiment"))
 	{
@@ -383,8 +388,95 @@ update_status ModuleEditor::PreUpdate()
 
 update_status ModuleEditor::Update()
 {
+	static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
 
 
+	ImGuiWindowFlags frameWindow_flags =
+		/*ImGuiWindowFlags_NoDocking |  ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |*/ ImGuiWindowFlags_NoNavFocus;
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGuiWindowClass* frameWindowClass = nullptr;
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(ImVec2(1800, 600));
+	ImGui::SetNextWindowViewport(viewport->ID);
+
+
+	//ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+	//ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0, frameWindowClass);
+	//ImGui::CaptureMouseFromApp(false);
+	ImGuiIO& io = ImGui::GetIO();
+
+	ImGui::Begin("Scene", nullptr, frameWindow_flags);
+	ImGuizmo::SetRect(float(ImGui::GetCursorScreenPos().x), float(ImGui::GetCursorScreenPos().y), float(SCREEN_WIDTH), float(SCREEN_HEIGHT));
+	ImGuizmo::SetDrawlist();
+
+	float4x4 delta;
+	
+
+	ImGui::Image((void*)(intptr_t)App->renderer->GetFramebufferTextureId(), ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+	if (Entity::selected_entity_in_hierarchy != NULL) {
+		float4x4 model_matrix = Entity::selected_entity_in_hierarchy->Transform()->GetMatrix().Transposed();
+		ImGuizmo::Manipulate(App->camera->GetCamera()->GetViewMatrix().Transposed().ptr(),
+			App->camera->GetCamera()->GetProjectionMatrix().Transposed().ptr(),
+			mCurrentGizmoOperation == ImGuizmo::TRANSLATE ? ImGuizmo::TRANSLATE : mCurrentGizmoOperation == ImGuizmo::ROTATE ? ImGuizmo::ROTATE : ImGuizmo::SCALE,
+			ImGuizmo::LOCAL,
+			(float*)&model_matrix, (float*)&delta, NULL);
+
+		if (ImGuizmo::IsUsing() && !delta.IsIdentity())
+		{
+			switch (mCurrentGizmoOperation)
+			{
+			case ImGuizmo::TRANSLATE:
+				//Transform with Translate
+				model_matrix.Transpose();
+				Entity::selected_entity_in_hierarchy->Transform()->SetPosition(model_matrix.TranslatePart());
+				break;
+			case ImGuizmo::ROTATE:
+				//Transform with Rotate
+				model_matrix.Transpose();
+				Entity::selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(model_matrix.RotatePart()));
+				break;
+			case ImGuizmo::SCALE:
+				//Transform with Scale
+				model_matrix.Transpose();
+				Entity::selected_entity_in_hierarchy->Transform()->SetScale(model_matrix.ExtractScale());
+				break;
+			default:
+				LOG("Imguizmo style of transform has an error");
+				break;
+			}
+		}
+	}
+	ImGui::End();
+
+	ImGui::Begin("Transfrom Buttons");
+	if (ImGui::IsKeyPressed(90))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsKeyPressed(69))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsKeyPressed(82)) // r Key
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+	ImGui::SameLine();
+	if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+	{
+		if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+			mCurrentGizmoMode = ImGuizmo::LOCAL;
+		ImGui::SameLine();
+		if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+			mCurrentGizmoMode = ImGuizmo::WORLD;
+	}
+	ImGui::End();
 
 	DrawMainMenuBar();
 
@@ -404,56 +496,6 @@ update_status ModuleEditor::Update()
 	DrawModuleSettings();
 
 	DrawInspector();
-
-	//ImGuiWindowFlags frameWindow_flags =
-	//	ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-	//	ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-	//	ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-	//ImGuiViewport* viewport = ImGui::GetMainViewport();
-	//ImGuiWindowClass* frameWindowClass = nullptr;
-	//ImGui::SetNextWindowPos(viewport->WorkPos);
-	//ImGui::SetNextWindowSize(viewport->WorkSize);
-	//ImGui::SetNextWindowViewport(viewport->ID);
-
-	//ImGui::Begin("Test", nullptr, frameWindow_flags);
-	//// DockSpace
-	//ImGuiIO& io = ImGui::GetIO();
-	//if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	//{
-	//	ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-	//	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
-
-	//	
-	//	float4x4 view = App->camera->GetCamera()->GetViewMatrix();
-	//	float4x4 proj = App->camera->GetCamera()->GetProjectionMatrix();
-	//	float4x4 asdasd = float4x4::identity;
-
-	//	ImGuizmo::Enable(true);
-	//	view.Transpose();
-	//	proj.Transpose();
-	//	ImGuizmo::DrawGrid((float*)&view, (float*)&proj, (float*)&asdasd, 100.f);
-
-
-	//	ImGuizmo::SetRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	//	ImGuizmo::SetDrawlist();
-	//	ImGuizmo::Manipulate(App->camera->GetCamera()->GetViewMatrix().Inverted().ptr(), App->camera->GetCamera()->GetProjectionMatrix().Inverted().ptr(), ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, App->, NULL, NULL);
-
-	//	ImGui::Image((void*)(intptr_t)App->renderer->GetFramebufferTextureId(), ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-	//	
-
-	//}
-	//ImGui::End();
-
-	
-	ImGuizmo::Enable(true);
-	ImGui::Begin("Test");
-	ImGuizmo::Enable(true);
-	ImGuizmo::SetRect(0, 0, 10, 10);
-	ImGuizmo::SetDrawlist();
-	ImGui::Image((void*)(intptr_t)App->renderer->GetFramebufferTextureId(), ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-	ImGuizmo::SetRect(0, 0, 10, 10);
-	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

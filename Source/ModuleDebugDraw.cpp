@@ -613,7 +613,7 @@ bool ModuleDebugDraw::CleanUp()
 
 update_status  ModuleDebugDraw::PreUpdate()
 {
-    dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
+    //dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
     dd::xzSquareGrid(-150, 150, 0.0f, 1.0f ,vec(0.3f, 0.3f, 0.3f), false);
 
     Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
