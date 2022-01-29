@@ -12,6 +12,7 @@ private:
 	Scene* current_scene; // For now we only have one scene support, in the future
 						  // we may add an additional vector that holds all the scenes
 						  // in the game, and add a load scene functionality as well.
+	Entity* renamed_entity_in_hierarchy;
 	EventListener<const char*> file_dropped_event_listener;
 
 public:

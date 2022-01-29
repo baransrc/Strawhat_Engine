@@ -6,12 +6,14 @@
 #include "Scene.h"
 #include "Entity.h"
 
+#include "Util.h"
 #include "ModelImporter.h"
 
 
 ModuleSceneManager::ModuleSceneManager() :
 	Module(),
-	current_scene(nullptr)
+	current_scene(nullptr),
+	renamed_entity_in_hierarchy(nullptr)
 {
 }
 
@@ -121,14 +123,23 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 		return;
 	}
 
-	static bool being_renamed = false;
+	bool being_renamed = renamed_entity_in_hierarchy != nullptr && renamed_entity_in_hierarchy->Id() == entity->Id();
 	bool open = false;
+	// should_be_deleted is set to true if delete was selected
+	// and it gets deleted after the tree is rendered:
+	bool should_be_deleted = false;
+	// should_move_up_in_hierarchy is set to true if the current entity "Move Up"
+	// is called:
+	bool should_move_up_in_hierarchy = false;
+
+	// Get a unique id of the current node for click events and etc to be unique to
+	// that node:
 	char main_id_buffer[64];
 	sprintf(main_id_buffer, "ent##%u\0", entity->Id());
 
 	ImGui::PushID(main_id_buffer);
 
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_FramePadding;
 
 	if (entity->GetChildren().size() <= 0)
 	{
@@ -144,11 +155,16 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 		flags |= ImGuiTreeNodeFlags_Selected;
 	}
 
-	open = ImGui::TreeNodeEx(entity->Name().c_str(), flags);
+	open = ImGui::TreeNodeEx(being_renamed ? "" : entity->Name().c_str(), flags);
 
 	// If Current node is clicked:
 	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
+		if (!being_renamed)
+		{
+			renamed_entity_in_hierarchy = nullptr;
+		}
+
 		selected_entity_in_hierarchy = entity;
 		current_scene->SetSelectedEntity(selected_entity_in_hierarchy);
 	}
@@ -156,23 +172,33 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 	is_selected = selected_entity_in_hierarchy != nullptr && selected_entity_in_hierarchy->Id() == entity->Id();
 		
 	// Rename text input area:
-	if (is_selected && being_renamed)
+	if (being_renamed)
 	{
 		ImGui::SetItemAllowOverlap();
-		char buffer[1024] = "Rename To";
+
+		char buffer[1024] = "";
+		util::CopyIntoBuffer(buffer, entity->Name().c_str(), 1024, entity->Name().size());
+
 		char rename_id_buffer[64];
 		sprintf(rename_id_buffer, "rn##%u\0", entity->Id());
 
-		LOG("%s", rename_id_buffer);
-
 		ImGui::SameLine();
+
+		ImGui::AlignTextToFramePadding();
+
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 		ImGui::PushID(rename_id_buffer);
-		if (ImGui::InputTextWithHint("", entity->Name().c_str(), &buffer[0], 1024, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+
+		if (ImGui::InputTextWithHint("", entity->Name().c_str(), &buffer[0], 1024, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_AlwaysOverwrite))
 		{
 			entity->SetName(buffer);
-			being_renamed = false;
+			renamed_entity_in_hierarchy = nullptr;
 		}
+
 		ImGui::PopID();
+		//ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
 	}
 
 	// Right Click context menu:
@@ -184,29 +210,40 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 
 			Entity* child = new Entity();
 
-			child->Initialize("Empty");
+			child->Initialize("Empty Entity");
 
 			child->SetParent(entity);
 		}
 
 		if (!is_root_entity)
 		{
+			const bool dont_show_move_up = entity->Id() == current_scene->GetRootEntity()->Id() || 
+				(entity->Parent() != nullptr && entity->Parent()->Id() == current_scene->GetRootEntity()->Id());
+
+			if (!dont_show_move_up && ImGui::MenuItem("Move Up"))
+			{
+				ImGui::CloseCurrentPopup();
+				
+				should_move_up_in_hierarchy = true;
+			}
+
 			if (ImGui::MenuItem("Delete"))
 			{
 				ImGui::CloseCurrentPopup();
 
-				entity->SetParent(nullptr);
+				if (is_selected)
+				{
+					current_scene->SetSelectedEntity(current_scene->GetRootEntity());
+				}
 
-				delete entity;
-
-				return;
+				should_be_deleted = true;
 			}
 
 			if (ImGui::MenuItem("Rename"))
 			{
 				ImGui::CloseCurrentPopup();
 
-				being_renamed = true;
+				renamed_entity_in_hierarchy = entity;
 			}
 		}
 
@@ -226,4 +263,23 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 	}
 
 	ImGui::PopID();	
+
+	if (should_move_up_in_hierarchy)
+	{
+		Entity* previous_parent = entity->Parent();
+
+		// This if check is unnecessary as it is prevented 
+		// above but put here anyway to have it secured:
+		if (previous_parent != nullptr)
+		{
+			entity->SetParent(previous_parent->Parent());
+		}
+	}
+
+	if (should_be_deleted)
+	{
+		entity->SetParent(nullptr);
+
+		delete entity;
+	}
 }
