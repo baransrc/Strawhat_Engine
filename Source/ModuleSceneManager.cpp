@@ -176,7 +176,7 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 	}
 
 	// Right Click context menu:
-	if (!is_root_entity && ImGui::BeginPopupContextItem(main_id_buffer))
+	if (ImGui::BeginPopupContextItem(main_id_buffer))
 	{
 		if (ImGui::MenuItem("Add Empty"))
 		{
@@ -189,22 +189,25 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 			child->SetParent(entity);
 		}
 
-		if (ImGui::MenuItem("Delete"))
+		if (!is_root_entity)
 		{
-			ImGui::CloseCurrentPopup();
+			if (ImGui::MenuItem("Delete"))
+			{
+				ImGui::CloseCurrentPopup();
 
-			entity->SetParent(nullptr);
+				entity->SetParent(nullptr);
 
-			delete entity;
+				delete entity;
 
-			return;
-		}
+				return;
+			}
 
-		if (ImGui::MenuItem("Rename"))
-		{
-			ImGui::CloseCurrentPopup();
+			if (ImGui::MenuItem("Rename"))
+			{
+				ImGui::CloseCurrentPopup();
 
-			being_renamed = true;
+				being_renamed = true;
+			}
 		}
 
 		ImGui::EndPopup();
