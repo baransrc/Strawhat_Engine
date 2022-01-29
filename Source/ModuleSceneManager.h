@@ -4,6 +4,7 @@
 #include "Event.h"
 
 class Scene;
+class Entity;
 
 class ModuleSceneManager : public Module
 {
@@ -24,6 +25,10 @@ public:
 	update_status PostUpdate() override;
 
 	void HandleFileDropped(const char* file_name);
+	void DrawHierarchyEditor();
 
 	Scene* const GetCurrentScene() const;
+
+private:
+	void DrawRecursiveEntityHierarchy(Entity* entity, bool is_root_entity);
 };
