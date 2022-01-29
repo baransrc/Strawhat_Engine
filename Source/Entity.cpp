@@ -123,11 +123,6 @@ void Entity::PostUpdate()
 
 void Entity::DrawGizmos()
 {
-	if (selected_entity_in_hierarchy == nullptr || selected_entity_in_hierarchy->Id() != Id())
-	{
-		return;
-	}
-
 	for (Component* component : components)
 	{
 		component->DrawGizmo();
