@@ -2,11 +2,13 @@
 #include "ModuleEditor.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
+#include "ModuleSceneManager.h"
 #include "ModuleRenderExercise.h"
 
 #include "Util.h"
 #include "Globals.h"
 
+#include "Scene.h"
 #include "Entity.h"
 #include "Component.h"
 #include "ComponentLight.h"
@@ -26,7 +28,6 @@ ModuleEditor::~ModuleEditor()
 {
 }
 
-
 bool ModuleEditor::Init()
 {
 	LOG("Initializing Editor");
@@ -43,16 +44,6 @@ bool ModuleEditor::Init()
 	fps_data.reserve(TIMER_BUFFER_LENGTH);
 
 	show_demo_window = true;
-
-	// Entity related stuff, just for testing, will be deleted:
-	base_entity = App->renderer->GetLoadedModel();
-
-	Entity* light_entity = new Entity();
-	light_entity->Initialize("Light");
-	light_entity->SetParent(base_entity);
-	ComponentLight* component_light = new ComponentLight();
-	component_light->Initialize(light_entity);
-	component_light->Load(light_type::POINT);
 
 	return true;
 }
@@ -291,7 +282,7 @@ void ModuleEditor::DrawInspector()
 	ImGui::Begin("Inspector", &should_draw_inspector_window);
 	// For now. Will be deleted after ModuleSceneManager is added:
 
-	Entity* selected_entity = base_entity->selected_entity_in_hierarchy;
+	Entity* selected_entity = App->scene_manager->GetCurrentScene()->GetSelectedEntity();
 
 	if (selected_entity != nullptr)
 	{
@@ -341,9 +332,22 @@ void ModuleEditor::DrawInspector()
 		}
 	}
 
-
 	ImGui::End();
 	ImGui::PopID();
+}
+
+void ModuleEditor::DrawHierarchy()
+{
+	if (!should_draw_hierarchy_window)
+	{
+		return;
+	}
+
+	ImGui::Begin("Hierarchy", &should_draw_hierarchy_window);
+
+	App->scene_manager->DrawHierarchyEditor();
+
+	ImGui::End();
 }
 
 void ModuleEditor::DrawModuleSettings()
@@ -356,11 +360,6 @@ void ModuleEditor::DrawModuleSettings()
 	ImGui::Begin("Module Settings", &show_module_settings_window);
 
 	App->renderer->OnEditor();
-
-
-	if (ImGui::CollapsingHeader("Entity Experiment"))
-	{
-	}
 
 	ImGui::End();
 }
@@ -395,6 +394,8 @@ update_status ModuleEditor::Update()
 	DrawModuleSettings();
 
 	DrawInspector();
+
+	DrawHierarchy();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
