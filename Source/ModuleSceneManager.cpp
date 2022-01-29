@@ -21,6 +21,8 @@ ModuleSceneManager::~ModuleSceneManager()
 
 bool ModuleSceneManager::Init()
 {
+	LOG("Initialize: Module Scene Manager");
+
 	// NOTE(Baran): For now this Module only creates 
 	// one scene, and uses it as the current_scene. 
 	// In the future this Module will also be responsible
@@ -44,6 +46,8 @@ bool ModuleSceneManager::Init()
 
 bool ModuleSceneManager::CleanUp()
 {
+	LOG("CleanUp: Module Scene Manager");
+
 	// NOTE(Baran): For now, we create a scene as 
 	// current_scene, thus we delete it here, but 
 	// in the future, current_scene will hold a 
