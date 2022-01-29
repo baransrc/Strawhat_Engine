@@ -208,6 +208,9 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleSceneManager.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -794,6 +797,9 @@
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleSceneManager.h">
+      <Filter>Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
