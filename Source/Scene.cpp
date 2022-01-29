@@ -77,8 +77,8 @@ void Scene::Initialize()
     camera_entity->SetParent(root_entity);
     camera_entity->AddComponent<ComponentCamera>();
     // Set camera_entity's camera component as the main_camera:
-    main_camera->SetIsMainCamera(true);
     SetMainCamera(camera_entity->GetComponent<ComponentCamera>());
+    main_camera->SetIsMainCamera(true);
     // Set camera_entity's position:
     camera_entity->Transform()->SetPosition(math::float3(0.0f, 10.0f, 10.0f));
 
