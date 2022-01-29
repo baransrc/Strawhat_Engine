@@ -149,7 +149,6 @@ void ModuleRender::HandleFileDrop(const char* file_directory)
 {
 	InitializeModel(file_directory);
 
-	App->camera->OnModelChanged();
 }
 
 float ModuleRender::GetRequiredAxisTriadLength() const
