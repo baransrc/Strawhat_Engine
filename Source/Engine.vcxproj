@@ -217,6 +217,7 @@
     <ClCompile Include="ModuleShaderProgram.cpp" />
     <ClCompile Include="ModuleTexture.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
+    <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -415,6 +416,7 @@
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="OPTICK\include\optick.config.h" />
     <ClInclude Include="OPTICK\include\optick.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
