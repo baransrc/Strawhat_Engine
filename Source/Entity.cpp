@@ -374,6 +374,34 @@ Entity* Entity::FindChild(unsigned int child_entity_id) const
 	return nullptr;
 }
 
+bool Entity::HasDescendant(unsigned int descendant_entity_id) const
+{
+	return FindDescendant(descendant_entity_id) != nullptr;
+}
+
+Entity* Entity::FindDescendant(unsigned int descendant_entity_id) const
+{
+	if (children.size() > 0)
+	{
+		for (Entity* child : children)
+		{
+			if (child->Id() == descendant_entity_id)
+			{
+				return child;
+			}
+
+			Entity* descendant = child->FindDescendant(descendant_entity_id);
+
+			if (descendant != nullptr)
+			{
+				return descendant;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 void Entity::InvokeComponentsChangedEvents(component_type type) const
 {
 	components_changed->Invoke(type);

@@ -62,6 +62,8 @@ public:
 	void AddChild(Entity* child);
 	void RemoveChild(Entity* child);
 	Entity* FindChild(unsigned int child_entity_id) const;
+	bool HasDescendant(unsigned int descendant_entity_id) const;
+	Entity* FindDescendant(unsigned int descendant_entity_id) const;
 
 	void InvokeComponentsChangedEvents(component_type type) const;
 	Event<component_type>* const GetComponentsChangedEvent() const;
