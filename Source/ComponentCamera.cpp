@@ -199,7 +199,25 @@ void ComponentCamera::LookAt(const math::float3& direction)
 
 void ComponentCamera::DrawInspectorContent()
 {
+	float fov_editor = math::RadToDeg(GetHorizontalFOV());
+	float near_plane_editor = GetNearPlaneDistance();
+	float far_plane_editor = GetFarPlaneDistance();
 
+	if (ImGui::DragFloat("Horizontal FOV", &fov_editor, 0.1f, 45.0f, 120.0f, "%.3f"))
+	{
+		SetHorizontalFOV(math::DegToRad(fov_editor));
+	}
+	if (ImGui::DragFloat("Near", &near_plane_editor,0.1f, 0.001f, 10000.0f, "%.3f"))
+	{
+		SetNearPlaneDistance(near_plane_editor);
+	}
+	if (ImGui::DragFloat("Far", &far_plane_editor, 0.1f, 0.001f, 10000.0f, "%.3f"))
+	{
+		SetFarPlaneDistance(far_plane_editor);
+	}
+
+	// NOTE: For now we only have support for perspective cameras on editor, therefore, 
+	// they cannot create an orthographic camera.
 }
 
 void ComponentCamera::CalculateProjectionMatrix()
