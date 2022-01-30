@@ -282,9 +282,11 @@ void ModuleEditor::DrawInspector()
 	ImGui::Begin("Inspector", &should_draw_inspector_window);
 	// For now. Will be deleted after ModuleSceneManager is added:
 
-	Entity* selected_entity = App->scene_manager->GetCurrentScene()->GetSelectedEntity();
+	const Scene* current_scene = App->scene_manager->GetCurrentScene();
+	Entity* selected_entity = current_scene->GetSelectedEntity();
+	unsigned int root_entity_id = current_scene->GetRootEntity()->Id();
 
-	if (selected_entity != nullptr)
+	if (selected_entity != nullptr && selected_entity->Id() != root_entity_id)
 	{
 		ImGui::BeginGroup();
 		ImGui::Text(selected_entity->Name().c_str());
@@ -294,7 +296,6 @@ void ModuleEditor::DrawInspector()
 		// Show right click menu
 		if (ImGui::BeginPopupContextItem("Inspector##Window"))
 		{
-
 			if (ImGui::BeginMenu("Add Component"))
 			{
 				if (ImGui::Selectable("Camera"))
