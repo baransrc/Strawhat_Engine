@@ -17,11 +17,9 @@ private:
 
 	light_type type;
 
-	float3 position;
-	Quat rotation;
-	float3 scale;
-
 	float radius;
+	float inner;
+	float outer;
 	float shininess;
 	float intensity;
 
@@ -43,10 +41,11 @@ public:
 	void DrawGizmo() override;
 
 	light_type GetLightType() const { return type; };
-	float3 GetLightPosition() const { return position; };
-	//Quat GetLightRotation() const { return rotation; };
-	float3 GetLightScale() const { return scale; };
 	float3 GetLightColor() const { return color; };
+
+	void SetUniformsPointLight();
+	void SetUniformsDirectionalLight();
+	void SetUniformsSpotLight();
 
 protected:
 	void DrawInspectorContent() override;
@@ -62,7 +61,7 @@ inline const char* component_light_type_to_string(light_type type)
 	}
 	case light_type::DIRECTIONAL:
 	{
-		return "Directrional";
+		return "Directional";
 	}
 	case light_type::POINT:
 	{
