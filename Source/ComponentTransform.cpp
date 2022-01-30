@@ -1,5 +1,5 @@
 #include "ComponentTransform.h"
-#include "Entity.h"
+
 #include "ModuleDebugDraw.h"
 #include "Application.h"
 
@@ -37,6 +37,21 @@ void ComponentTransform::Initialize(Entity* new_owner)
 	Component::Initialize(new_owner);
 
 	SetEulerRotation(math::float3::zero);
+
+	owner_hierarchy_changed_event_listener = 
+		EventListener<entity_operation>
+		(
+			std::bind
+			(
+				&ComponentTransform::HandleOwnerHierarchyChanged, 
+				this, 
+				std::placeholders::_1
+			)
+		);
+	// Listen to owner hierarchy changed event:
+	owner->GetHierarchyChangedEvent()->
+		AddListener(&owner_hierarchy_changed_event_listener);
+
 }
 
 void ComponentTransform::Update()
@@ -221,7 +236,7 @@ void ComponentTransform::LookAt(const math::float3& direction)
 
 void ComponentTransform::DrawInspectorContent()
 {
-	// This controls the sensitivity of sliders inside the transform editor:
+	// This controls the sensiti vity of sliders inside the transform editor:
 	static float variable_sensitivity = 1.0f;
 
 	math::float3 position_local_editor = position_local;
@@ -264,6 +279,16 @@ void ComponentTransform::DrawInspectorContent()
 	ImGui::NewLine();
 
 	ImGui::DragFloat("Sensitivity", &variable_sensitivity, 0.001f, 0.000001f, inf, "%.3f");
+}
+
+void ComponentTransform::HandleOwnerHierarchyChanged(entity_operation operation)
+{
+	if (operation != entity_operation::PARENT_CHANGED)
+	{
+		return;
+	} 
+
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mode)
