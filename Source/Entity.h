@@ -6,6 +6,9 @@
 #include "Event.h"
 #include "Globals.h"
 
+#define COMPONENT_VOID template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void)
+#define COMPONENT_PTR_CONST template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const)
+#define COMPONENT_VECTOR template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>)
 class Component;
 class ComponentTransform;
 
@@ -38,16 +41,12 @@ public:
 	Component* CreateComponent(component_type type) const;
 	const std::vector<Entity*>& GetChildren() const;
 
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) AddComponent();
-	template <class COMPONENT_TYPE> 
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) GetComponent() const;
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponents() const;
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponentsInChildren() const;
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponentsIncludingChildren() const;
+	COMPONENT_VOID AddComponent();
+	COMPONENT_PTR_CONST GetComponent() const;
+	COMPONENT_VECTOR GetComponents() const;
+	COMPONENT_VECTOR GetComponentsInChildren() const;
+	COMPONENT_VECTOR GetComponentsIncludingChildren() const;
+	COMPONENT_VECTOR GetComponentsInDescendants() const;
 
 	Component* const GetComponent(component_type type);
 
@@ -76,8 +75,7 @@ private:
 	unsigned int GetCurrentId();
 };
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) Entity::AddComponent()
+COMPONENT_VOID Entity::AddComponent()
 {
 	COMPONENT_TYPE* component = new COMPONENT_TYPE();
 
@@ -98,8 +96,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) Entity::AddCompone
 	}
 }
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) Entity::GetComponent() const
+COMPONENT_PTR_CONST Entity::GetComponent() const
 {
 	component_type type = COMPONENT_TYPE().Type();
 
@@ -114,8 +111,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) E
 	return nullptr;
 }
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) Entity::GetComponents() const
+COMPONENT_VECTOR Entity::GetComponents() const
 {
 	component_type type = COMPONENT_TYPE().Type();
 
@@ -143,8 +139,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TY
 	return components_of_type;
 }
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) Entity::GetComponentsInChildren() const
+COMPONENT_VECTOR Entity::GetComponentsInChildren() const
 {
 	std::vector<COMPONENT_TYPE*> components_in_children;
 
