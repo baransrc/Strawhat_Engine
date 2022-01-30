@@ -2,6 +2,7 @@
 #include "ComponentTransform.h"
 #include "Entity.h"
 
+#include "ModuleDebugDraw.h"
 #include "ModuleShaderProgram.h"
 #include "ModuleWindow.h"
 #include "Application.h"
@@ -79,6 +80,11 @@ void ComponentCamera::Update()
 
 void ComponentCamera::DrawGizmo()
 {
+	// You are the one neo:
+	float4x4 neo = frustum.ViewProjMatrix();
+	neo.Inverse();
+	
+	App->debug_draw->DrawFrustum(neo, float3(0.8f, 0.8f, 1.0f));
 }
 
 component_type ComponentCamera::Type() const
