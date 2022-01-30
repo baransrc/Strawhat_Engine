@@ -115,7 +115,7 @@ void Component::DrawInspector()
 	sprintf_s(id_buffer, 64, "cmp##%u\0", Id());
 
 	ImGui::PushID(id_buffer);
-	if (ImGui::CollapsingHeader(component_type_to_string(Type())))
+	if (ImGui::CollapsingHeader(component_type_to_string(Type()), ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::TextWrapped("ID: %u", Id());
 		DrawInspectorContent();
