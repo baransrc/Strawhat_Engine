@@ -15,6 +15,7 @@ Entity::Entity() :
 	parent(nullptr), 
 	components_changed(nullptr),
 	components_changed_in_descendants(nullptr),
+	hierarchy_changed(nullptr),
 	transform(nullptr)
 {
 }
@@ -35,6 +36,7 @@ Entity::~Entity()
 
 	children.clear();
 
+	delete hierarchy_changed;
 	delete components_changed;
 	delete components_changed_in_descendants;
 }
@@ -51,6 +53,7 @@ void Entity::Initialize(std::string new_name)
 
 	components_changed = new Event<component_type>();
 	components_changed_in_descendants = new Event<component_type>();
+	hierarchy_changed = new Event<entity_operation>();
 
 	// Initialize and add transform component:
 	transform = new ComponentTransform();
@@ -293,6 +296,8 @@ void Entity::SetParent(Entity* new_parent)
 	}
 
 	parent->AddChild(this);
+
+	hierarchy_changed->Invoke(entity_operation::PARENT_CHANGED);
 }
 
 
@@ -319,6 +324,8 @@ void Entity::AddChild(Entity* child)
 	}
 
 	children.push_back(child);
+
+	hierarchy_changed->Invoke(entity_operation::CHILDREN_CHANGED);
 }
 
 /// <summary>
@@ -349,7 +356,7 @@ void Entity::RemoveChild(Entity* child)
 		children.erase(child_index);
 	}
 
-	// TODO: Add componentchanged event invoke statement here too.
+	hierarchy_changed->Invoke(entity_operation::CHILDREN_CHANGED);
 }
 
 /// <summary>
@@ -402,6 +409,11 @@ Entity* Entity::FindDescendant(unsigned int descendant_entity_id) const
 	return nullptr;
 }
 
+std::vector<Entity*> Entity::GetAllDescendants() const
+{
+	return std::vector<Entity*>();
+}
+
 void Entity::InvokeComponentsChangedEvents(component_type type) const
 {
 	components_changed->Invoke(type);
@@ -420,6 +432,11 @@ Event<component_type>* const  Entity::GetComponentsChangedEvent() const
 Event<component_type>* const Entity::GetComponentsChangedInDescendantsEvent() const
 {
 	return components_changed_in_descendants;
+}
+
+Event<entity_operation>* const Entity::GetHierarchyChangedEvent() const
+{
+	return hierarchy_changed;
 }
 
 ComponentTransform* const Entity::Transform() const

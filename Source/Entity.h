@@ -1,14 +1,18 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "EntityOperation.h"
 #include "ComponentType.h"
+
 #include "Event.h"
 #include "Globals.h"
+
+#include <vector>
+#include <string>
 
 #define COMPONENT_VOID template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void)
 #define COMPONENT_PTR_CONST template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const)
 #define COMPONENT_VECTOR template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>)
+
 class Component;
 class ComponentTransform;
 
@@ -20,6 +24,7 @@ private:
 	std::vector<Entity*> children;
 	Event<component_type>* components_changed;
 	Event<component_type>* components_changed_in_descendants;
+	Event<entity_operation>* hierarchy_changed;
 	Entity* parent;
 	std::string name;
 	unsigned int id;
@@ -68,7 +73,7 @@ public:
 	void InvokeComponentsChangedEvents(component_type type) const;
 	Event<component_type>* const GetComponentsChangedEvent() const;
 	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;
-
+	Event<entity_operation>* const GetHierarchyChangedEvent() const;
 	ComponentTransform* const Transform() const;
 
 private:
@@ -157,9 +162,7 @@ COMPONENT_VECTOR Entity::GetComponentsInChildren() const
 	return components_in_children;
 }
 
-
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) Entity::GetComponentsIncludingChildren() const
+COMPONENT_VECTOR Entity::GetComponentsIncludingChildren() const
 {
 	std::vector<COMPONENT_TYPE*> components_including_children = GetComponents<COMPONENT_TYPE>();
 
