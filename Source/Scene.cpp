@@ -10,12 +10,18 @@
 Scene::Scene() :
     root_entity(nullptr),
     selected_entity(nullptr),
-    main_camera(nullptr)
+    main_camera(nullptr),
+    components_changed_in_descendants_event_listener(EventListener<component_type>())
 {
 }
 
 Scene::~Scene()
-{
+{   
+    // Since root_entity delete will call the 
+    // remove all listeners method of the event(s)
+    // we have subscribed here, no need to unsubscribe
+    // before we delete the root entity:
+
     delete root_entity;
 }
 
@@ -69,6 +75,22 @@ void Scene::Initialize()
     // Initialize the root_entity:
     root_entity = new Entity();
     root_entity->Initialize("Root Entity");
+
+    // Subscribe to the components_changed_in_descendants event 
+    // of root_entity:
+    components_changed_in_descendants_event_listener = 
+        EventListener<component_type>
+        (
+            std::bind
+            (
+                &Scene::HandleComponentsChangedInDescendantsOfRoot, 
+                this, 
+                std::placeholders::_1
+            )
+        );
+
+    root_entity->GetComponentsChangedInDescendantsEvent()
+        ->AddListener(&components_changed_in_descendants_event_listener);
     
     // Add an entity with a camera component to the root
     // entity:
@@ -127,4 +149,24 @@ void Scene::Delete()
     selected_entity = nullptr;
 
     main_camera = nullptr;
+}
+
+void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)
+{
+    // Right now we will only care about changes in transform, 
+    // mesh and bounding box components of descendants, as
+    // they will change the culled entities:
+    switch (type)
+    {
+    case component_type::TRANSFORM:
+        break;
+    case component_type::MESH:
+        break;
+    case component_type::BOUNDING_BOX:
+        break;
+    default:
+        return;
+    }
+
+    LOG("SOMETHING CHANGED IN SCENE");
 }

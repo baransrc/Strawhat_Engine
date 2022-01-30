@@ -1,15 +1,19 @@
 #pragma once
 
+#include "Event.h"
+#include "ComponentType.h"
+
 class Entity;
 class ComponentCamera;
 
 class Scene
 {
 private:
-	ComponentCamera*	main_camera;
-	Entity*				selected_entity;
-	Entity*				root_entity;
-
+	ComponentCamera*				main_camera;
+	Entity*							selected_entity;
+	Entity*							root_entity;
+	EventListener<component_type>	components_changed_in_descendants_event_listener;
+	
 public:
 	Scene();
 	~Scene();
@@ -26,4 +30,7 @@ public:
 	void Update();
 	void PostUpdate();
 	void Delete();
+
+private:
+	void HandleComponentsChangedInDescendantsOfRoot(component_type type);
 };
