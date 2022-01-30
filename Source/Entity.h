@@ -63,6 +63,7 @@ public:
 	Entity* FindChild(unsigned int child_entity_id) const;
 	bool HasDescendant(unsigned int descendant_entity_id) const;
 	Entity* FindDescendant(unsigned int descendant_entity_id) const;
+	std::vector<Entity*> GetAllDescendants() const;
 
 	void InvokeComponentsChangedEvents(component_type type) const;
 	Event<component_type>* const GetComponentsChangedEvent() const;
@@ -173,4 +174,22 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TY
 	}
 
 	return components_including_children;
+}
+
+COMPONENT_VECTOR Entity::GetComponentsInDescendants() const
+{
+	std::vector<COMPONENT_TYPE*> components_in_descendants;
+
+	for (Entity* child : children)
+	{
+		std::vector<COMPONENT_TYPE*> components_in_child = child->GetComponents<COMPONENT_TYPE>();
+
+		components_in_descendants.push_back(components_in_child);
+
+		std::vector<COMPONENT_TYPE*> components_in_childs_descendants = child->GetComponentsInDescendants<COMPONENT_TYPE>();
+
+		components_in_descendants.push_back(components_in_childs_descendants);
+	}
+
+	return components_in_descendants;
 }
