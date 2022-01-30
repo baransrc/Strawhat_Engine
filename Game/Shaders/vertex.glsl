@@ -7,8 +7,6 @@ uniform mat4 projection_matrix;
 uniform mat4 view_matrix;
 uniform mat4 model_matrix;
 
-out vec3 interpolated_colorNORMALS;
-out vec2 interpolated_texture_coordinate;
 out vec3 world_normal;
 out vec3 fragment_position;
 out vec3 fragment_normal;
@@ -21,6 +19,4 @@ void main()
     fragment_normal = transpose(inverse(mat3(model_matrix))) * vertex_normal;
     fragment_texture_coordinate = vertex_texture_coordinate;
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vertex_position, 1.0);
-    interpolated_colorNORMALS = vertex_normal;
-    interpolated_texture_coordinate = vertex_texture_coordinate;
 }
