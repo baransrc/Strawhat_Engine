@@ -24,7 +24,7 @@ public:
     void            Draw(const float4x4& view, const float4x4& proj, unsigned width, unsigned height);
 
     void DrawCuboid(vec* points, vec color);
-    void DrawCone(vec position, vec direction, vec color);
+    void DrawCone(vec position, vec direction, float longitude, float radius, vec color);
     void DrawFrustum(float4x4 matrix, vec color);
     void DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size);
     
