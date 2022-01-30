@@ -187,11 +187,19 @@ COMPONENT_VECTOR Entity::GetComponentsInDescendants() const
 	{
 		std::vector<COMPONENT_TYPE*> components_in_child = child->GetComponents<COMPONENT_TYPE>();
 
-		components_in_descendants.push_back(components_in_child);
+		for (COMPONENT_TYPE* component_in_child : components_in_child)
+		{
+			components_in_descendants.push_back(component_in_child);
+
+		}
 
 		std::vector<COMPONENT_TYPE*> components_in_childs_descendants = child->GetComponentsInDescendants<COMPONENT_TYPE>();
 
-		components_in_descendants.push_back(components_in_childs_descendants);
+		for (COMPONENT_TYPE* component_in_childs_descendants : components_in_childs_descendants)
+		{
+			components_in_descendants.push_back(component_in_childs_descendants);
+
+		}
 	}
 
 	return components_in_descendants;
