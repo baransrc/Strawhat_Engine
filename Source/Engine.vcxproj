@@ -327,6 +327,7 @@
     <ClInclude Include="DEVIL\include\IL\ilu_region.h" />
     <ClInclude Include="DEVIL\include\IL\il_wrap.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="EntityOperation.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="ModelImporter.h" />

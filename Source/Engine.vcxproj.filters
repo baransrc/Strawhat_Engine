@@ -801,6 +801,9 @@
     <ClInclude Include="ModuleSceneManager.h">
       <Filter>Modules</Filter>
     </ClInclude>
+    <ClInclude Include="EntityOperation.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">
