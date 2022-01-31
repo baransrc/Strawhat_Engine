@@ -434,7 +434,7 @@ update_status ModuleEditor::PreUpdate()
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 	ImGuizmo::BeginFrame();
-	ImGuizmo::Enable(true);
+	//ImGuizmo::Enable(true);
 
 
 	return update_status::UPDATE_CONTINUE;
@@ -621,12 +621,12 @@ void ModuleEditor::DrawSceneWindow()
 	// NOTE: Other flags we used to have are:
 	// ImGuiWindowFlags_NoDocking |  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | 
 	// ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-	ImGuiWindowFlags frame_window_flags = ImGuiWindowFlags_NoNavFocus;
+	ImGuiWindowFlags frame_window_flags = ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-	ImGui::SetNextWindowPos(ImVec2(270, 50));
-	ImGui::SetNextWindowSize(ImVec2(1100, 600));
+	//ImGui::SetNextWindowPos(ImVec2(270, 50));
+	//ImGui::SetNextWindowSize(ImVec2(1100, 600));
 	ImGui::SetNextWindowViewport(viewport->ID);
 
 	//ImGuiID dockspace_id = ImGui::GetID("DockSpace");
@@ -634,8 +634,12 @@ void ModuleEditor::DrawSceneWindow()
 	//ImGui::CaptureMouseFromApp(false);
 	ImGuiIO& io = ImGui::GetIO();
 
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+
 	ImGui::Begin("Scene", nullptr, frame_window_flags);
 
+	
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	float x = viewportPanelSize.x;
 	float y = viewportPanelSize.y;
@@ -647,6 +651,9 @@ void ModuleEditor::DrawSceneWindow()
 	vMin.y += ImGui::GetWindowPos().y;
 	vMax.x += ImGui::GetWindowPos().x;
 	vMax.y += ImGui::GetWindowPos().y;
+
+	x = vMax.x - vMin.x;
+	y = vMax.y - vMin.y;
 
 	App->renderer->HandleWindowResized(x, y);
 
@@ -665,7 +672,7 @@ void ModuleEditor::DrawSceneWindow()
 	ImGui::Image
 	(
 		(void*)(intptr_t)App->renderer->GetFramebufferTextureId(),
-		ImVec2(window_width, window_height),
+		ImVec2(x, y),
 		ImVec2(0, 1),
 		ImVec2(1, 0)
 	);
@@ -673,6 +680,7 @@ void ModuleEditor::DrawSceneWindow()
 	TransformSelectedEntityWithImGuizmo();
 
 	ImGui::End();
+	ImGui::PopStyleVar();
 }
 
 void ModuleEditor::SwitchImGuizmoOperationModeWithKeyboard()
