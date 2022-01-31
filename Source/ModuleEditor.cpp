@@ -297,6 +297,9 @@ void ModuleEditor::DrawPerformanceWindow()
 
 void ModuleEditor::DrawInspector()
 {
+	ImGui::SetNextWindowPos(ImVec2(1370, 50));
+
+
 	if (!should_draw_inspector_window)
 	{
 		return;
@@ -363,6 +366,9 @@ void ModuleEditor::DrawInspector()
 
 void ModuleEditor::DrawImGuizmoModeWindow()
 {
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	//ImGui::SetNextWindowSize(ImVec2(1800, 600));
 	ImGui::Begin("Transfrom Mode");
 
 	if (ImGui::RadioButton("Translate", current_imguizmo_operation == ImGuizmo::TRANSLATE))
@@ -403,6 +409,8 @@ void ModuleEditor::DrawImGuizmoModeWindow()
 
 void ModuleEditor::DrawModuleSettings()
 {
+	ImGui::SetNextWindowPos(ImVec2(0, 50));
+	
 	if (!show_module_settings_window)
 	{
 		return;
@@ -617,8 +625,8 @@ void ModuleEditor::DrawSceneWindow()
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-	ImGui::SetNextWindowPos(viewport->WorkPos);
-	ImGui::SetNextWindowSize(ImVec2(1800, 600));
+	ImGui::SetNextWindowPos(ImVec2(270, 50));
+	ImGui::SetNextWindowSize(ImVec2(1100, 600));
 	ImGui::SetNextWindowViewport(viewport->ID);
 
 	//ImGuiID dockspace_id = ImGui::GetID("DockSpace");
@@ -626,18 +634,32 @@ void ModuleEditor::DrawSceneWindow()
 	//ImGui::CaptureMouseFromApp(false);
 	ImGuiIO& io = ImGui::GetIO();
 
+	ImGui::Begin("Scene", nullptr, frame_window_flags);
+
+	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+	float x = viewportPanelSize.x;
+	float y = viewportPanelSize.y;
+
+	ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+	ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+
+	vMin.x += ImGui::GetWindowPos().x;
+	vMin.y += ImGui::GetWindowPos().y;
+	vMax.x += ImGui::GetWindowPos().x;
+	vMax.y += ImGui::GetWindowPos().y;
+
+	App->renderer->HandleWindowResized(x, y);
+
 	// Get Window width and heights:
 	float window_width = (float)App->window->window_width;
 	float window_height = (float)App->window->window_height;
-
-	ImGui::Begin("Scene", nullptr, frame_window_flags);
 
 	ImGuizmo::SetRect
 	(
 		float(ImGui::GetCursorScreenPos().x),
 		float(ImGui::GetCursorScreenPos().y),
-		window_width,
-		window_height
+		x,
+		y
 	);
 
 	ImGui::Image
