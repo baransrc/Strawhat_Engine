@@ -5,6 +5,7 @@
 
 #include "Scene.h"
 #include "Entity.h"
+#include "ComponentCamera.h"
 
 #include "Util.h"
 #include "ModelImporter.h"
@@ -34,9 +35,11 @@ bool ModuleSceneManager::Init()
 	current_scene = new Scene();
 	current_scene->Initialize();
 
-	// Also, for now we set the current scene's main camera to nullptr
-	// so that we render from ModuleCamera's camera:
-	current_scene->SetMainCamera(nullptr);
+	// Also, for now we set the current scene's main camera should_render 
+	// to false so that we render from ModuleCamera's camera:
+	current_scene->GetMainCamera()->SetShouldRender(false);
+	// NOTE(Baran): We will switch should render to true when we are on play 
+	// mode in the future.
 
 	// Initialize file_dropped_event_listener:
 	file_dropped_event_listener = EventListener<const char*>(std::bind(&ModuleSceneManager::HandleFileDropped, this, std::placeholders::_1));

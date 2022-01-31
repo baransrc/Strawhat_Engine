@@ -15,6 +15,7 @@ ComponentCamera::ComponentCamera() :
 	projection_mode(camera_projection_mode::ORTHOGRAPHIC),
 	should_calculate_projection_matrix(false),
 	is_main_camera(false),
+	should_render(false),
 	component_changed_event_listener(EventListener<component_type>())
 {
 }
@@ -31,6 +32,9 @@ ComponentCamera::~ComponentCamera()
 void ComponentCamera::Initialize(Entity* new_owner)
 {
 	Component::Initialize(new_owner);
+
+	// Set Should Render to true:
+	should_render = true;
 
 	// Initialize the frustum:
 	frustum.SetKind(FrustumSpaceGL, FrustumRightHanded);
@@ -58,7 +62,7 @@ void ComponentCamera::PreUpdate()
 	// If it's the main camera, use the matrices of this:
 	// NOTE: When play/stop is implemented, we will start rendering from 
 	// the camera that is flagged as main camera found in the current scene.
-	if (is_main_camera)
+	if (is_main_camera && should_render)
 	{
 		// Make sure we are using the true shader before passing the arguments:
 		App->shader_program->Use();
@@ -137,9 +141,14 @@ float ComponentCamera::GetNearPlaneDistance() const
 	return frustum.NearPlaneDistance();
 }
 
-camera_projection_mode ComponentCamera::GetProjectionMode()
+camera_projection_mode ComponentCamera::GetProjectionMode() const
 {
 	return projection_mode;
+}
+
+bool ComponentCamera::GetShouldRender() const
+{
+	return should_render;
 }
 
 void ComponentCamera::SetHorizontalFOV(float new_horizontal_fov)
@@ -190,6 +199,11 @@ void ComponentCamera::SetAsOrthographic(float new_orthographic_width, float new_
 	frustum.SetOrthographic(new_orthographic_width, new_orthographic_height);
 	projection_mode = camera_projection_mode::ORTHOGRAPHIC;
 	should_calculate_projection_matrix = true;
+}
+
+void ComponentCamera::SetShouldRender(bool new_should_render)
+{
+	should_render = new_should_render;
 }
 
 void ComponentCamera::LookAt(const math::float3& direction)
