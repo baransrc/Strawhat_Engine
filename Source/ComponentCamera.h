@@ -6,7 +6,7 @@
 #include "MATH_GEO_LIB/Geometry/Frustum.h"
 #include "MATH_GEO_LIB/Math/float4x4.h"
 #include "MATH_GEO_LIB/Math/float3.h"
-
+#include "MATH_GEO_LIB/Geometry/OBB.h"
 
 enum class camera_projection_mode
 {
@@ -60,6 +60,7 @@ public:
 	void SetShouldRender(bool new_should_render);
 
 	void LookAt(const math::float3& direction);
+	bool DoesOBBHavePointInsideFrustum(const math::OBB& obb) const;
 
 protected:
 	void DrawInspectorContent() override;

@@ -7,6 +7,8 @@
 #include "ModuleWindow.h"
 #include "Application.h"
 
+#include "MATH_GEO_LIB/Geometry/Plane.h"
+
 ComponentCamera::ComponentCamera() : 
 	Component(),
 	frustum(math::Frustum()),
@@ -209,6 +211,99 @@ void ComponentCamera::SetShouldRender(bool new_should_render)
 void ComponentCamera::LookAt(const math::float3& direction)
 {
 	owner->Transform()->LookAt(direction.Normalized());
+}
+
+bool ComponentCamera::DoesOBBHavePointInsideFrustum(const math::OBB& obb) const
+{
+	// Get planes of frustum:
+	math::Plane planes[6];
+	frustum.GetPlanes(planes);
+
+	// Get points of the obb:
+	math::float3 points[8];
+	obb.GetCornerPoints(points);
+
+	// Iterate through all the points of obb:
+	for (size_t i = 0; i < 8; ++i)
+	{
+		// Start as assuming the point is inside the
+		// frustum:
+		bool is_inside_frustum = true;
+
+		// Iterate through all the planes of frustum:
+		for (size_t j = 0; j < 6; ++j)
+		{
+			// Check if the point lies on the plane or in the negative
+			// side of the plane:
+			if (!planes[j].ProjectToNegativeHalf(points[i]).Equals(points[i]))
+			{
+				// If it's not on the plane or in the negative side of the 
+				// plane, the point is not inside the frustum as it's
+				// on the positive side of the plane.
+				// Set is_inside_frustum to false, break out of loop
+				// and stop checking for current point:
+				is_inside_frustum = false;
+
+				break;
+			}
+		}
+
+		// If the point is inside the frustum, return true as obb
+		// has a point inside the frustum:
+		if (is_inside_frustum)
+		{
+			return true;
+		}
+	}
+
+	// TODO: Refactor this as we have duplicate code.
+	// Maybe have a function that compares points
+	// with planes in Util.h.
+
+	// Check if we have a false negative, but this time
+	// test frustum corner points against obb planes:
+	// Get points of frustum to points:
+	frustum.GetCornerPoints(points);
+	// Get planes of obb to planes:
+	obb.GetFacePlanes(planes);
+
+	// Iterate through all the points of frustum:
+	for (size_t i = 0; i < 8; ++i)
+	{
+		// Start as assuming the frustum point is inside the
+		// obb:
+		bool is_inside_obb = true;
+
+		// Iterate through all the planes of obb:
+		for (size_t j = 0; j < 6; ++j)
+		{
+			// Check if the point lies on the plane or in the negative
+			// side of the plane:
+			if (!planes[j].ProjectToNegativeHalf(points[i]).Equals(points[i]))
+			{
+				// If it's not on the plane or in the negative side of the 
+				// plane, the point is not inside the obb as it's
+				// on the positive side of the plane.
+				// Set is_inside_obb to false, break out of loop
+				// and stop checking for current point:
+				is_inside_obb = false;
+
+				break;
+			}
+		}
+
+		// If the point is inside the obb, return true as frustum
+		// has a point inside the obb:
+		if (is_inside_obb)
+		{
+			return true;
+		}
+	}
+	
+	// Return false as if the execution comes to this line,
+	// it means there is no point of obb that lies inside
+	// the frustum ore vice versa:
+	return false;
 }
 
 void ComponentCamera::DrawInspectorContent()
