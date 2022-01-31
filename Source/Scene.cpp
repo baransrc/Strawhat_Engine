@@ -4,8 +4,9 @@
 #include "ComponentCamera.h"
 #include "ComponentLight.h"
 #include "ComponentTransform.h"
+#include "ComponentMesh.h"
+#include "ComponentBoundingBox.h"
 
-#include <vector>
 
 Scene::Scene() :
     root_entity(nullptr),
@@ -58,12 +59,34 @@ void Scene::SetMainCamera(ComponentCamera* new_main_camera)
 
     // NOTE(Baran): If we ever add any play mode/editor mode switching,
     // the main camera should always be the one that ModuleCamera
-    // has while we ara in the editor mode.
+    // has while we are in the editor mode.
 }
 
 void Scene::SetSelectedEntity(Entity* new_selected_entity)
 {
     selected_entity = new_selected_entity;
+}
+
+void Scene::CullMeshes()
+{
+    for (ComponentMesh* mesh : mesh_components_in_scene)
+    {
+        // TODO: Add component bounding box to all entities:
+        ComponentBoundingBox* bounding_box = 
+            mesh->Owner()->GetComponent<ComponentBoundingBox>();
+
+        if (bounding_box == nullptr)
+        {
+            continue;
+        }
+
+        math::OBB obb = bounding_box->GetBoundingBox();
+
+        if (main_camera->DoesOBBHavePointInsideFrustum(obb))
+        {
+            bounding_box->DrawGizmo();
+        }
+    }
 }
 
 void Scene::Initialize()
@@ -130,6 +153,10 @@ void Scene::Update()
     {
         selected_entity->DrawGizmos();
     }
+
+    // TODO: Move this inside HandleComponentsChangedInDescendantsOfRoot
+    // For now we call this here bc we draw gizmos of non culled meshes
+    CullMeshes();
 }
 
 void Scene::PostUpdate()
@@ -158,15 +185,19 @@ void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)
     // they will change the culled entities:
     switch (type)
     {
-    case component_type::TRANSFORM:
-        break;
-    case component_type::MESH:
-        break;
-    case component_type::BOUNDING_BOX:
-        break;
-    default:
-        return;
+        case component_type::TRANSFORM:
+            break;
+        case component_type::MESH:
+            break;
+        case component_type::BOUNDING_BOX:
+            break;
+        default:
+            return;
     }
-
-    LOG("SOMETHING CHANGED IN SCENE");
+    // NOTE(Baran): Add here to make all camera should_render false if new
+    // camera changes are discovered here and we are in editor mode.
+    
+    // Get mesh components in scene:
+    mesh_components_in_scene.clear();
+    mesh_components_in_scene = (root_entity->GetComponentsInDescendants<ComponentMesh>());
 }

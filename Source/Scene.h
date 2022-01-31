@@ -3,8 +3,11 @@
 #include "Event.h"
 #include "ComponentType.h"
 
+#include <vector>
+
 class Entity;
 class ComponentCamera;
+class ComponentMesh;
 
 class Scene
 {
@@ -13,7 +16,8 @@ private:
 	Entity*							selected_entity;
 	Entity*							root_entity;
 	EventListener<component_type>	components_changed_in_descendants_event_listener;
-	
+	std::vector<ComponentMesh*>		mesh_components_in_scene;
+
 public:
 	Scene();
 	~Scene();
@@ -24,6 +28,8 @@ public:
 
 	void SetMainCamera(ComponentCamera* new_main_camera);
 	void SetSelectedEntity(Entity* new_selected_entity);
+
+	void CullMeshes();
 
 	void Initialize();
 	void PreUpdate();
