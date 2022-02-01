@@ -804,6 +804,7 @@
     <ClInclude Include="EntityOperation.h">
       <Filter>Entity</Filter>
     </ClInclude>
+    <ClInclude Include="QuadTree.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">

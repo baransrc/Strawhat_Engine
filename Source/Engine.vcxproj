@@ -419,6 +419,7 @@
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="OPTICK\include\optick.config.h" />
     <ClInclude Include="OPTICK\include\optick.h" />
+    <ClInclude Include="QuadTree.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Util.h" />
