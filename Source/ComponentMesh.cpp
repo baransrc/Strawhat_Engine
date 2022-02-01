@@ -131,6 +131,11 @@ void ComponentMesh::Update()
 		return;
 	}
 
+	if (is_culled)
+	{
+		return;
+	}
+
 	//// Use the shader:
 	
 	//// Activate Texture Unit 0:
@@ -195,6 +200,16 @@ void ComponentMesh::DrawGizmo()
 	{
 		return;
 	}*/
+}
+
+void ComponentMesh::SetCulled(bool new_is_culled)
+{
+	is_culled = new_is_culled;
+}
+
+bool ComponentMesh::IsCulled() const
+{
+	return is_culled;
 }
 
 void ComponentMesh::DrawInspectorContent()

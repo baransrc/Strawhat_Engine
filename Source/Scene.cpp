@@ -82,15 +82,7 @@ void Scene::CullMeshes()
 
         math::OBB obb = bounding_box->GetBoundingBox();
 
-        if (main_camera->DoesOBBHavePointInsideFrustum(obb))
-        {
-            mesh->Enable();
-            bounding_box->DrawGizmo();
-        }
-        else
-        {
-            mesh->Disable();
-        }
+        mesh->SetCulled(!main_camera->DoesOBBHavePointInsideFrustum(obb));
     }
 }
 
