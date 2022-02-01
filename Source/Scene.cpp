@@ -84,7 +84,12 @@ void Scene::CullMeshes()
 
         if (main_camera->DoesOBBHavePointInsideFrustum(obb))
         {
+            mesh->Enable();
             bounding_box->DrawGizmo();
+        }
+        else
+        {
+            mesh->Disable();
         }
     }
 }
