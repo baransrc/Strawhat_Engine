@@ -385,9 +385,9 @@ void ModuleEditor::DrawImGuizmoModeWindow()
 	//ImGui::SetNextWindowPos(ImVec2(0,15));
 	//ImGui::SetNextWindowSize(ImVec2(window_width, 40));
 
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-
+	
 	ImGui::Begin("Transfrom Mode", 0, ImGuiWindowFlags_NoTitleBar);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 0.0f, 0.0f, 0.50f));
 
 	if (ImGui::RadioButton("Translate", current_imguizmo_operation == ImGuizmo::TRANSLATE))
 	{
@@ -475,23 +475,29 @@ update_status ModuleEditor::Update()
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.00f));
 	ImGui::Begin("DockSpace Demo", 0, window_flags);
 	// Submit the DockSpace
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiWindowFlags_NoBackground);
+	
+	ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
+	ImGui::PopStyleColor();
+
 	ImGui::CaptureMouseFromApp(false);
 
 	DrawImGuizmo();
 
 	SwitchImGuizmoOperationModeWithKeyboard();
 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	
 	DrawImGuizmoModeWindow();
 
 	DrawMainMenuBar();
@@ -509,11 +515,11 @@ update_status ModuleEditor::Update()
 	DrawModuleSettings();
 
 	DrawInspector();
-
-	ImGui::PopStyleColor();
+	
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 	ImGui::End();
+	ImGui::PopStyleColor();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
