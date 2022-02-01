@@ -1,15 +1,20 @@
-#include "Globals.h"
 #include "Application.h"
+
 #include "ModuleCamera.h"
 #include "ModuleInput.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleShaderProgram.h"
+#include "ModuleSceneManager.h"
 
+#include "Scene.h"
 #include "Entity.h"
+
 #include "ComponentBoundingBox.h"
 #include "ComponentTransform.h"
 #include "ComponentCamera.h"
+
+#include "Globals.h"
 
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
 
@@ -156,27 +161,6 @@ ComponentTransform* const ModuleCamera::GetTransform() const
 void ModuleCamera::HandleWindowResized(unsigned int width, unsigned int height)
 {
 	camera->SetAspectRatio((float)width / (float)height);
-}
-
-void ModuleCamera::OnModelChanged()
-{
-	// Initialize the size of the model to 10 by default:
-	float size = 10.0f;
-
-	// NOTE: This code assumes renderer will always return an Entity that is not 
-	// a nullptr.
-	ComponentBoundingBox* bounding_box = App->renderer->GetLoadedModel()->GetComponent<ComponentBoundingBox>();
-
-	if (bounding_box != nullptr)
-	{
-		size = bounding_box->GetMinimalEnclosingSphereRadius();
-	}
-
-	float new_far_plane_distance = camera->GetFarPlaneDistance();
-
-	new_far_plane_distance = math::Max(size * 10, new_far_plane_distance);
-
-	camera->SetFarPlaneDistance(new_far_plane_distance);
 }
 
 void ModuleCamera::Move()
@@ -438,19 +422,21 @@ void ModuleCamera::DetectFocus()
 	{
 		focus_on_model_changed = false;
 
-		if (Entity::selected_entity_in_hierarchy == nullptr)
+		Entity* selected_entity_in_hierarchy = App->scene_manager->GetCurrentScene()->GetSelectedEntity();
+
+		if (selected_entity_in_hierarchy == nullptr)
 		{
 			return;
 		}
 		
 		// Get Bounding Box component of the Entity:
-		ComponentBoundingBox* bounding_box = Entity::selected_entity_in_hierarchy->GetComponent<ComponentBoundingBox>();
+		ComponentBoundingBox* bounding_box = selected_entity_in_hierarchy->GetComponent<ComponentBoundingBox>();
 			
 		// If Entity has no bounding box component attached to it, focus to it's position with arbitrary
 		// radius such as 1.0f:
 		if (bounding_box == nullptr)
 		{
-			SetupFocus(Entity::selected_entity_in_hierarchy->Transform()->GetPosition(), 1.0f);
+			SetupFocus(selected_entity_in_hierarchy->Transform()->GetPosition(), 1.0f);
 			
 			return;
 		}

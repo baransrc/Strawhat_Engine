@@ -1,31 +1,37 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "EntityOperation.h"
 #include "ComponentType.h"
+
 #include "Event.h"
 #include "Globals.h"
 
+#include <vector>
+#include <string>
+
+#define COMPONENT_VOID template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void)
+#define COMPONENT_PTR_CONST template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const)
+#define COMPONENT_VECTOR template <class COMPONENT_TYPE> TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>)
+
 class Component;
 class ComponentTransform;
+class ComponentBoundingBox;
 
 class Entity
 {
 private:
 	ComponentTransform* transform;
+	ComponentBoundingBox* bounding_box;
 	std::vector<Component*> components;
 	std::vector<Entity*> children;
 	Event<component_type>* components_changed;
 	Event<component_type>* components_changed_in_descendants;
+	Event<entity_operation>* hierarchy_changed;
 	Entity* parent;
 	std::string name;
 	unsigned int id;
 	bool active;
-	bool being_renamed;
 
-public:
-	static Entity* selected_entity_in_hierarchy; // This is for experiments on component addition and viewing for now. 
-												 // and will be deleted when ModuleSceneManager is added.
 public:
 	Entity();
 	~Entity();
@@ -42,16 +48,12 @@ public:
 	Component* CreateComponent(component_type type) const;
 	const std::vector<Entity*>& GetChildren() const;
 
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) AddComponent();
-	template <class COMPONENT_TYPE> 
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) GetComponent() const;
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponents() const;
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponentsInChildren() const;
-	template <class COMPONENT_TYPE>
-	TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) GetComponentsIncludingChildren() const;
+	COMPONENT_VOID AddComponent();
+	COMPONENT_PTR_CONST GetComponent() const;
+	COMPONENT_VECTOR GetComponents() const;
+	COMPONENT_VECTOR GetComponentsInChildren() const;
+	COMPONENT_VECTOR GetComponentsIncludingChildren() const;
+	COMPONENT_VECTOR GetComponentsInDescendants() const;
 
 	Component* const GetComponent(component_type type);
 
@@ -61,26 +63,30 @@ public:
 	const std::string& Name() const;
 	unsigned int Id() const;
 	Entity* Parent() const;
+	bool IsActive() const;
 	void SetParent(Entity* new_parent);
 	void SetActive(bool activeness);
+
 	void AddChild(Entity* child);
 	void RemoveChild(Entity* child);
 	Entity* FindChild(unsigned int child_entity_id) const;
-	void DrawEditor();
+	bool HasDescendant(unsigned int descendant_entity_id) const;
+	Entity* FindDescendant(unsigned int descendant_entity_id) const;
+	std::vector<Entity*> GetAllDescendants() const;
 
 	void InvokeComponentsChangedEvents(component_type type) const;
 	Event<component_type>* const GetComponentsChangedEvent() const;
 	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;
-
+	Event<entity_operation>* const GetHierarchyChangedEvent() const;
 	ComponentTransform* const Transform() const;
+	ComponentBoundingBox* const BoundingBox() const;
 
 private:
 	Component* FindComponentById(unsigned int id) const;
 	unsigned int GetCurrentId();
 };
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) Entity::AddComponent()
+COMPONENT_VOID Entity::AddComponent()
 {
 	COMPONENT_TYPE* component = new COMPONENT_TYPE();
 
@@ -101,8 +107,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, void) Entity::AddCompone
 	}
 }
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) Entity::GetComponent() const
+COMPONENT_PTR_CONST Entity::GetComponent() const
 {
 	component_type type = COMPONENT_TYPE().Type();
 
@@ -117,8 +122,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, COMPONENT_TYPE* const) E
 	return nullptr;
 }
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) Entity::GetComponents() const
+COMPONENT_VECTOR Entity::GetComponents() const
 {
 	component_type type = COMPONENT_TYPE().Type();
 
@@ -146,8 +150,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TY
 	return components_of_type;
 }
 
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) Entity::GetComponentsInChildren() const
+COMPONENT_VECTOR Entity::GetComponentsInChildren() const
 {
 	std::vector<COMPONENT_TYPE*> components_in_children;
 
@@ -164,9 +167,7 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TY
 	return components_in_children;
 }
 
-
-template<class COMPONENT_TYPE>
-inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TYPE*>) Entity::GetComponentsIncludingChildren() const
+COMPONENT_VECTOR Entity::GetComponentsIncludingChildren() const
 {
 	std::vector<COMPONENT_TYPE*> components_including_children = GetComponents<COMPONENT_TYPE>();
 
@@ -181,4 +182,30 @@ inline TYPE_IF_DERIVED_CLASS(Component, COMPONENT_TYPE, std::vector<COMPONENT_TY
 	}
 
 	return components_including_children;
+}
+
+COMPONENT_VECTOR Entity::GetComponentsInDescendants() const
+{
+	std::vector<COMPONENT_TYPE*> components_in_descendants;
+
+	for (Entity* child : children)
+	{
+		std::vector<COMPONENT_TYPE*> components_in_child = child->GetComponents<COMPONENT_TYPE>();
+
+		for (COMPONENT_TYPE* component_in_child : components_in_child)
+		{
+			components_in_descendants.push_back(component_in_child);
+
+		}
+
+		std::vector<COMPONENT_TYPE*> components_in_childs_descendants = child->GetComponentsInDescendants<COMPONENT_TYPE>();
+
+		for (COMPONENT_TYPE* component_in_childs_descendants : components_in_childs_descendants)
+		{
+			components_in_descendants.push_back(component_in_childs_descendants);
+
+		}
+	}
+
+	return components_in_descendants;
 }

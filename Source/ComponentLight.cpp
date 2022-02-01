@@ -129,6 +129,11 @@ void ComponentLight::Load(light_type new_type)
 
 void ComponentLight::Update()
 {
+	if (!Enabled())
+	{
+		return;
+	}
+
 	switch (type)
 	{
 	case light_type::POINT:
@@ -199,11 +204,24 @@ void ComponentLight::Reset()
 
 void ComponentLight::DrawGizmo()
 {
+	if (!Enabled() || !owner->IsActive())
+	{
+		return;
+	}
+
 	Component::DrawGizmo();
 }
 
 void ComponentLight::DrawInspectorContent()
 {
+	bool enabled_editor = Enabled();
+	if (ImGui::Checkbox("Enabled", &enabled_editor))
+	{
+		enabled_editor ? Enable() : Disable();
+	}
+
+	ImGui::NewLine();
+
 	ImGui::Text("Type:");
 	if (ImGui::BeginCombo("", component_light_type_to_string(type)))
 	{

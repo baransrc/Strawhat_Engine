@@ -6,7 +6,7 @@
 #include "MATH_GEO_LIB/Geometry/Frustum.h"
 #include "MATH_GEO_LIB/Math/float4x4.h"
 #include "MATH_GEO_LIB/Math/float3.h"
-
+#include "MATH_GEO_LIB/Geometry/OBB.h"
 
 enum class camera_projection_mode
 {
@@ -23,6 +23,7 @@ private:
 	camera_projection_mode projection_mode;
 	bool should_calculate_projection_matrix;
 	bool is_main_camera;
+	bool should_render;
 	EventListener<component_type> component_changed_event_listener;
 
 public:
@@ -45,7 +46,8 @@ public:
 	float GetOrthographicHeight() const;
 	float GetFarPlaneDistance() const;
 	float GetNearPlaneDistance() const;
-	camera_projection_mode GetProjectionMode();
+	camera_projection_mode GetProjectionMode() const;
+	bool GetShouldRender() const;
 
 	void SetHorizontalFOV(float new_horizontal_fov);
 	void SetAspectRatio(float new_aspect_ratio);
@@ -55,8 +57,10 @@ public:
 	void SetIsMainCamera(bool new_is_main_camera);
 	void SetAsPerspective(float new_horizontal_fov, float new_aspect_ratio);
 	void SetAsOrthographic(float new_orthographic_width, float new_orthographic_height);
+	void SetShouldRender(bool new_should_render);
 
 	void LookAt(const math::float3& direction);
+	bool DoesOBBHavePointInsideFrustum(const math::OBB& obb) const;
 
 protected:
 	void DrawInspectorContent() override;

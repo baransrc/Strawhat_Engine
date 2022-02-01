@@ -214,9 +214,12 @@
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
     <ClCompile Include="ModuleRenderExercise.cpp" />
+    <ClCompile Include="ModuleSceneManager.cpp" />
     <ClCompile Include="ModuleShaderProgram.cpp" />
     <ClCompile Include="ModuleTexture.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
+    <ClCompile Include="QuadTree.cpp" />
+    <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -325,6 +328,7 @@
     <ClInclude Include="DEVIL\include\IL\ilu_region.h" />
     <ClInclude Include="DEVIL\include\IL\il_wrap.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="EntityOperation.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="ModelImporter.h" />
@@ -410,11 +414,14 @@
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
     <ClInclude Include="ModuleRenderExercise.h" />
+    <ClInclude Include="ModuleSceneManager.h" />
     <ClInclude Include="ModuleShaderProgram.h" />
     <ClInclude Include="ModuleTexture.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="OPTICK\include\optick.config.h" />
     <ClInclude Include="OPTICK\include\optick.h" />
+    <ClInclude Include="QuadTree.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>

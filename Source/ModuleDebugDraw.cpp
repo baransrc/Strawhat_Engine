@@ -645,14 +645,14 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
     MakeDrawCall();
 }
 
-void ModuleDebugDraw::DrawCone(vec position, vec direction, vec color)
+void ModuleDebugDraw::DrawCone(const vec& position, const vec& direction, const vec& color)
 {
     dd::cone(position, direction, color, 0.7f, 0.01f);
 
     MakeDrawCall();
 }
 
-void ModuleDebugDraw::DrawFrustum(float4x4 matrix, vec color)
+void ModuleDebugDraw::DrawFrustum(const math::float4x4& matrix, vec color)
 {
     dd::frustum(matrix, color);
 

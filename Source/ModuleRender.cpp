@@ -1,19 +1,23 @@
-#include "Globals.h"
 #include "Application.h"
+
 #include "ModuleRender.h"
 #include "ModuleCamera.h"
 #include "ModuleWindow.h"
 #include "ModuleInput.h"
 #include "ModuleShaderProgram.h"
 #include "ModuleDebugDraw.h"
-#include "MATH_GEO_LIB/Geometry/Polyhedron.h"
-#include "Util.h"
+
+#include "ComponentCamera.h"
+#include "Entity.h"
+
 #include "ModelImporter.h"
+#include "Globals.h"
+#include "Util.h"
+
+#include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
 #include "ComponentBoundingBox.h"
-#include "Entity.h"
-
 
 ModuleRender::ModuleRender()
 {
@@ -41,19 +45,6 @@ bool ModuleRender::Init()
 	// Initialize OpenGL debug features and vao.
 	InitializeOpenGL();
 
-	// Get Model File Name:
-	char* default_model_file_name = util::ConcatCStrings(App->GetWorkingDirectory(), ROBOT_MODEL_PATH);
-
-	// Load Default Model:
-	// For now, this model is loaded inside ModuleRenderer, but it makes more sense to have a scene
-	// Loading all these model's ad renderer calls the current loaded scene's draw method:
-	default_entity = ModelImporter::Import(default_model_file_name);
-
-	// Initialize file_dropped_event_listener:
-	file_dropped_event_listener = EventListener<const char*>(std::bind(&ModuleRender::HandleFileDrop, this, std::placeholders::_1));
-	// Subscribe to file drop event of ModuleInput:
-	App->input->GetFileDroppedEvent()->AddListener(&file_dropped_event_listener);
-
 	// Initialize window_resized_event_listener:
 	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleRender::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
@@ -62,16 +53,11 @@ bool ModuleRender::Init()
 	viewport_height = App->window->window_height;
 	viewport_width = App->window->window_width;
 
-	// Delete model_file_name:
-	free(default_model_file_name);
-
 	return true;
 }
 
 update_status ModuleRender::PreUpdate()
 {
-	//OPTICK_CATEGORY("ModuleRender::PreUpdate", Optick::Category::Rendering);
-	
 	// Resize the viewport to the newly resized window:
 	glViewport(0, 0, viewport_width, viewport_height);
 
@@ -87,23 +73,14 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
-	//OPTICK_CATEGORY("ModuleRender::Update", Optick::Category::Rendering);
-
-	Entity::selected_entity_in_hierarchy->DrawGizmos();
-
 	// Use the shader program created in ModuleShaderProgram:
 	App->shader_program->Use();
-
-	// Update loaded model:
-	GetLoadedModel()->Update();
 
 	return update_status::UPDATE_CONTINUE;
 }
 
 update_status ModuleRender::PostUpdate()
 {
-	//OPTICK_CATEGORY("ModuleRender::PostUpdate", Optick::Category::Rendering);
-
 	// Swap frame buffer:
 	SDL_GL_SwapWindow(App->window->window);
 
@@ -133,35 +110,18 @@ bool ModuleRender::CleanUp()
 		window_resized_event->RemoveListener(&window_resized_event_listener);
 	}
 
-	delete default_entity;
-	delete loaded_entity;
-
 	return true;
 }
 
-void ModuleRender::HandleWindowResized(unsigned width, unsigned height)
+void ModuleRender::HandleWindowResized(unsigned int width, unsigned int height)
 {
 	viewport_width = width;
 	viewport_height = height;
 }
 
-void ModuleRender::HandleFileDrop(const char* file_directory)
-{
-	InitializeModel(file_directory);
-
-	App->camera->OnModelChanged();
-}
-
 float ModuleRender::GetRequiredAxisTriadLength() const
-{
-	ComponentBoundingBox* bounding_box = (ComponentBoundingBox*)(GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX));
-	
-	if (bounding_box == nullptr)
-	{
-		return 10.0f;
-	}
-
-	return bounding_box->GetMinimalEnclosingSphereRadius() + 10.0f;
+{	
+	return App->camera->GetCamera()->GetFarPlaneDistance() * 0.75f;
 }
 
 void ModuleRender::OnEditor()
@@ -240,17 +200,6 @@ void ModuleRender::OnPerformanceWindow() const
 	ImGui::Text("VRAM: %fMb", total_vram_gib);
 	ImGui::Text("VRAM Usage: %fGiB", (total_vram_gib - free_vram_gib));
 	ImGui::Text("Free VRAM: %fGiB", free_vram_gib);
-}
-
-void ModuleRender::InitializeModel(const char* file_directory)
-{
-	if (loaded_entity != nullptr)
-	{
-		delete loaded_entity;
-		loaded_entity = nullptr;
-	}
-
-	loaded_entity = ModelImporter::Import(file_directory);
 }
 
 void ModuleRender::InitializeOpenGL()
