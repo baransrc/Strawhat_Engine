@@ -326,6 +326,14 @@ bool ComponentCamera::DoesOBBHavePointInsideFrustum(const math::OBB& obb) const
 
 void ComponentCamera::DrawInspectorContent()
 {
+	bool enabled_editor = Enabled();
+	if (ImGui::Checkbox("Enabled", &enabled_editor))
+	{
+		enabled_editor ? Enable() : Disable();
+	}
+
+	ImGui::NewLine();
+
 	float fov_editor = math::RadToDeg(GetHorizontalFOV());
 	float near_plane_editor = GetNearPlaneDistance();
 	float far_plane_editor = GetFarPlaneDistance();

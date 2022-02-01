@@ -26,6 +26,7 @@ private:
 	size_t number_of_texture_ids;
 
 	bool is_currently_loaded;
+	bool is_culled;
 
 public:
 	ComponentMesh();
@@ -50,6 +51,9 @@ public:
 	size_t GetNumberOfIndices() const { return number_of_indices; };
 	size_t GetNumberOfTriangles() const { return number_of_triangles; };
 	const math::AABB& GetAABB() const { return bounding_box; };
+
+	void SetCulled(bool new_is_culled) const;
+	bool IsCulled() const;
 
 
 protected:

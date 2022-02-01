@@ -326,6 +326,12 @@ void ModuleEditor::DrawInspector()
 
 			ImGui::EndPopup();
 		}
+		
+		bool is_entity_active = selected_entity->IsActive();
+		if (ImGui::Checkbox("Active", &is_entity_active))
+		{
+			selected_entity->SetActive(is_entity_active);
+		}
 
 		for (Component* component : selected_entity->Components())
 		{

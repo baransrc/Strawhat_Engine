@@ -199,6 +199,11 @@ void ComponentMesh::DrawGizmo()
 
 void ComponentMesh::DrawInspectorContent()
 {
+	bool enabled_editor = Enabled();
+	if (ImGui::Checkbox("Enabled", &enabled_editor))
+	{
+		enabled_editor ? Enable() : Disable();
+	}
 }
 
 void ComponentMesh::LoadAABB()
