@@ -6,6 +6,7 @@
 
 QuadTreeNode::QuadTreeNode()
 {
+	parent = nullptr;
 	children[0] = nullptr;
 	children[1] = nullptr;
 	children[2] = nullptr;
