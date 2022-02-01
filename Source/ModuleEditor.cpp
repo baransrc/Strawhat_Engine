@@ -302,6 +302,19 @@ void ModuleEditor::DrawInspector()
 		return;
 	}
 
+	// Get Window width and heights:
+	float window_width = (float)App->window->window_width;
+	float window_height = (float)App->window->window_height;
+
+	float final_width = (window_width * 15) * 0.01f;
+	float final_pos = window_width - final_width;
+
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(ImVec2(final_pos+1, 55));
+	ImGui::SetNextWindowSize(ImVec2(final_width, window_height-55));
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
+
 	ImGui::PushID("Inspector##Window");
 	ImGui::Begin("Inspector", &should_draw_inspector_window);
 	// For now. Will be deleted after ModuleSceneManager is added:
@@ -359,11 +372,20 @@ void ModuleEditor::DrawInspector()
 
 	ImGui::End();
 	ImGui::PopID();
+	ImGui::PopStyleColor();
 }
 
 void ModuleEditor::DrawImGuizmoModeWindow()
 {
-	ImGui::Begin("Transfrom Mode");
+	// Get Window width and heights:
+	float window_width = (float)App->window->window_width;
+	float window_height = (float)App->window->window_height;
+
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(ImVec2(0,15));
+	ImGui::SetNextWindowSize(ImVec2(window_width, 40));
+
+	ImGui::Begin("Transfrom Mode", 0, ImGuiWindowFlags_NoTitleBar);
 
 	if (ImGui::RadioButton("Translate", current_imguizmo_operation == ImGuizmo::TRANSLATE))
 	{
@@ -408,6 +430,16 @@ void ModuleEditor::DrawModuleSettings()
 		return;
 	}
 
+	// Get Window width and heights:
+	float window_width = (float)App->window->window_width;
+	float window_height = (float)App->window->window_height;
+
+	float final_width = (window_width * 10) * 0.01f;
+
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(ImVec2(0, 55));
+	ImGui::SetNextWindowSize(ImVec2(final_width, window_height - 55));
+
 	ImGui::Begin("Module Settings", &show_module_settings_window);
 
 
@@ -433,6 +465,8 @@ update_status ModuleEditor::PreUpdate()
 
 update_status ModuleEditor::Update()
 {
+
+
 	DrawImGuizmo();
 
 	SwitchImGuizmoOperationModeWithKeyboard();
@@ -454,6 +488,8 @@ update_status ModuleEditor::Update()
 	DrawModuleSettings();
 
 	DrawInspector();
+
+
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
