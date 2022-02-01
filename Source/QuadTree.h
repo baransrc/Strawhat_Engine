@@ -10,10 +10,15 @@ class ComponentMesh;
 class QuadTreeNode
 {
 public:
+	QuadTreeNode();
+	~QuadTreeNode();
+
 	bool IsLeaf() const;
 	QuadTreeNode* const GetParent() const;
-	QuadTreeNode* const GetChildren() const;
+	QuadTreeNode* GetChildren() const;
 	const math::AABB& GetContainer() const;
+	void SetChild(size_t index, QuadTreeNode* new_child);
+	void SetParent(QuadTreeNode* new_parent);
 	void Insert(Entity* const entity) const;
 	void Remove(Entity* const entity) const;
 	void CollectEntities(std::vector<Entity*>& entities) const;
