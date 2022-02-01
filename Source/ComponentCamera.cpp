@@ -228,6 +228,11 @@ void ComponentCamera::LookAt(const math::float3& direction)
 
 bool ComponentCamera::DoesOBBHavePointInsideFrustum(const math::OBB& obb) const
 {
+	if (obb.Intersects(frustum))
+	{
+		return true;
+	}
+
 	// Get planes of frustum:
 	math::Plane planes[6];
 	frustum.GetPlanes(planes);
