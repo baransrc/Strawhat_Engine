@@ -302,21 +302,21 @@ void ModuleEditor::DrawInspector()
 		return;
 	}
 
-	// Get Window width and heights:
-	float window_width = (float)App->window->window_width;
-	float window_height = (float)App->window->window_height;
+	//// Get Window width and heights:
+	//float window_width = (float)App->window->window_width;
+	//float window_height = (float)App->window->window_height;
 
-	float final_width = (window_width * 15) * 0.01f;
-	float final_pos = window_width - final_width;
+	//float final_width = (window_width * 15) * 0.01f;
+	//float final_pos = window_width - final_width;
 
-	const ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(ImVec2(final_pos+1, 55));
-	ImGui::SetNextWindowSize(ImVec2(final_width, window_height-55));
+	//const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	//ImGui::SetNextWindowPos(ImVec2(final_pos+1, 55));
+	//ImGui::SetNextWindowSize(ImVec2(final_width, window_height-55));
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
 
 	ImGui::PushID("Inspector##Window");
-	ImGui::Begin("Inspector", &should_draw_inspector_window);
+	ImGui::Begin("Inspector", &should_draw_inspector_window, ImGuiWindowFlags_NoResize);
 	// For now. Will be deleted after ModuleSceneManager is added:
 
 	Entity* selected_entity = base_entity->selected_entity_in_hierarchy;
@@ -377,13 +377,15 @@ void ModuleEditor::DrawInspector()
 
 void ModuleEditor::DrawImGuizmoModeWindow()
 {
-	// Get Window width and heights:
-	float window_width = (float)App->window->window_width;
-	float window_height = (float)App->window->window_height;
+	//// Get Window width and heights:
+	//float window_width = (float)App->window->window_width;
+	//float window_height = (float)App->window->window_height;
 
-	const ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(ImVec2(0,15));
-	ImGui::SetNextWindowSize(ImVec2(window_width, 40));
+	//const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	//ImGui::SetNextWindowPos(ImVec2(0,15));
+	//ImGui::SetNextWindowSize(ImVec2(window_width, 40));
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	ImGui::Begin("Transfrom Mode", 0, ImGuiWindowFlags_NoTitleBar);
 
@@ -420,6 +422,7 @@ void ModuleEditor::DrawImGuizmoModeWindow()
 		current_imguizmo_transform_mode = ImGuizmo::WORLD;
 	}
 
+	ImGui::PopStyleColor();
 	ImGui::End();
 }
 
@@ -430,15 +433,17 @@ void ModuleEditor::DrawModuleSettings()
 		return;
 	}
 
-	// Get Window width and heights:
-	float window_width = (float)App->window->window_width;
-	float window_height = (float)App->window->window_height;
+	//// Get Window width and heights:
+	//float window_width = (float)App->window->window_width;
+	//float window_height = (float)App->window->window_height;
 
-	float final_width = (window_width * 10) * 0.01f;
+	//float final_width = (window_width * 10) * 0.01f;
 
-	const ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(ImVec2(0, 55));
-	ImGui::SetNextWindowSize(ImVec2(final_width, window_height - 55));
+	//const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	//ImGui::SetNextWindowPos(ImVec2(0, 55));
+	//ImGui::SetNextWindowSize(ImVec2(final_width, window_height - 55));
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
 
 	ImGui::Begin("Module Settings", &show_module_settings_window);
 
@@ -448,6 +453,7 @@ void ModuleEditor::DrawModuleSettings()
 		base_entity->DrawEditor();
 	}
 
+	ImGui::PopStyleColor();
 	ImGui::End();
 }
 
@@ -465,7 +471,22 @@ update_status ModuleEditor::PreUpdate()
 
 update_status ModuleEditor::Update()
 {
-
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	ImGui::Begin("DockSpace Demo", 0, window_flags);
+	// Submit the DockSpace
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiWindowFlags_NoBackground);
+	ImGui::CaptureMouseFromApp(false);
 
 	DrawImGuizmo();
 
@@ -489,7 +510,10 @@ update_status ModuleEditor::Update()
 
 	DrawInspector();
 
-
+	ImGui::PopStyleColor();
+	ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
+	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
