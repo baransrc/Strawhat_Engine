@@ -479,7 +479,7 @@ update_status ModuleEditor::Update()
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.00f));
+	ImGui::SetNextWindowBgAlpha(0);
 	ImGui::Begin("DockSpace Demo", 0, window_flags);
 	// Submit the DockSpace
 	ImGuiIO& io = ImGui::GetIO();
@@ -498,28 +498,28 @@ update_status ModuleEditor::Update()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawImGuizmoModeWindow();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawMainMenuBar();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawAboutWindow();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawExitPopup();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawConsoleWindow();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawRenderExerciseTextureInfoWindow();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawPerformanceWindow();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawModuleSettings();
-
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawInspector();
 	
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 	ImGui::End();
-	ImGui::PopStyleColor();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
