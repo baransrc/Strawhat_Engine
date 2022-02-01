@@ -65,7 +65,7 @@ void ComponentBoundingBox::Load()
     // TODO(Baran): Refactor this code to remove duplicate code here.
 
     ComponentMesh* owner_mesh_component = owner->GetComponent<ComponentMesh>();
-    if (owner->GetComponent<ComponentMesh>() != nullptr && mesh_components.size() > 0)
+    if (owner_mesh_component != nullptr && mesh_components.size() > 0)
     {
         mesh_components.push_back(owner_mesh_component);
 

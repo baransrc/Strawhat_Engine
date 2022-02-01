@@ -15,11 +15,13 @@
 
 class Component;
 class ComponentTransform;
+class ComponentBoundingBox;
 
 class Entity
 {
 private:
 	ComponentTransform* transform;
+	ComponentBoundingBox* bounding_box;
 	std::vector<Component*> components;
 	std::vector<Entity*> children;
 	Event<component_type>* components_changed;
@@ -77,6 +79,7 @@ public:
 	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;
 	Event<entity_operation>* const GetHierarchyChangedEvent() const;
 	ComponentTransform* const Transform() const;
+	ComponentBoundingBox* const BoundingBox() const;
 
 private:
 	Component* FindComponentById(unsigned int id) const;

@@ -5,6 +5,7 @@
 
 #include "Component.h"
 #include "ComponentTransform.h"
+#include "ComponentBoundingBox.h"
 
 #include "Globals.h"
 
@@ -16,7 +17,8 @@ Entity::Entity() :
 	components_changed(nullptr),
 	components_changed_in_descendants(nullptr),
 	hierarchy_changed(nullptr),
-	transform(nullptr)
+	transform(nullptr),
+	bounding_box(nullptr)
 {
 }
 
@@ -58,6 +60,9 @@ void Entity::Initialize(std::string new_name)
 	// Initialize and add transform component:
 	transform = new ComponentTransform();
 	transform->Initialize(this);
+	// Initialize and add bounding box components:
+	bounding_box = new ComponentBoundingBox();
+	bounding_box->Initialize(this);
 	// NOTE: Initialize adds transform to components list of this entity.
 	// So, no additional need to delete it separately, as it gets deleted
 	// along with other components. Same goes with Update as well.
@@ -462,6 +467,11 @@ Event<entity_operation>* const Entity::GetHierarchyChangedEvent() const
 ComponentTransform* const Entity::Transform() const
 {
 	return transform;
+}
+
+ComponentBoundingBox* const Entity::BoundingBox() const
+{
+	return bounding_box;
 }
 
 /// <summary>
