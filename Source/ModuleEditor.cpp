@@ -297,9 +297,6 @@ void ModuleEditor::DrawPerformanceWindow()
 
 void ModuleEditor::DrawInspector()
 {
-	ImGui::SetNextWindowPos(ImVec2(1370, 50));
-
-
 	if (!should_draw_inspector_window)
 	{
 		return;
@@ -342,7 +339,7 @@ void ModuleEditor::DrawInspector()
 				}
 
 				ImGui::EndMenu();
-				
+
 			}
 
 			if (ImGui::Selectable("Other"))
@@ -366,9 +363,6 @@ void ModuleEditor::DrawInspector()
 
 void ModuleEditor::DrawImGuizmoModeWindow()
 {
-
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	//ImGui::SetNextWindowSize(ImVec2(1800, 600));
 	ImGui::Begin("Transfrom Mode");
 
 	if (ImGui::RadioButton("Translate", current_imguizmo_operation == ImGuizmo::TRANSLATE))
@@ -384,7 +378,7 @@ void ModuleEditor::DrawImGuizmoModeWindow()
 	}
 
 	ImGui::SameLine();
-	
+
 	if (ImGui::RadioButton("Scale", current_imguizmo_operation == ImGuizmo::SCALE))
 	{
 		current_imguizmo_operation = ImGuizmo::SCALE;
@@ -409,8 +403,6 @@ void ModuleEditor::DrawImGuizmoModeWindow()
 
 void ModuleEditor::DrawModuleSettings()
 {
-	ImGui::SetNextWindowPos(ImVec2(0, 50));
-	
 	if (!show_module_settings_window)
 	{
 		return;
@@ -434,15 +426,14 @@ update_status ModuleEditor::PreUpdate()
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 	ImGuizmo::BeginFrame();
-	//ImGuizmo::Enable(true);
-
+	ImGuizmo::Enable(true);
 
 	return update_status::UPDATE_CONTINUE;
 }
 
 update_status ModuleEditor::Update()
 {
-	DrawSceneWindow();
+	DrawImGuizmo();
 
 	SwitchImGuizmoOperationModeWithKeyboard();
 
@@ -466,8 +457,6 @@ update_status ModuleEditor::Update()
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	//SDL_GL_MakeCurrent(App->window->window, App->renderer->context);
 
 	return update_status::UPDATE_CONTINUE;
 }
@@ -499,7 +488,7 @@ void ModuleEditor::InitializeDearImGui()
 
 void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 {
-	if (Entity::selected_entity_in_hierarchy == NULL) 
+	if (Entity::selected_entity_in_hierarchy == NULL)
 	{
 		return;
 	}
@@ -507,15 +496,12 @@ void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 	// Will be used to render the delta of transformation we did with
 	// ImGuizmo:
 	math::float4x4 delta_transform = math::float4x4::identity;
-		
+
 	// ImGuizmo is column-major like OpenGL as opposed to MathGeoLib we use
 	// so we get the transposed version of all the matrices we have first:
 	math::float4x4 model_matrix = Entity::selected_entity_in_hierarchy->Transform()->GetMatrix().Transposed();
 	math::float4x4 view_matrix = App->camera->GetCamera()->GetViewMatrix().Transposed();
 	math::float4x4 projection_matrix = App->camera->GetCamera()->GetProjectionMatrix().Transposed();
-
-	// Must be called before we call manipulate:
-	ImGuizmo::SetDrawlist();
 
 	// Manipulate the model_matrix with the transforms made with ImGuizmo gizmos:
 	ImGuizmo::Manipulate
@@ -537,70 +523,70 @@ void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 		// Transform according to the current imguizmo operation:
 		switch (current_imguizmo_transform_mode)
 		{
-			case ImGuizmo::LOCAL:
+		case ImGuizmo::LOCAL:
+		{
+			// Transpose the delta_transform we got from ImGuizmo::Manipulate
+			// and use it to calculate new resulting_local_matrix:
+			math::float4x4 resulting_local_model_matrix =
+				delta_transform.Transposed() * Entity::selected_entity_in_hierarchy->Transform()->GetLocalMatrix();
+			// Decompose the matrix and feed translation, rotation and scaling:
+			resulting_local_model_matrix.Decompose(translation, rotation, scaling);
+
+			switch (current_imguizmo_operation)
 			{
-				// Transpose the delta_transform we got from ImGuizmo::Manipulate
-				// and use it to calculate new resulting_local_matrix:
-				math::float4x4 resulting_local_model_matrix =
-					delta_transform.Transposed() * Entity::selected_entity_in_hierarchy->Transform()->GetLocalMatrix();
-				// Decompose the matrix and feed translation, rotation and scaling:
-				resulting_local_model_matrix.Decompose(translation, rotation, scaling);
-
-				switch (current_imguizmo_operation)
-				{
-					default:
-					case ImGuizmo::TRANSLATE:
-					{
-						Entity::selected_entity_in_hierarchy->Transform()->SetLocalPosition(translation);
-					}
-					break;
-
-					case ImGuizmo::ROTATE:
-					{
-						Entity::selected_entity_in_hierarchy->Transform()->SetLocalRotation(math::Quat(rotation));
-					}
-					break;
-
-					case ImGuizmo::SCALE:
-					{
-						Entity::selected_entity_in_hierarchy->Transform()->SetLocalScale(scaling);
-					}
-					break;
-				}
+			default:
+			case ImGuizmo::TRANSLATE:
+			{
+				Entity::selected_entity_in_hierarchy->Transform()->SetLocalPosition(translation);
 			}
 			break;
 
-			default:
-			case ImGuizmo::WORLD:
+			case ImGuizmo::ROTATE:
 			{
-				// Transpose the resulting model matrix we got from ImGuizmo
-				// back again as they used transposed version of our matrix:
-				math::float4x4 resulting_model_matrix = model_matrix.Transposed();
-				// Decompose the matrix and feed translation, rotation and scaling:
-				resulting_model_matrix.Decompose(translation, rotation, scaling);
-
-				switch (current_imguizmo_operation)
-				{
-					default:
-					case ImGuizmo::TRANSLATE:
-					{
-						Entity::selected_entity_in_hierarchy->Transform()->SetPosition(translation);
-					}
-					break;
-
-					case ImGuizmo::ROTATE:
-					{
-						Entity::selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(rotation));
-					}
-					break;
-
-					case ImGuizmo::SCALE:
-					{
-						Entity::selected_entity_in_hierarchy->Transform()->SetScale(scaling);
-					}
-					break;
-				}
+				Entity::selected_entity_in_hierarchy->Transform()->SetLocalRotation(math::Quat(rotation));
 			}
+			break;
+
+			case ImGuizmo::SCALE:
+			{
+				Entity::selected_entity_in_hierarchy->Transform()->SetLocalScale(scaling);
+			}
+			break;
+			}
+		}
+		break;
+
+		default:
+		case ImGuizmo::WORLD:
+		{
+			// Transpose the resulting model matrix we got from ImGuizmo
+			// back again as they used transposed version of our matrix:
+			math::float4x4 resulting_model_matrix = model_matrix.Transposed();
+			// Decompose the matrix and feed translation, rotation and scaling:
+			resulting_model_matrix.Decompose(translation, rotation, scaling);
+
+			switch (current_imguizmo_operation)
+			{
+			default:
+			case ImGuizmo::TRANSLATE:
+			{
+				Entity::selected_entity_in_hierarchy->Transform()->SetPosition(translation);
+			}
+			break;
+
+			case ImGuizmo::ROTATE:
+			{
+				Entity::selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(rotation));
+			}
+			break;
+
+			case ImGuizmo::SCALE:
+			{
+				Entity::selected_entity_in_hierarchy->Transform()->SetScale(scaling);
+			}
+			break;
+			}
+		}
 		}
 	}
 }
@@ -615,72 +601,12 @@ void ModuleEditor::UninitializeDearImGui()
 	ImGui::DestroyContext();
 }
 
-void ModuleEditor::DrawSceneWindow()
+void ModuleEditor::DrawImGuizmo()
 {
-	// Set frame_window_flags:
-	// NOTE: Other flags we used to have are:
-	// ImGuiWindowFlags_NoDocking |  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | 
-	// ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-	ImGuiWindowFlags frame_window_flags = ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
-
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-	//ImGui::SetNextWindowPos(ImVec2(270, 50));
-	//ImGui::SetNextWindowSize(ImVec2(1100, 600));
-	ImGui::SetNextWindowViewport(viewport->ID);
-
-	//ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-	//ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0, frameWindowClass);
-	//ImGui::CaptureMouseFromApp(false);
 	ImGuiIO& io = ImGui::GetIO();
-
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-
-
-	ImGui::Begin("Scene", nullptr, frame_window_flags);
-
-	
-	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-	float x = viewportPanelSize.x;
-	float y = viewportPanelSize.y;
-
-	ImVec2 vMin = ImGui::GetWindowContentRegionMin();
-	ImVec2 vMax = ImGui::GetWindowContentRegionMax();
-
-	vMin.x += ImGui::GetWindowPos().x;
-	vMin.y += ImGui::GetWindowPos().y;
-	vMax.x += ImGui::GetWindowPos().x;
-	vMax.y += ImGui::GetWindowPos().y;
-
-	x = vMax.x - vMin.x;
-	y = vMax.y - vMin.y;
-
-	App->renderer->HandleWindowResized(x, y);
-
-	// Get Window width and heights:
-	float window_width = (float)App->window->window_width;
-	float window_height = (float)App->window->window_height;
-
-	ImGuizmo::SetRect
-	(
-		float(ImGui::GetCursorScreenPos().x),
-		float(ImGui::GetCursorScreenPos().y),
-		x,
-		y
-	);
-
-	ImGui::Image
-	(
-		(void*)(intptr_t)App->renderer->GetFramebufferTextureId(),
-		ImVec2(x, y),
-		ImVec2(0, 1),
-		ImVec2(1, 0)
-	);
+	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
 	TransformSelectedEntityWithImGuizmo();
-
-	ImGui::End();
-	ImGui::PopStyleVar();
 }
 
 void ModuleEditor::SwitchImGuizmoOperationModeWithKeyboard()

@@ -30,48 +30,11 @@ ModuleRender::~ModuleRender()
 // Called before render is available
 bool ModuleRender::Init()
 {
-	LOG("Creating Renderer context");
-
 	viewport_height = App->window->window_height;
 	viewport_width = App->window->window_width;
 
 	// Initialize GLEW and OpenGL:
 	InitializeGLEW();
-
-	//Generate Framebuffer:
-	glGenFramebuffers(1, &framebuffer_scene_id);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_scene_id);
-
-	//Generate Texture for Draw Scene
-	glGenTextures(1, &framebuffer_scene_texture_id);
-	glBindTexture(GL_TEXTURE_2D, framebuffer_scene_texture_id);
-	glTexImage2D
-	(
-		GL_TEXTURE_2D,					// Target texture
-		0,								// Level of detail number
-		GL_RGB,							// Number of color components in the texture, il defines it as bytes per pixel
-		viewport_width,					// Width of texture image
-		viewport_height,				// Height of texture image
-		0,								// Border of texture image, in docs of Khronos, it says this must be zero
-		GL_RGB,							// Format of the image 
-		GL_UNSIGNED_BYTE,				// Data type of pixel data
-		NULL							// Pointer to the image data in memory
-	);
-
-	// Configure Magnification filter:
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Configure Minification filter:
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebuffer_scene_texture_id, 0);
-
-	//Stencil and Depth buffer
-	glGenRenderbuffers(1, &stencil_depth_buffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, stencil_depth_buffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, viewport_width, viewport_height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencil_depth_buffer);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Log Hardware Details:
 	LogHardware();
@@ -96,9 +59,9 @@ bool ModuleRender::Init()
 	App->input->GetFileDroppedEvent()->AddListener(&file_dropped_event_listener);
 
 	// Initialize window_resized_event_listener:
-	//window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleRender::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
+	window_resized_event_listener = EventListener<unsigned int, unsigned int>(std::bind(&ModuleRender::HandleWindowResized, this, std::placeholders::_1, std::placeholders::_2));
 	// Subscribe to window resized event of ModuleInput:
-	//App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
+	App->input->GetWindowResizedEvent()->AddListener(&window_resized_event_listener);
 
 	// Delete model_file_name:
 	free(default_model_file_name);
@@ -108,20 +71,6 @@ bool ModuleRender::Init()
 
 update_status ModuleRender::PreUpdate()
 {
-	//OPTICK_CATEGORY("ModuleRender::PreUpdate", Optick::Category::Rendering);
-	
-	// Resize the viewport to the newly resized window:
-	glViewport(0, 0, viewport_width, viewport_height);
-
-	// Clear to clear color:
-	glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
-
-	// Clear to the selected Clear color:
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//Bind Framebuffer Scene
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_scene_id);
-
 	// Resize the viewport to the newly resized window:
 	glViewport(0, 0, viewport_width, viewport_height);
 
@@ -137,8 +86,6 @@ update_status ModuleRender::PreUpdate()
 // Called every draw update
 update_status ModuleRender::Update()
 {
-	//OPTICK_CATEGORY("ModuleRender::Update", Optick::Category::Rendering);
-
 	Entity::selected_entity_in_hierarchy->DrawGizmos();
 
 	// Use the shader program created in ModuleShaderProgram:
@@ -147,16 +94,11 @@ update_status ModuleRender::Update()
 	// Update loaded model:
 	GetLoadedModel()->Update();
 
-	//Bind Framebuffer UI
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	return update_status::UPDATE_CONTINUE;
 }
 
 update_status ModuleRender::PostUpdate()
 {
-	//OPTICK_CATEGORY("ModuleRender::PostUpdate", Optick::Category::Rendering);
-
 	// Swap frame buffer:
 	SDL_GL_SwapWindow(App->window->window);
 
@@ -211,7 +153,7 @@ void ModuleRender::HandleFileDrop(const char* file_directory)
 float ModuleRender::GetRequiredAxisTriadLength() const
 {
 	ComponentBoundingBox* bounding_box = (ComponentBoundingBox*)(GetLoadedModel()->GetComponent(component_type::BOUNDING_BOX));
-	
+
 	if (bounding_box == nullptr)
 	{
 		return 10.0f;
@@ -288,7 +230,7 @@ void ModuleRender::OnPerformanceWindow() const
 
 	static const float total_vram_gib = (total_vram / 1024.f) / 1024.f;
 	float free_vram_gib = (free_vram / 1024.f) / 1024.f;
-	
+
 	ImGui::Text("Vendor: %s", glGetString(GL_VENDOR));
 	ImGui::Text("Renderer: %s", glGetString(GL_RENDERER));
 	ImGui::Text("OpenGL version supported %s", glGetString(GL_VERSION));

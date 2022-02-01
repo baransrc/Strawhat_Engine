@@ -52,7 +52,7 @@ public:
 	void DrawPerformanceWindow();
 	void DrawInspector();
 	void DrawImGuizmoModeWindow();
-	void DrawSceneWindow();
+	void DrawImGuizmo();
 	void DrawModuleSettings();
 
 private:
