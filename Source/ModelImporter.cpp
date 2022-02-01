@@ -271,9 +271,6 @@ namespace ModelImporter
 			Entity* model_entity = new Entity();
 			model_entity->Initialize(scene_name);
 
-			ComponentBoundingBox* bounding_box = new ComponentBoundingBox();
-			bounding_box->Initialize(model_entity);
-
 			size_t number_of_meshes = scene->mNumMeshes;
 			//size_t number_of_textures = scene->mNumMaterials; // For now we assume we have one texture for each material.
 			size_t number_of_textures = 3; // For now we assume we have three texture for each material.
@@ -303,14 +300,9 @@ namespace ModelImporter
 				current_node->Initialize((current_mesh_data->mName.C_Str()));
 				current_node->SetParent(model_entity);
 
-				ComponentBoundingBox* component_bounding_box = new ComponentBoundingBox();
-
-				component_bounding_box->Initialize(current_node);
-
 				ComponentMaterial* component_material = new ComponentMaterial();
 				component_material->Initialize(current_node);
 				component_material->Load(texture_ids, number_of_textures);
-
 
 				ComponentMesh* current_component_mesh = 
 					ModelImporter_LoadComponentMeshFromMeshData(current_mesh_data, current_node, texture_ids, number_of_textures);
