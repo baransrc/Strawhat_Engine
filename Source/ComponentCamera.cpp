@@ -58,6 +58,11 @@ void ComponentCamera::Initialize(Entity* new_owner)
 
 void ComponentCamera::PreUpdate()
 {
+	if (!Enabled())
+	{
+		return;
+	}
+
 	// Calculate the projection matrix if it's necessary:
 	CalculateProjectionMatrix();
 
@@ -81,11 +86,19 @@ void ComponentCamera::PreUpdate()
 
 void ComponentCamera::Update()
 {
-
+	if (!Enabled())
+	{
+		return;
+	}
 }
 
 void ComponentCamera::DrawGizmo()
 {
+	if (!Enabled() || !owner->IsActive())
+	{
+		return;
+	}
+
 	// You are the one neo:
 	float4x4 neo = frustum.ViewProjMatrix();
 	neo.Inverse();

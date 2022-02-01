@@ -132,10 +132,19 @@ void ComponentBoundingBox::Load()
 
 void ComponentBoundingBox::Update()
 {
+    // NOTE: It does not make any sense to disabling 
+    // ComponentBoundingBox stop it's update or other
+    // functions. So it's not added here. But Gizmos are not
+    // shown like the others.
 }
 
 void ComponentBoundingBox::DrawGizmo()
 {
+    if (!Enabled() || !owner->IsActive())
+    {
+        return;
+    }
+
     static const int order[8] = { 0, 1, 5, 4, 2, 3, 7, 6 };
     float3 vertices[8];
     for (int i = 0; i < 8; ++i)

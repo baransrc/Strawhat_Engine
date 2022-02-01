@@ -129,6 +129,11 @@ void ComponentLight::Load(light_type new_type)
 
 void ComponentLight::Update()
 {
+	if (!Enabled())
+	{
+		return;
+	}
+
 	switch (type)
 	{
 	case light_type::POINT:
@@ -199,6 +204,11 @@ void ComponentLight::Reset()
 
 void ComponentLight::DrawGizmo()
 {
+	if (!Enabled() || !owner->IsActive())
+	{
+		return;
+	}
+
 	Component::DrawGizmo();
 }
 

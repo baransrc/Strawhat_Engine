@@ -65,6 +65,11 @@ void Entity::Initialize(std::string new_name)
 
 void Entity::PreUpdate()
 {
+	if (!active)
+	{
+		return;
+	}
+
 	if (components.size() > 0)
 	{
 		for (Component* component : components)
@@ -88,6 +93,11 @@ void Entity::PreUpdate()
 /// </summary>
 void Entity::Update()
 {
+	if (!active)
+	{
+		return;
+	}
+
 	if (components.size() > 0)
 	{
 		for (Component* component : components)
@@ -107,6 +117,11 @@ void Entity::Update()
 
 void Entity::PostUpdate()
 {
+	if (!active)
+	{
+		return;
+	}
+
 	if (components.size() > 0)
 	{
 		for (Component* component : components)
@@ -274,6 +289,11 @@ unsigned int Entity::Id() const
 Entity* Entity::Parent() const
 {
 	return parent;
+}
+
+bool Entity::IsActive() const
+{
+	return active;
 }
 
 /// <summary>

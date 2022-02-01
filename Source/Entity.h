@@ -61,8 +61,10 @@ public:
 	const std::string& Name() const;
 	unsigned int Id() const;
 	Entity* Parent() const;
+	bool IsActive() const;
 	void SetParent(Entity* new_parent);
 	void SetActive(bool activeness);
+
 	void AddChild(Entity* child);
 	void RemoveChild(Entity* child);
 	Entity* FindChild(unsigned int child_entity_id) const;

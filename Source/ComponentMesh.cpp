@@ -126,6 +126,11 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 
 void ComponentMesh::Update()
 {
+	if (!Enabled())
+	{
+		return;
+	}
+
 	//// Use the shader:
 	
 	//// Activate Texture Unit 0:
@@ -181,6 +186,12 @@ void ComponentMesh::Reset()
 
 void ComponentMesh::DrawGizmo()
 {
+	// NOTE: If you add a gizmo for ComponentMesh,
+	// check for the following:
+	/*if (!Enabled() || !owner->IsActive())
+	{
+		return;
+	}*/
 }
 
 void ComponentMesh::DrawInspectorContent()
