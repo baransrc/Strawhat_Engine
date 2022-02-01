@@ -108,7 +108,7 @@ void ModuleSceneManager::HandleFileDropped(const char* file_name)
 
 void ModuleSceneManager::DrawHierarchyEditor()
 {
-	DrawRecursiveEntityHierarchy(current_scene->GetRootEntity(), true);
+	DrawRecursiveEntityHierarchy(current_scene->GetRootEntity(), true, false);
 }
 
 Scene* const ModuleSceneManager::GetCurrentScene() const
@@ -116,7 +116,7 @@ Scene* const ModuleSceneManager::GetCurrentScene() const
 	return current_scene;
 }
 
-void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_root_entity)
+void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_root_entity, bool is_parent_inactive)
 {
 	// TODO(Baran): Refactor this code as it looks ugly a.f, and make 
 	// it non-recursive if possible.
@@ -126,6 +126,11 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 		return;
 	}
 
+	// This is used if the current node and it's children should be rendered as 
+	// grayed out to show that either they are, or one of their ancestors are
+	// disabled:
+	bool should_be_rendered_as_inactive = is_parent_inactive || !entity->IsActive();
+	// Is this entity in the renaming state:
 	bool being_renamed = renamed_entity_in_hierarchy != nullptr && renamed_entity_in_hierarchy->Id() == entity->Id();
 	// This is updated again according to whether the node is collapsed or 
 	// expanded:
@@ -164,8 +169,18 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 		flags |= ImGuiTreeNodeFlags_Selected;
 	}
 
+	// If this should be rendered as inactive push the grayed out text color:
+	if (should_be_rendered_as_inactive)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6, 0.6, 0.6, 1.0f));
+	}
 	// Render the tree node of entity, return if it's expanded or not:
 	open = ImGui::TreeNodeEx(being_renamed ? "" : entity->Name().c_str(), flags);
+	// If this was rendered as inactive pop the grayed out text color:
+	if (should_be_rendered_as_inactive)
+	{
+		ImGui::PopStyleColor();
+	}
 
 	ImGui::PushID(main_id_buffer);
 
@@ -326,7 +341,7 @@ void ModuleSceneManager::DrawRecursiveEntityHierarchy(Entity* entity, bool is_ro
 		{
 			for (Entity* child : entity->GetChildren())
 			{
-				DrawRecursiveEntityHierarchy(child, false);
+				DrawRecursiveEntityHierarchy(child, false, should_be_rendered_as_inactive);
 			}
 		}
 		ImGui::TreePop();

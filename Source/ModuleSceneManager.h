@@ -31,5 +31,5 @@ public:
 	Scene* const GetCurrentScene() const;
 
 private:
-	void DrawRecursiveEntityHierarchy(Entity* entity, bool is_root_entity);
+	void DrawRecursiveEntityHierarchy(Entity* entity, bool is_root_entity, bool is_parent_inactive);
 };
