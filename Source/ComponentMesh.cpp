@@ -170,8 +170,6 @@ void ComponentMesh::Update()
 
 void ComponentMesh::Reset()
 {
-	is_currently_loaded = false;
-
 	free(indices);
 	free(vertices);
 	free(texture_ids);
@@ -179,9 +177,14 @@ void ComponentMesh::Reset()
 	indices = nullptr;
 	vertices = nullptr;
 
-	glDeleteBuffers(1, &element_buffer_object);
-	glDeleteBuffers(1, &vertex_buffer_object);
-	glDeleteVertexArrays(1, &vertex_array_object);
+	if (is_currently_loaded)
+	{
+		glDeleteBuffers(1, &element_buffer_object);
+		glDeleteBuffers(1, &vertex_buffer_object);
+		glDeleteVertexArrays(1, &vertex_array_object);
+	}
+
+	is_currently_loaded = false;
 }
 
 void ComponentMesh::DrawGizmo()
