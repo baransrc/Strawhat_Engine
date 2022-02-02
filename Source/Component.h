@@ -18,7 +18,7 @@ public:
 	Component();
 	virtual ~Component() = default;
 
-	const Entity* Owner() const;
+	Entity* Owner() const;
 	bool Enabled() const;
 	unsigned int Id() const;
 	virtual component_type Type() const;

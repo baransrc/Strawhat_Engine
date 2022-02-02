@@ -1,3 +1,4 @@
+
 #include "Scene.h"
 
 #include "ComponentCamera.h"
@@ -5,6 +6,9 @@
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
 #include "ComponentBoundingBox.h"
+
+#include "MATH_GEO_LIB/Geometry/Triangle.h"
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
 
 
 Scene::Scene() :
@@ -224,4 +228,41 @@ void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)
     // Get mesh components in scene:
     mesh_components_in_scene.clear();
     mesh_components_in_scene = (root_entity->GetComponentsInDescendants<ComponentMesh>());
+}
+
+void Scene::CheckRaycast(LineSegment segment) 
+{
+    // Get all entities with mesh components:
+    std::vector<ComponentMesh*> meshes = 
+        root_entity->GetComponentsInDescendants<ComponentMesh>();
+    Entity* best_picking_candidate_entity = nullptr;
+
+    float distance_max = segment.Length();
+
+    for (ComponentMesh* mesh : meshes)
+    {
+        math::LineSegment segment_local(segment);
+        
+        segment_local.Transform(mesh->Owner()->Transform()->GetMatrix().Inverted());
+
+        const TriangleArray& triangles = mesh->GetTriangles();
+
+        for (const Triangle& triangle : triangles)
+        {
+            float distance;
+            math::float3 hit_point = math::float3::zero;
+
+            if (segment_local.Intersects(triangle, &distance, &hit_point))
+            {   
+                if (distance < distance_max)
+                {
+                    best_picking_candidate_entity = mesh->Owner();
+                    distance_max = distance;
+                }
+            }
+            
+        }   
+    }
+
+    SetSelectedEntity(best_picking_candidate_entity);
 }

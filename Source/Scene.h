@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Entity.h"
 #include "Event.h"
 #include "ComponentType.h"
 
-#include "Entity.h"
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
 
 #include <vector>
 
-class Entity;
 class ComponentCamera;
 class ComponentMesh;
 
@@ -31,6 +31,7 @@ public:
 
 	void SetMainCamera(ComponentCamera* new_main_camera);
 	void SetSelectedEntity(Entity* new_selected_entity);
+	void CheckRaycast(LineSegment ray);
 
 	void CullMeshes();
 

@@ -6,6 +6,8 @@
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 
+#include "MATH_GEO_LIB/Geometry/Triangle.h"
+
 #define DEBUG_DRAW_IMPLEMENTATION
 #include "DebugDraw.h"     // Debug Draw API. Notice that we need the DEBUG_DRAW_IMPLEMENTATION macro here!
 
@@ -673,6 +675,22 @@ void ModuleDebugDraw::DrawFrustum(const math::float4x4& matrix, vec color)
 void ModuleDebugDraw::DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size)
 {
     dd::arrow(from, to, color, arrow_head_size);
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::DrawLine(const vec& from, const vec& to, const vec& color)
+{
+    dd::line(from, to, color);
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::DrawTriangle(const Triangle& triangle, const vec& color)
+{
+    dd::line(triangle.a, triangle.b, color);
+    dd::line(triangle.b, triangle.c, color);
+    dd::line(triangle.c, triangle.a, color);
 
     MakeDrawCall();
 }

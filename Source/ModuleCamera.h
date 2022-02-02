@@ -68,6 +68,7 @@ public:
 	void HandleWindowResized(unsigned int width, unsigned int height);
 
 private:
+	void ExecuteMousePicking();
 	void Move();
 	void Rotate();
 	void Orbit();

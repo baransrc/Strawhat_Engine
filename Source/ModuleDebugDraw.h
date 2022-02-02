@@ -30,6 +30,8 @@ public:
     void DrawCone(const vec& position, const vec& direction, float longitude, float radius, const vec& color);
     void DrawFrustum(const float4x4& matrix, vec color);
     void DrawArrow(const vec& from, const vec& to, const vec& color, const float arrow_head_size);
+    void DrawLine(const vec& from, const vec& to, const vec& color);
+    void DrawTriangle(const Triangle& triangle, const vec& color);
     
 private:
     void MakeDrawCall();

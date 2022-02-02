@@ -12,7 +12,7 @@ Component::Component() : enabled(false), owner(nullptr)
 /// <summary>
 /// </summary>
 /// <returns>Owner of the component.</returns>
-const Entity* Component::Owner() const
+Entity* Component::Owner() const
 {
 	return owner;
 }

@@ -1,14 +1,17 @@
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 #include "Entity.h"
+#include "Scene.h"
 
 #include "ModuleDebugDraw.h"
 #include "ModuleRender.h"
 #include "ModuleShaderProgram.h"
+#include "ModuleSceneManager.h"
 #include "ModuleWindow.h"
 #include "Application.h"
 
 #include "MATH_GEO_LIB/Geometry/Plane.h"
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
 
 ComponentCamera::ComponentCamera() : 
 	Component(),
@@ -398,4 +401,17 @@ void ComponentCamera::HandleComponentChanged(component_type type)
 
 	// Update transform related variables:
 	UpdateTransformVariables();
+}
+
+/// <summary>
+/// x and y should be between -1 and 1.
+/// -1, 1   1, 1
+/// -1,-1   1,-1
+/// </summary>
+/// <param name="x"></param>
+/// <param name="y"></param>
+/// <returns></returns>
+math::LineSegment ComponentCamera::GenerateRayFromNormalizedPositions(float x, float y)
+{
+	return frustum.UnProjectLineSegment(x, y);
 }

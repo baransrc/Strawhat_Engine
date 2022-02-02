@@ -28,6 +28,8 @@ private:
 	bool is_currently_loaded;
 	bool is_culled;
 
+	math::TriangleArray cached_triangles;
+
 public:
 	ComponentMesh();
 	~ComponentMesh() override;
@@ -51,6 +53,8 @@ public:
 	size_t GetNumberOfIndices() const { return number_of_indices; };
 	size_t GetNumberOfTriangles() const { return number_of_triangles; };
 	const math::AABB& GetAABB() const { return bounding_box; };
+	const float* GetVertices() const { return vertices; };
+	const math::TriangleArray& GetTriangles() const { return cached_triangles; }
 
 	void SetCulled(bool new_is_culled);
 	bool IsCulled() const;
