@@ -645,9 +645,10 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
     MakeDrawCall();
 }
 
-void ModuleDebugDraw::DrawCone(const vec& position, const vec& direction, const vec& color)
+// TODO: MRG.
+void ModuleDebugDraw::DrawCone(const vec& position, const vec& direction, float longitude, float radius, const vec& color)
 {
-    dd::cone(position, direction, color, 0.7f, 0.01f);
+    dd::cone(position, direction * longitude, color, radius/3, 0.01f);
 
     MakeDrawCall();
 }
