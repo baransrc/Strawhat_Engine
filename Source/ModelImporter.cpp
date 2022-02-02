@@ -266,7 +266,7 @@ namespace ModelImporter
 		/// <param name="scene_name">Name of model</param>
 		/// <param name="texture_ids">An array consisting of texture ids</param>
 		/// <returns>Entity with child entities having mesh components.</returns>
-		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name/*, unsigned int* texture_ids*/)
+		Entity* ModelImporter_LoadMeshesAsEntity(const aiScene* scene, const char* scene_name, const char* path_directory)
 		{
 			Entity* model_entity = new Entity();
 			model_entity->Initialize(scene_name);
@@ -290,7 +290,7 @@ namespace ModelImporter
 				current_mesh_data = scene->mMeshes[i];
 
 				// Get the parent directory path from full file path:
-				char* path_to_parent_directory = util::ConcatCStrings("", scene_name);
+				char* path_to_parent_directory = util::ConcatCStrings("", path_directory);
 				util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
 
 				// Get Texture IDs:
@@ -356,8 +356,8 @@ namespace ModelImporter
 		}
 
 		// Get the parent directory path from full file path:
-		//char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
-		//util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
+		char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
+		util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
 
 		//Get only the name of the file
 		//char* name_of_file = util::ConcatCStrings("", path_to_file);
@@ -372,8 +372,8 @@ namespace ModelImporter
 
 		Entity* loaded_model = ModelImporter_LoadMeshesAsEntity(
 			model,
-			model_name
-			//texture_ids
+			model_name,
+			path_to_parent_directory
 		);
 
 		// Deallocate resources:
