@@ -62,6 +62,8 @@ public:
 	void LookAt(const math::float3& direction);
 	bool DoesOBBHavePointInsideFrustum(const math::OBB& obb) const;
 
+	void MousePicking();
+
 protected:
 	void DrawInspectorContent() override;
 

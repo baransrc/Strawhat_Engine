@@ -3,6 +3,8 @@
 #include "Event.h"
 #include "ComponentType.h"
 
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
+
 #include <vector>
 
 class Entity;
@@ -28,6 +30,7 @@ public:
 
 	void SetMainCamera(ComponentCamera* new_main_camera);
 	void SetSelectedEntity(Entity* new_selected_entity);
+	void CheckRaycast(const LineSegment& ray);
 
 	void CullMeshes();
 

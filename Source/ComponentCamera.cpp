@@ -1,13 +1,17 @@
 #include "ComponentCamera.h"
 #include "ComponentTransform.h"
 #include "Entity.h"
+#include "Scene.h"
 
 #include "ModuleDebugDraw.h"
+#include "ModuleInput.h"
 #include "ModuleShaderProgram.h"
+#include "ModuleSceneManager.h"
 #include "ModuleWindow.h"
 #include "Application.h"
 
 #include "MATH_GEO_LIB/Geometry/Plane.h"
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
 
 ComponentCamera::ComponentCamera() : 
 	Component(),
@@ -90,6 +94,8 @@ void ComponentCamera::Update()
 	{
 		return;
 	}
+
+	MousePicking();
 }
 
 void ComponentCamera::DrawGizmo()
@@ -392,4 +398,34 @@ void ComponentCamera::HandleComponentChanged(component_type type)
 
 	// Update transform related variables:
 	UpdateTransformVariables();
+}
+
+void ComponentCamera::MousePicking()
+{
+	// If user is not clicking on left mouse button, ignore movement through key inputs:
+	if (!App->input->GetMouseKey(SDL_BUTTON_LEFT, key_state::DOWN))
+	{
+		return;
+	}
+
+	if(!should_render)
+	{
+		return;
+	}
+
+	float2 mouse_position = App->input->GetMousePosition();
+
+	float mouse_normX = mouse_position.x / App->window->window_width;
+	float mouse_normY = mouse_position.y / App->window->window_height;
+
+	// Normalize mouse position in range of -1 / 1 // -1, -1 being at the bottom left corner
+	//mouse_normX = (mouse_normX - 0.5f) / 0.5f;
+	//mouse_normY = (mouse_normY - 0.5f) / 0.5f;
+
+	LineSegment line = frustum.UnProjectLineSegment(mouse_normX, mouse_normY);
+	//LineSegment line = frustum.UnProjectLineSegment(mouse_position.x, mouse_position.y);
+	LOG("largo de pene: %f", line.Length());
+	App->debug_draw->DrawLine(line.a, line.b, float3(0.9, 0.5, 0.3));
+	App->scene_manager->GetCurrentScene()->CheckRaycast(line);
+
 }

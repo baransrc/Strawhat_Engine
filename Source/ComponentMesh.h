@@ -51,6 +51,7 @@ public:
 	size_t GetNumberOfIndices() const { return number_of_indices; };
 	size_t GetNumberOfTriangles() const { return number_of_triangles; };
 	const math::AABB& GetAABB() const { return bounding_box; };
+	const float& GetVertices() const { return *vertices; };
 
 	void SetCulled(bool new_is_culled);
 	bool IsCulled() const;

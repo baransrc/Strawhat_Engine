@@ -7,6 +7,9 @@
 #include "ComponentMesh.h"
 #include "ComponentBoundingBox.h"
 
+#include "MATH_GEO_LIB/Geometry/Triangle.h"
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
+
 
 Scene::Scene() :
     root_entity(nullptr),
@@ -197,4 +200,76 @@ void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)
     // Get mesh components in scene:
     mesh_components_in_scene.clear();
     mesh_components_in_scene = (root_entity->GetComponentsInDescendants<ComponentMesh>());
+}
+
+void Scene::CheckRaycast(const LineSegment& ray) 
+{
+    std::vector <Entity*> entities;
+    float hit_near = NULL, hit_far = NULL;
+    // Get all entities
+    std::vector<ComponentBoundingBox*> bounding_boxes = root_entity->GetComponentsInDescendants<ComponentBoundingBox>();
+    for (ComponentBoundingBox* bounding_box : bounding_boxes)
+    {
+        
+        if (ray.Intersects(bounding_box->GetBoundingBox(), hit_near, hit_far))
+        {
+            //entities[hit_near] = bounding_box->Owner();
+            entities.push_back(bounding_box->Owner());
+        }
+    }
+
+    Entity* finale = nullptr;
+    float end = ray.Length();
+    LineSegment rayToMeshSpace = ray;
+
+    //std::vector<const Entity*>::iterator it;
+    for (Entity* object : entities)
+    {
+        const ComponentMesh* mesh;
+        mesh = object->GetComponent<ComponentMesh>();
+        if (mesh != NULL)
+        {
+            //if (const R_Mesh* rMesh = ((C_Mesh*)mesh)->rMeshHandle.Get())
+            //{
+                //Convert ray in world space coordinates to model space coordinates
+                
+                rayToMeshSpace.Transform(object->GetComponent<ComponentTransform>()->GetMatrix().Inverted());
+
+                //Iterate all mesh triangles until we find a hit
+                //for (unsigned int v = 0; v < rMesh->buffersSize[R_Mesh::b_indices]; v += 3)
+                //{
+                    const float* vertices = &mesh->GetVertices();
+
+                    for (size_t i = 0; i < mesh->GetNumberOfVertices() * 8; i += 8)
+                    {
+                        //temp_vertices[i / 8] = float3(mesh->GetVertices()[i + 0], mesh->vertices[i + 1], mesh->vertices[i + 2]);
+                    
+                        /*vec vertexA(&rMesh->vertices[rMesh->indices[v] * 3]);
+                        vec vertexB(&rMesh->vertices[rMesh->indices[v + 1] * 3]);
+                        vec vertexC(&rMesh->vertices[rMesh->indices[v + 2] * 3]);*/
+
+                        vec vertexA(vertices[i + 0]);
+                        vec vertexB(vertices[i + 1]);
+                        vec vertexC(vertices[i + 2]);
+                    
+                        Triangle triangle(vertexA, vertexB, vertexC);
+
+                        float newDistance = 0.0f;
+                        if (rayToMeshSpace.Intersects(triangle, &newDistance, nullptr))
+                        {
+                            if (newDistance < end)
+                            {
+                                finale = object;
+                                end = newDistance;
+                            }
+                        }
+                    }
+                //}
+        }
+    }
+    if(finale)
+        selected_entity = finale;
+
+    //free(entities);
+    free(finale);
 }
