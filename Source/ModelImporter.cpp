@@ -379,7 +379,7 @@ namespace ModelImporter
 		// Deallocate resources:
 		free(model_name);
 		//free(texture_ids);
-		//free(path_to_parent_directory);
+		free(path_to_parent_directory);
 		//free(name_of_file);
 
 		return loaded_model;
