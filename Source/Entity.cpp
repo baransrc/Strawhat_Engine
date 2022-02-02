@@ -381,7 +381,7 @@ void Entity::RemoveChild(Entity* child)
 		children.erase(child_index);
 	}
 
-	hierarchy_changed->Invoke(entity_operation::CHILDREN_CHANGED);
+	InvokeChildHierarchyChangedEventRecursively();
 }
 
 /// <summary>
@@ -437,6 +437,16 @@ Entity* Entity::FindDescendant(unsigned int descendant_entity_id) const
 std::vector<Entity*> Entity::GetAllDescendants() const
 {
 	return std::vector<Entity*>();
+}
+
+void Entity::InvokeChildHierarchyChangedEventRecursively() const
+{
+	hierarchy_changed->Invoke(entity_operation::CHILDREN_CHANGED);
+	
+	if (parent != nullptr)
+	{
+		parent->InvokeChildHierarchyChangedEventRecursively();
+	}
 }
 
 void Entity::InvokeComponentsChangedEvents(component_type type) const
