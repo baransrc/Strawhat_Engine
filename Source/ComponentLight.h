@@ -42,6 +42,7 @@ public:
 
 	light_type GetLightType() const { return type; };
 	float3 GetLightColor() const { return color; };
+	void SetLightColor(float3 new_color) { color = new_color; };
 
 	void SetUniformsPointLight();
 	void SetUniformsDirectionalLight();

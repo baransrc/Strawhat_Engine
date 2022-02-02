@@ -133,7 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;LOGGING_SUPPORT_DISABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;LOGGING_SUPPORT_DISABLED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.\SDL\include;GLEW\include;DEAR_IMGUI\backends;DEAR_IMGUI\include;MATH_GEO_LIB\;DEVIL\include\;DEBUG_DRAW\;ASSIMP\include\;OPTICK\include\</AdditionalIncludeDirectories>
     </ClCompile>

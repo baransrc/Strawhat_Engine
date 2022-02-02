@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Application.h"
 
 #include "ComponentCamera.h"
 #include "ComponentLight.h"
@@ -8,9 +9,12 @@
 
 #include "ModelImporter.h"
 
+<<<<<<< Updated upstream
 #include "MATH_GEO_LIB/Geometry/Triangle.h"
 #include "MATH_GEO_LIB/Geometry/LineSegment.h"
 
+=======
+>>>>>>> Stashed changes
 
 Scene::Scene() :
     root_entity(nullptr),
@@ -141,15 +145,88 @@ void Scene::Initialize()
     SetMainCamera(camera_entity->GetComponent<ComponentCamera>());
     main_camera->SetIsMainCamera(true);
     // Set camera_entity's position:
-    camera_entity->Transform()->SetPosition(math::float3(0.0f, 50.0f, 0.0f));
+    camera_entity->Transform()->SetPosition(math::float3(20.0f, 50.0f, -15.0f));
     main_camera->LookAt(math::float3(0.0f, 50.0f, 0.0f));
-
+    
     // Add an entity with a light component as a child of root_entity:
-    Entity* light_entity = new Entity();
-    light_entity->Initialize("Directional Light");
-    light_entity->SetParent(root_entity);
-    light_entity->AddComponent<ComponentLight>();
-    light_entity->GetComponent<ComponentLight>()->Load(light_type::DIRECTIONAL);
+    Entity* light_entity_directional = new Entity();
+    light_entity_directional->Initialize("Directional Light");
+    light_entity_directional->SetParent(root_entity);
+    light_entity_directional->AddComponent<ComponentLight>();
+    light_entity_directional->GetComponent<ComponentLight>()->Load(light_type::DIRECTIONAL);
+
+    //Scene
+    Entity* light_entity_point = new Entity();
+    light_entity_point->Initialize("Point Light");
+    light_entity_point->SetParent(root_entity);
+    light_entity_point->AddComponent<ComponentLight>();
+    light_entity_point->GetComponent<ComponentLight>()->Load(light_type::POINT);
+    light_entity_point->Transform()->SetPosition(math::float3(12.0f, 3.0f, -18.0f));
+    light_entity_point->GetComponent<ComponentLight>()->SetLightColor(math::float3(1.0f, 0.2f, 0.0f));
+
+    Entity* light_entity_spot = new Entity();
+    light_entity_spot->Initialize("Spotlight");
+    light_entity_spot->SetParent(root_entity);
+    light_entity_spot->AddComponent<ComponentLight>();
+    light_entity_spot->GetComponent<ComponentLight>()->Load(light_type::SPOT);
+    light_entity_spot->Transform()->SetPosition(math::float3(23.0f, 14.0f, -25.0f));
+
+
+    std::string working_path = App->GetWorkingDirectory();
+    std::string clock_path = working_path + "\\Models\\Clock.fbx";
+    Entity* clock_entity = ModelImporter::Import(clock_path.c_str());
+    clock_entity->SetParent(root_entity);
+    clock_entity->Transform()->SetPosition(math::float3(0.0f, 1.0f, 0.0f));
+
+    std::string doll_path = working_path + "\\Models\\Dollhouse.fbx";
+    Entity* doll_entity = ModelImporter::Import(doll_path.c_str());
+    doll_entity->SetParent(root_entity);
+    doll_entity->Transform()->SetPosition(math::float3(38.0f, 1.0f, -4.0f));
+
+    std::string drawers_path = working_path + "\\Models\\Drawers.fbx";
+    Entity* drawers_entity = ModelImporter::Import(drawers_path.c_str());
+    drawers_entity->SetParent(root_entity);
+    drawers_entity->Transform()->SetPosition(math::float3(8.0f, 1.0f, -4.0f));
+
+    std::string firetruck_path = working_path + "\\Models\\Firetruck.fbx";
+    Entity* firetruck_entity = ModelImporter::Import(firetruck_path.c_str());
+    firetruck_entity->SetParent(root_entity);
+    firetruck_entity->Transform()->SetPosition(math::float3(0.0f, 1.0f, 0.0f));
+
+    std::string floor_path = working_path + "\\Models\\Floor.fbx";
+    Entity* floor_entity = ModelImporter::Import(floor_path.c_str());
+    floor_entity->SetParent(root_entity);
+    floor_entity->Transform()->SetPosition(math::float3(0.0f, 1.0f, 0.0f));
+
+    std::string hearse_path = working_path + "\\Models\\Hearse.FBX";
+    Entity* hearse_entity = ModelImporter::Import(hearse_path.c_str());
+    hearse_entity->SetParent(root_entity);
+    hearse_entity->Transform()->SetPosition(math::float3(12.0f, 1.0f, -18.0f));
+
+    std::string player_path = working_path + "\\Models\\Player.fbx";
+    Entity* player_entity = ModelImporter::Import(player_path.c_str());
+    player_entity->SetParent(root_entity);
+    player_entity->Transform()->SetPosition(math::float3(20.0f, 1.0f, -20.0f));
+
+    std::string robot_path = working_path + "\\Models\\Robot.FBX";
+    Entity* robot_entity = ModelImporter::Import(robot_path.c_str());
+    robot_entity->SetParent(root_entity);
+    robot_entity->Transform()->SetPosition(math::float3(23.0f, 1.0f, -18.0f));
+
+    std::string spinning_path = working_path + "\\Models\\SpinningTop.fbx";
+    Entity* spinning_entity = ModelImporter::Import(spinning_path.c_str());
+    spinning_entity->SetParent(root_entity);
+    spinning_entity->Transform()->SetPosition(math::float3(5.0f, 1.0f, -10.0f));
+
+    std::string wall_path = working_path + "\\Models\\Wall.FBX";
+    Entity* wall_entity = ModelImporter::Import(wall_path.c_str());
+    wall_entity->SetParent(root_entity);
+    wall_entity->Transform()->SetPosition(math::float3(0.0f, 1.0f, 0.0f));
+
+    std::string zombunny_path = working_path + "\\Models\\Zombunny.fbx";
+    Entity* zombunny_entity = ModelImporter::Import(zombunny_path.c_str());
+    zombunny_entity->SetParent(root_entity);
+    zombunny_entity->Transform()->SetPosition(math::float3(9.0f, 1.0f, -20.0f));
 
     /*
         Entity* player_model = ModelImporter::Import();
@@ -160,7 +237,7 @@ void Scene::Initialize()
     // Set selected entity as the light_entity:
     // NOTE: If new stuff is added into SetSelectedEntity, 
     // just use that instead of this.
-    selected_entity = light_entity;
+    selected_entity = camera_entity;
 }
 
 void Scene::PreUpdate()

@@ -219,4 +219,8 @@ void ComponentLight::SetUniformsSpotLight()
 	App->shader_program->SetUniformVariable("lightS.quadratic", 0.032f);
 	App->shader_program->SetUniformVariable("lightS.shininess", shininess);
 	App->shader_program->SetUniformVariable("lightS.intensity", intensity);
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 }
