@@ -56,7 +56,7 @@ bool Application::Start()
 {
     bool ret = true;
 
-    for (list<Module*>::iterator it = modules.begin(); it != modules.end() && ret; ++it)
+    for (std::list<Module*>::iterator it = modules.begin(); it != modules.end() && ret; ++it)
     {
         ret = (*it)->Start();
     }

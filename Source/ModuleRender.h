@@ -33,7 +33,6 @@ public:
 	void HandleWindowResized(unsigned int width, unsigned int height);
 	float GetRequiredAxisTriadLength() const;
 	const void* GetContext() const { return context; };
-	unsigned int GetFramebufferTextureId() const { return framebuffer_scene_texture_id; };
 
 	void OnEditor();
 	void OnPerformanceWindow() const;

@@ -431,13 +431,13 @@ void ModuleEditor::DrawHierarchy()
 		return;
 	}
   
-  // TODO: MRG.
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
-  
-  ImGui::Begin("Hierarchy", &should_draw_hierarchy_window);
+	ImGui::Begin("Hierarchy", &should_draw_hierarchy_window);
+	
 	App->scene_manager->DrawHierarchyEditor();
-
+	
 	ImGui::End();
+	ImGui::PopStyleColor();
 }
 
 void ModuleEditor::DrawModuleSettings()
@@ -446,12 +446,12 @@ void ModuleEditor::DrawModuleSettings()
 	{
 		return;
 	}
-  // TODO: MRG:
-  ImGui::Begin("Module Settings", &show_module_settings_window);
+
+	ImGui::Begin("Module Settings", &show_module_settings_window);
 
 	App->renderer->OnEditor();
 	
-  ImGui::End();
+	ImGui::End();
 }
 
 update_status ModuleEditor::PreUpdate()
@@ -480,13 +480,16 @@ update_status ModuleEditor::Update()
 	ImGui::Begin("DockSpace Demo", 0, window_flags);
 	// Submit the DockSpace
 	ImGuiIO& io = ImGui::GetIO();
+
 	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 	
 	ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+	ImGui::CaptureMouseFromApp(false);
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
 	ImGui::PopStyleColor();
 
-	ImGui::CaptureMouseFromApp(false);
+	//ImGui::CaptureMouseFromApp(false);
+	
 
 	DrawImGuizmo();
 
@@ -513,12 +516,13 @@ update_status ModuleEditor::Update()
 	DrawModuleSettings();
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawInspector();
-	
+	ImGui::SetNextWindowBgAlpha(0.5f);
+	DrawHierarchy();
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 	ImGui::End();
 
-	DrawHierarchy();
+	
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -553,7 +557,9 @@ void ModuleEditor::InitializeDearImGui()
 
 void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 {
-	if (Entity::selected_entity_in_hierarchy == NULL)
+	Entity* const selected_entity_in_hierarchy = App->scene_manager->GetCurrentScene()->GetSelectedEntity();
+
+	if (selected_entity_in_hierarchy == nullptr)
 	{
 		return;
 	}
@@ -564,7 +570,7 @@ void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 
 	// ImGuizmo is column-major like OpenGL as opposed to MathGeoLib we use
 	// so we get the transposed version of all the matrices we have first:
-	math::float4x4 model_matrix = Entity::selected_entity_in_hierarchy->Transform()->GetMatrix().Transposed();
+	math::float4x4 model_matrix = selected_entity_in_hierarchy->Transform()->GetMatrix().Transposed();
 	math::float4x4 view_matrix = App->camera->GetCamera()->GetViewMatrix().Transposed();
 	math::float4x4 projection_matrix = App->camera->GetCamera()->GetProjectionMatrix().Transposed();
 
@@ -593,7 +599,7 @@ void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 			// Transpose the delta_transform we got from ImGuizmo::Manipulate
 			// and use it to calculate new resulting_local_matrix:
 			math::float4x4 resulting_local_model_matrix =
-				delta_transform.Transposed() * Entity::selected_entity_in_hierarchy->Transform()->GetLocalMatrix();
+				delta_transform.Transposed() * selected_entity_in_hierarchy->Transform()->GetLocalMatrix();
 			// Decompose the matrix and feed translation, rotation and scaling:
 			resulting_local_model_matrix.Decompose(translation, rotation, scaling);
 
@@ -602,19 +608,19 @@ void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 			default:
 			case ImGuizmo::TRANSLATE:
 			{
-				Entity::selected_entity_in_hierarchy->Transform()->SetLocalPosition(translation);
+				selected_entity_in_hierarchy->Transform()->SetLocalPosition(translation);
 			}
 			break;
 
 			case ImGuizmo::ROTATE:
 			{
-				Entity::selected_entity_in_hierarchy->Transform()->SetLocalRotation(math::Quat(rotation));
+				selected_entity_in_hierarchy->Transform()->SetLocalRotation(math::Quat(rotation));
 			}
 			break;
 
 			case ImGuizmo::SCALE:
 			{
-				Entity::selected_entity_in_hierarchy->Transform()->SetLocalScale(scaling);
+				selected_entity_in_hierarchy->Transform()->SetLocalScale(scaling);
 			}
 			break;
 			}
@@ -635,19 +641,19 @@ void ModuleEditor::TransformSelectedEntityWithImGuizmo()
 			default:
 			case ImGuizmo::TRANSLATE:
 			{
-				Entity::selected_entity_in_hierarchy->Transform()->SetPosition(translation);
+				selected_entity_in_hierarchy->Transform()->SetPosition(translation);
 			}
 			break;
 
 			case ImGuizmo::ROTATE:
 			{
-				Entity::selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(rotation));
+				selected_entity_in_hierarchy->Transform()->SetRotation(math::Quat(rotation));
 			}
 			break;
 
 			case ImGuizmo::SCALE:
 			{
-				Entity::selected_entity_in_hierarchy->Transform()->SetScale(scaling);
+				selected_entity_in_hierarchy->Transform()->SetScale(scaling);
 			}
 			break;
 			}
