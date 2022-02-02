@@ -131,6 +131,8 @@ update_status ModuleCamera::PreUpdate()
 
 	camera_entity->PreUpdate();
 
+	ExecuteMousePicking();
+
 	return update_status::UPDATE_CONTINUE;
 }
 
@@ -161,6 +163,33 @@ ComponentTransform* const ModuleCamera::GetTransform() const
 void ModuleCamera::HandleWindowResized(unsigned int width, unsigned int height)
 {
 	camera->SetAspectRatio((float)width / (float)height);
+}
+
+void ModuleCamera::ExecuteMousePicking()
+{
+	if (state != camera_state::UNFOCUSED)
+	{
+		return;
+	}
+
+	// If user is not clicking on left mouse button, ignore movement through key inputs:
+	if (!App->input->GetMouseKey(SDL_BUTTON_LEFT, key_state::DOWN))
+	{
+		return;
+	}
+
+	float2 mouse_position = App->input->GetMousePosition();
+
+	float window_width = (float)App->window->window_width;
+	float window_height = (float)App->window->window_height;
+
+	// Normalize mouse position in range of -1 / 1 // -1, -1 being at the bottom left corner
+	float normalized_x = (mouse_position.x * 2.0f) - 1.0f;
+	float normalized_y = 1.0f - (mouse_position.y * 2.0f);
+
+	math::LineSegment line_segment = GetCamera()->GenerateRayFromNormalizedPositions(normalized_x, normalized_y);
+
+	App->scene_manager->GetCurrentScene()->CheckRaycast(line_segment);
 }
 
 void ModuleCamera::Move()

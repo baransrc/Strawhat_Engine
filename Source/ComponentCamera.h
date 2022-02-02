@@ -7,6 +7,7 @@
 #include "MATH_GEO_LIB/Math/float4x4.h"
 #include "MATH_GEO_LIB/Math/float3.h"
 #include "MATH_GEO_LIB/Geometry/OBB.h"
+#include "MATH_GEO_LIB/Geometry/LineSegment.h"
 
 enum class camera_projection_mode
 {
@@ -62,7 +63,7 @@ public:
 	void LookAt(const math::float3& direction);
 	bool DoesOBBHavePointInsideFrustum(const math::OBB& obb) const;
 
-	void MousePicking();
+	math::LineSegment GenerateRayFromNormalizedPositions(float x, float y);
 
 protected:
 	void DrawInspectorContent() override;

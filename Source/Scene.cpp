@@ -1,3 +1,4 @@
+
 #include "Scene.h"
 
 #include "Entity.h"
@@ -212,8 +213,6 @@ void Scene::CheckRaycast(LineSegment segment)
 
     float distance_max = segment.Length();
 
-    LOG("Seg Length: %f", distance_max);
-
     for (ComponentMesh* mesh : meshes)
     {
         math::LineSegment segment_local(segment);
@@ -228,7 +227,7 @@ void Scene::CheckRaycast(LineSegment segment)
             math::float3 hit_point = math::float3::zero;
 
             if (segment_local.Intersects(triangle, &distance, &hit_point))
-            {
+            {   
                 if (distance < distance_max)
                 {
                     best_picking_candidate_entity = mesh->Owner();
@@ -236,7 +235,6 @@ void Scene::CheckRaycast(LineSegment segment)
                 }
             }
             
-            LOG("HITPOINT %f, %f, %f", hit_point.x, hit_point.y, hit_point.z);
         }   
     }
 
