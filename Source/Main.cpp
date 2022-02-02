@@ -8,18 +8,18 @@
 #pragma comment( lib, "SDL/lib/x64/SDL2.lib" )
 #pragma comment( lib, "SDL/lib/x64/SDL2main.lib" )
 
-#ifdef _DEBUG
-#define MYDEBUG_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__)
-#define _CRTDBG_MAP_ALLOC
-#include <cstdlib>
-#include <crtdbg.h>
-#define new MYDEBUG_NEW
-#endif
-
-void DumpLeaks(void)
-{
-	_CrtDumpMemoryLeaks(); // Show leaks with file and line where allocation was made
-}
+//#ifdef _DEBUG
+//#define MYDEBUG_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__)
+//#define _CRTDBG_MAP_ALLOC
+//#include <cstdlib>
+//#include <crtdbg.h>
+//#define new MYDEBUG_NEW
+//#endif
+//
+//void DumpLeaks(void)
+//{
+//	_CrtDumpMemoryLeaks(); // Show leaks with file and line where allocation was made
+//}
 
 enum class main_states
 {
@@ -37,7 +37,7 @@ Application* App = NULL;
 int main(int argc, char ** argv)
 {
 	//_CrtSetBreakAlloc(493);
-	atexit(DumpLeaks);
+	//atexit(DumpLeaks);
 	
 	int main_return = EXIT_FAILURE;
 
