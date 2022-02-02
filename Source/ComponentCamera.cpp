@@ -3,6 +3,7 @@
 #include "Entity.h"
 
 #include "ModuleDebugDraw.h"
+#include "ModuleRender.h"
 #include "ModuleShaderProgram.h"
 #include "ModuleWindow.h"
 #include "Application.h"
@@ -92,9 +93,10 @@ void ComponentCamera::Update()
 	}
 }
 
+// TODO: MRG.
 void ComponentCamera::DrawGizmo()
 {
-	if (!Enabled() || !owner->IsActive())
+  if (!Enabled() || !owner->IsActive())
 	{
 		return;
 	}
@@ -103,7 +105,7 @@ void ComponentCamera::DrawGizmo()
 	float4x4 neo = frustum.ViewProjMatrix();
 	neo.Inverse();
 	
-	App->debug_draw->DrawFrustum(neo, float3(0.8f, 0.8f, 1.0f));
+  App->debug_draw->DrawFrustum(neo, float3(0.8f, 0.8f, 1.0f));
 }
 
 component_type ComponentCamera::Type() const
@@ -324,10 +326,12 @@ bool ComponentCamera::DoesOBBHavePointInsideFrustum(const math::OBB& obb) const
 	return false;
 }
 
+// TODO: MRG.
 void ComponentCamera::DrawInspectorContent()
 {
 	bool enabled_editor = Enabled();
-	if (ImGui::Checkbox("Enabled", &enabled_editor))
+	
+  if (ImGui::Checkbox("Enabled", &enabled_editor))
 	{
 		enabled_editor ? Enable() : Disable();
 	}
@@ -342,10 +346,12 @@ void ComponentCamera::DrawInspectorContent()
 	{
 		SetHorizontalFOV(math::DegToRad(fov_editor));
 	}
+  
 	if (ImGui::DragFloat("Near", &near_plane_editor,0.1f, 0.001f, 10000.0f, "%.3f"))
 	{
 		SetNearPlaneDistance(near_plane_editor);
 	}
+  
 	if (ImGui::DragFloat("Far", &far_plane_editor, 0.1f, 0.001f, 10000.0f, "%.3f"))
 	{
 		SetFarPlaneDistance(far_plane_editor);

@@ -52,6 +52,18 @@ bool Application::Init()
 	return ret;
 }
 
+bool Application::Start()
+{
+    bool ret = true;
+
+    for (list<Module*>::iterator it = modules.begin(); it != modules.end() && ret; ++it)
+    {
+        ret = (*it)->Start();
+    }
+
+    return ret;
+}
+
 update_status Application::Update()
 {
 	update_status ret = update_status::UPDATE_CONTINUE;

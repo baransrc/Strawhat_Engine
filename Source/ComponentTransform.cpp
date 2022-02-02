@@ -1,6 +1,8 @@
 #include "ComponentTransform.h"
 
 #include "ModuleDebugDraw.h"
+#include "ModuleCamera.h"
+#include "ComponentCamera.h"
 #include "Application.h"
 
 #include "MATH_GEO_LIB/Math/float3x3.h"
@@ -61,10 +63,10 @@ void ComponentTransform::Update()
 
 void ComponentTransform::DrawGizmo()
 {
-	App->debug_draw->DrawArrow(position, position + position.Length() * front, float3(1.0f, 0.0f, 1.0f), 0.1f);
-	App->debug_draw->DrawArrow(position, position + 20.0f * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
-	App->debug_draw->DrawArrow(position, position + 20.0f * right, float3(1.0f, 0.0f, 0.0f), 0.1f);
-	App->debug_draw->DrawArrow(position, position + 20.0f * up, float3(0.0f, 1.0f, 0.0f), 0.1f);
+	//App->debug_draw->DrawArrow(position, position + position.Length() * front, float3(1.0f, 0.0f, 1.0f), 0.1f);
+	//App->debug_draw->DrawArrow(position, position + 20.0f * front, float3(0.0f, 0.0f, 1.0f), 0.1f);
+	//App->debug_draw->DrawArrow(position, position + 20.0f * right, float3(1.0f, 0.0f, 0.0f), 0.1f);
+	//App->debug_draw->DrawArrow(position, position + 20.0f * up, float3(0.0f, 1.0f, 0.0f), 0.1f);
 }
 
 component_type ComponentTransform::Type() const

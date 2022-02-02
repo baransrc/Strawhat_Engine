@@ -205,6 +205,9 @@
     <ClCompile Include="ComponentMaterial.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="DEAR_IMGUI\include\ImGuizmo.cpp">
+      <Filter>Libraries\DearImGui</Filter>
+    </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
@@ -796,6 +799,9 @@
     <ClInclude Include="ComponentMaterial.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="DEAR_IMGUI\include\ImGuizmo.h">
+      <Filter>Libraries\DearImGui</Filter>
+    </ClInclude>                    
     <ClInclude Include="Scene.h">
       <Filter>Scene</Filter>
     </ClInclude>

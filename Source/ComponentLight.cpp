@@ -95,7 +95,7 @@ void ComponentLight::Update()
 {
 	if (!Enabled())
 	{
-		return;
+    return;
 	}
 
 	switch (type)
@@ -108,12 +108,14 @@ void ComponentLight::Update()
 
 			break;
 		}
+      
+    // TODO: MRG.
 		case light_type::DIRECTIONAL:
 		{
 			// Pass variables to the shader
 			SetUniformsDirectionalLight();
 
-			break;
+      break;
 		}
 		case light_type::SPOT:
 		{

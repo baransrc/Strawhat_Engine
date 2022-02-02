@@ -57,7 +57,7 @@ public:
 	const math::float3& GetUp() const;
 	const math::float3& GetFront() const;
 	const math::float3& GetDirection() const;
-	static math::Quat SimulateLookAt(const math::float3& direction);
+  static math::Quat SimulateLookAt(const math::float3& direction);
 
 	void SetPosition(const math::float3& new_position);
 	void SetScale(const math::float3& new_scale);
