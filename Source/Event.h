@@ -63,6 +63,11 @@ inline void Event<ARGS...>::RemoveListener(EventListener<ARGS...>* listener)
 	// making each instance of EventListener hold a unique ID would be a better solution.
 	// TODO: Address this issue.
 
+	if (listeners.empty())
+	{
+		return;
+	}
+
 	index_to_erase = std::find(listeners.begin(), listeners.end(), listener);
 
 	if (index_to_erase != listeners.end())

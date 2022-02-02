@@ -18,6 +18,11 @@ class Module
 	{
 		return true; 
 	}
+
+	virtual bool Start()
+	{
+		return true;
+	}
     
 	virtual update_status PreUpdate()
 	{

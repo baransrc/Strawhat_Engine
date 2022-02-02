@@ -615,7 +615,7 @@ bool ModuleDebugDraw::CleanUp()
 
 update_status  ModuleDebugDraw::PreUpdate()
 {
-    dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
+    //dd::axisTriad(float4x4::identity, 0.5, App->renderer->GetRequiredAxisTriadLength());
     dd::xzSquareGrid(-150, 150, 0.0f, 1.0f ,vec(0.3f, 0.3f, 0.3f), false);
 
     Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -647,14 +647,25 @@ void ModuleDebugDraw::DrawCuboid(vec* points, vec color)
     MakeDrawCall();
 }
 
-void ModuleDebugDraw::DrawCone(const vec& position, const vec& direction, const vec& color)
+// TODO: MRG.
+void ModuleDebugDraw::DrawCone(const vec& position, const vec& direction, float longitude, float radius, const vec& color)
 {
-    dd::cone(position, direction, color, 0.7f, 0.01f);
+    dd::cone(position, direction * longitude, color, radius/3, 0.01f);
+
+    MakeDrawCall();
+}
+
+void ModuleDebugDraw::DrawSphere(const vec& position, const vec& direction, const vec& color, float radius)
+{
+    dd::circle(position, direction, color, radius, 25);
+    dd::circle(position, vec (0,1,0), color, radius, 25);
+    dd::circle(position, vec (1,0,0), color, radius, 25);
 
     MakeDrawCall();
 }
 
 void ModuleDebugDraw::DrawFrustum(const math::float4x4& matrix, vec color)
+
 {
     dd::frustum(matrix, color);
 

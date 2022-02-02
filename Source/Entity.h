@@ -74,6 +74,7 @@ public:
 	Entity* FindDescendant(unsigned int descendant_entity_id) const;
 	std::vector<Entity*> GetAllDescendants() const;
 
+	void InvokeChildHierarchyChangedEventRecursively() const;
 	void InvokeComponentsChangedEvents(component_type type) const;
 	Event<component_type>* const GetComponentsChangedEvent() const;
 	Event<component_type>* const GetComponentsChangedInDescendantsEvent() const;

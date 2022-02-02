@@ -18,6 +18,10 @@
 #include "SDL.h"
 #include "GLEW/include/GL/glew.h"
 #include "ComponentBoundingBox.h"
+#include "Entity.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
 
 ModuleRender::ModuleRender()
 {
@@ -31,7 +35,8 @@ ModuleRender::~ModuleRender()
 // Called before render is available
 bool ModuleRender::Init()
 {
-	LOG("Creating Renderer context");
+	viewport_height = App->window->window_height;
+	viewport_width = App->window->window_width;
 
 	// Initialize GLEW and OpenGL:
 	InitializeGLEW();
@@ -109,7 +114,7 @@ bool ModuleRender::CleanUp()
 	{
 		window_resized_event->RemoveListener(&window_resized_event_listener);
 	}
-
+  
 	return true;
 }
 
@@ -120,7 +125,7 @@ void ModuleRender::HandleWindowResized(unsigned int width, unsigned int height)
 }
 
 float ModuleRender::GetRequiredAxisTriadLength() const
-{	
+{
 	return App->camera->GetCamera()->GetFarPlaneDistance() * 0.75f;
 }
 
@@ -192,7 +197,7 @@ void ModuleRender::OnPerformanceWindow() const
 
 	static const float total_vram_gib = (total_vram / 1024.f) / 1024.f;
 	float free_vram_gib = (free_vram / 1024.f) / 1024.f;
-	
+
 	ImGui::Text("Vendor: %s", glGetString(GL_VENDOR));
 	ImGui::Text("Renderer: %s", glGetString(GL_RENDERER));
 	ImGui::Text("OpenGL version supported %s", glGetString(GL_VERSION));

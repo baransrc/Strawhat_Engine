@@ -156,6 +156,7 @@ update_status ModuleInput::PreUpdate()
                 {
                     break;
                 }
+
                 mouse_buttons_state[sdl_event.button.button] = key_state::DOWN;
             }
             break;

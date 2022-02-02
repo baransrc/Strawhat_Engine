@@ -17,7 +17,6 @@ enum class key_state
 class ModuleInput : public Module
 {
 public:
-
 	ModuleInput();
 	~ModuleInput() override;
 

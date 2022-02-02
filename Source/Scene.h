@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Entity.h"
 #include "Event.h"
 #include "ComponentType.h"
 
@@ -7,7 +8,6 @@
 
 #include <vector>
 
-class Entity;
 class ComponentCamera;
 class ComponentMesh;
 
@@ -18,6 +18,7 @@ private:
 	Entity*							selected_entity;
 	Entity*							root_entity;
 	EventListener<component_type>	components_changed_in_descendants_event_listener;
+	EventListener<entity_operation>	hierarchy_changed_event_listener;
 	std::vector<ComponentMesh*>		mesh_components_in_scene;
 
 public:
@@ -41,5 +42,6 @@ public:
 	void Delete();
 
 private:
+	void HandleHierarchyChangedEvent(entity_operation operation);
 	void HandleComponentsChangedInDescendantsOfRoot(component_type type);
 };

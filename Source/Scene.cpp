@@ -1,7 +1,6 @@
 
 #include "Scene.h"
 
-#include "Entity.h"
 #include "ComponentCamera.h"
 #include "ComponentLight.h"
 #include "ComponentTransform.h"
@@ -16,7 +15,8 @@ Scene::Scene() :
     root_entity(nullptr),
     selected_entity(nullptr),
     main_camera(nullptr),
-    components_changed_in_descendants_event_listener(EventListener<component_type>())
+    components_changed_in_descendants_event_listener(components_changed_in_descendants_event_listener),
+    hierarchy_changed_event_listener(hierarchy_changed_event_listener)
 {
 }
 
@@ -115,7 +115,21 @@ void Scene::Initialize()
 
     root_entity->GetComponentsChangedInDescendantsEvent()
         ->AddListener(&components_changed_in_descendants_event_listener);
-    
+
+    // Subscribed to hierarchy changed event of the root entity:
+    hierarchy_changed_event_listener =
+        EventListener<entity_operation>
+        (
+            std::bind
+            (
+                &Scene::HandleHierarchyChangedEvent,
+                this,
+                std::placeholders::_1
+            )
+        );
+    root_entity->GetHierarchyChangedEvent()
+        ->AddListener(&hierarchy_changed_event_listener);
+
     // Add an entity with a camera component to the root
     // entity:
     Entity* camera_entity = new Entity();
@@ -178,6 +192,18 @@ void Scene::Delete()
     selected_entity = nullptr;
 
     main_camera = nullptr;
+}
+
+void Scene::HandleHierarchyChangedEvent(entity_operation operation)
+{
+    if (operation != entity_operation::CHILDREN_CHANGED)
+    {
+        return;
+    }
+
+    // Get mesh components in scene:
+    mesh_components_in_scene.clear();
+    mesh_components_in_scene = (root_entity->GetComponentsInDescendants<ComponentMesh>());
 }
 
 void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)

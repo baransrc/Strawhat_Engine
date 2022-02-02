@@ -14,13 +14,12 @@
 
 ComponentLight::ComponentLight() : 
 	Component(),
-	type(light_type::SPOT),
-	position(0,0,0),
-	rotation(0,0,0,0),
-	scale(1,1,1),
-	radius(0),
-	shininess(0),
-	intensity(0),
+	type(light_type::POINT),
+	radius(10),
+	inner(10),
+	outer(20),
+	shininess(1),
+	intensity(1),
 	color(1,1,1),
 	is_currently_loaded(false)
 {
@@ -45,33 +44,24 @@ void ComponentLight::Load(light_type new_type)
 {
 	type = new_type;
 	
-	position = owner->Transform()->GetPosition();;
-	
-	rotation = owner->Transform()->GetRotation();
-	
-	scale = owner->Transform()->GetScale();
-	
 	color = float3(1, 1, 1);
 
-	radius = 50.0f;
-	shininess = 25.0f;
+	radius = 10.0f;
+	inner = 10.0f;
+	outer = 20.0f;
+	shininess = 5.0f;
 	intensity = 1.0f;
 
 	switch (type)
 	{
+		default:
 		case light_type::POINT:
 		{
 			// Make sure we are using the true shader before passing the arguments:
 			App->shader_program->Use();
 
-			// Pass position of the directional light
-			float3 aux_pos = owner->Transform()->GetPosition();
-			App->shader_program->SetUniformVariable("light.position", aux_pos);		
-			App->shader_program->SetUniformVariable("light.radius", radius);
-			App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-			App->shader_program->SetUniformVariable("light.diffuse", color);
-			App->shader_program->SetUniformVariable("shininess", shininess);
-			App->shader_program->SetUniformVariable("light.intensity", intensity);
+			// Pass variables to the shader
+			SetUniformsPointLight();
 
 			break;
 		}
@@ -80,12 +70,8 @@ void ComponentLight::Load(light_type new_type)
 			// Make sure we are using the true shader before passing the arguments:
 			App->shader_program->Use();
 
-			// Pass position of the directional light
-			float3 aux_pos = owner->Transform()->GetFront();
-			App->shader_program->SetUniformVariable("light.direction", aux_pos);
-			App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-			App->shader_program->SetUniformVariable("light.diffuse", color);
-			App->shader_program->SetUniformVariable("shininess", shininess);
+			// Pass variables to the shader
+			SetUniformsDirectionalLight();
 
 			break;
 		}
@@ -94,34 +80,12 @@ void ComponentLight::Load(light_type new_type)
 			// Make sure we are using the true shader before passing the arguments:
 			App->shader_program->Use();
 
-			// Pass position of the directional light
-			float3 aux_pos = owner->Transform()->GetPosition();
-			float3 aux_front = owner->Transform()->GetFront();
-			float aux_angle = math::Cos(math::DegToRad(radius));
-		
-			App->shader_program->SetUniformVariable("light.direction", aux_front);
-			App->shader_program->SetUniformVariable("light.position", aux_pos);
-			App->shader_program->SetUniformVariable("light.radius", radius);
-			App->shader_program->SetUniformVariable("light.inner", radius);
-			App->shader_program->SetUniformVariable("light.outer", radius+20.0f);
-			App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-			App->shader_program->SetUniformVariable("light.diffuse", color);
-			App->shader_program->SetUniformVariable("light.specular", float3(1.0f, 1.0f, 1.0f));
-			App->shader_program->SetUniformVariable("light.constant", 1.0f);
-			App->shader_program->SetUniformVariable("light.linear", 0.9f);
-			App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
-			App->shader_program->SetUniformVariable("shininess", shininess);
-			App->shader_program->SetUniformVariable("light.intensity", intensity);
+			// Pass variables to the shader
+			SetUniformsSpotLight();
 
-			break;
-		}
-		default:
-		{
-			LOG("The light type is crashing bro");
 			break;
 		}
 	}
-
 
 	// Set as currently loaded:
 	is_currently_loaded = true;
@@ -131,69 +95,35 @@ void ComponentLight::Update()
 {
 	if (!Enabled())
 	{
-		return;
+    return;
 	}
 
 	switch (type)
 	{
-	case light_type::POINT:
-	{
-		// Pass position of the point light
-		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
-		App->shader_program->SetUniformVariable("light.radius", radius);
-		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-		App->shader_program->SetUniformVariable("light.constant", 1.0f);
-		App->shader_program->SetUniformVariable("light.linear", 0.9f);
-		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
+		default:
+		case light_type::POINT:
+		{
+			// Pass variables to the shader
+			SetUniformsPointLight();
 
-		App->shader_program->SetUniformVariable("shininess", shininess);
-		App->shader_program->SetUniformVariable("light.intensity", intensity);
+			break;
+		}
+      
+    // TODO: MRG.
+		case light_type::DIRECTIONAL:
+		{
+			// Pass variables to the shader
+			SetUniformsDirectionalLight();
 
-		break;
-	}
-	case light_type::DIRECTIONAL:
-	{
-		// Make sure we are using the true shader before passing the arguments:
-		//App->shader_program->Use();
+      break;
+		}
+		case light_type::SPOT:
+		{
+			// Pass variables to the shader
+			SetUniformsSpotLight();
 
-		// Pass position of the directional light
-		float3 aux_pos = owner->Transform()->GetFront();
-		App->shader_program->SetUniformVariable("light.direction", aux_pos);
-		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-		App->shader_program->SetUniformVariable("light.diffuse", color);
-		App->shader_program->SetUniformVariable("shininess", shininess);
-
-		break;
-	}
-	case light_type::SPOT:
-	{
-		// Make sure we are using the true shader before passing the arguments:
-		//App->shader_program->Use();
-
-		// Pass position of the directional light
-		App->shader_program->SetUniformVariable("light.position", owner->Transform()->GetPosition());
-		App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), float3(0.8f, 0.6f, 1.0f));
-		App->shader_program->SetUniformVariable("light.direction", owner->Transform()->GetFront());
-		App->shader_program->SetUniformVariable("light.radius", radius);
-		App->shader_program->SetUniformVariable("light.inner", radius);
-		App->shader_program->SetUniformVariable("light.outer", radius + 20.0f);
-		App->shader_program->SetUniformVariable("light.ambient", float3(0.2, 0.2, 0.2));
-		App->shader_program->SetUniformVariable("light.diffuse", color);
-		App->shader_program->SetUniformVariable("light.specular", float3(1.0f, 1.0f, 1.0f));
-  
-		App->shader_program->SetUniformVariable("light.constant", 1.0f);
-		App->shader_program->SetUniformVariable("light.linear", 0.9f);
-		App->shader_program->SetUniformVariable("light.quadratic", 0.032f);
-		App->shader_program->SetUniformVariable("shininess", shininess);
-		App->shader_program->SetUniformVariable("light.intensity", intensity);
-
-		break;
-	}
-	default:
-	{
-		LOG("The light type is crashing bro");
-		break;
-	}
+			break;
+		}
 	}
 }
 
@@ -236,8 +166,57 @@ void ComponentLight::DrawInspectorContent()
 		ImGui::EndCombo();
 	}
 
+	ImGui::PushItemWidth(200.0f);
+	ImGui::ColorPicker3("Clear Color", &color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Shininess", &shininess, 0.1f, -inf, inf);
 	ImGui::DragFloat("Radius", &radius, 0.1f, -inf, inf);
+	ImGui::DragFloat("Inner", &inner, 0.1f, -inf, inf);
+	ImGui::DragFloat("Outer", &outer, 0.1f, -inf, inf);
 	ImGui::DragFloat("Intensity", &intensity, 0.1f, -inf, inf);
 
+}
+
+void ComponentLight::SetUniformsPointLight()
+{
+	App->shader_program->SetUniformVariable("lightP.position", owner->Transform()->GetPosition());
+	App->shader_program->SetUniformVariable("lightP.radius", radius);
+	App->shader_program->SetUniformVariable("lightP.ambient", float3(0.2, 0.2, 0.2));	
+	App->shader_program->SetUniformVariable("lightP.diffuse", color);
+	App->shader_program->SetUniformVariable("lightP.constant", 1.0f);
+	App->shader_program->SetUniformVariable("lightP.linear", 0.9f);
+	App->shader_program->SetUniformVariable("lightP.quadratic", 0.032f);
+
+	App->shader_program->SetUniformVariable("lightP.shininess", shininess);
+	App->shader_program->SetUniformVariable("lightP.intensity", intensity);
+}
+
+void ComponentLight::SetUniformsDirectionalLight()
+{
+	App->shader_program->SetUniformVariable("lightD.direction", owner->Transform()->GetFront());
+	App->shader_program->SetUniformVariable("lightD.ambient", float3(0.2, 0.2, 0.2));
+	App->shader_program->SetUniformVariable("lightD.diffuse", color);
+	App->shader_program->SetUniformVariable("lightD.intensity", intensity);
+	App->shader_program->SetUniformVariable("lightD.shininess", shininess);
+}
+
+void ComponentLight::SetUniformsSpotLight()
+{
+	App->shader_program->SetUniformVariable("lightS.position", owner->Transform()->GetPosition());
+	App->shader_program->SetUniformVariable("lightS.direction", owner->Transform()->GetFront());
+	App->shader_program->SetUniformVariable("lightS.radius", radius);
+	App->shader_program->SetUniformVariable("lightS.inner", inner);
+	App->shader_program->SetUniformVariable("lightS.outer", outer);
+	App->shader_program->SetUniformVariable("lightS.ambient", float3(0.2, 0.2, 0.2));
+	App->shader_program->SetUniformVariable("lightS.diffuse", color);
+	App->shader_program->SetUniformVariable("lightS.specular", float3(1.0f, 1.0f, 1.0f));
+
+	App->shader_program->SetUniformVariable("lightS.constant", 1.0f);
+	App->shader_program->SetUniformVariable("lightS.linear", 0.9f);
+	App->shader_program->SetUniformVariable("lightS.quadratic", 0.032f);
+	App->shader_program->SetUniformVariable("lightS.shininess", shininess);
+	App->shader_program->SetUniformVariable("lightS.intensity", intensity);
+
+	//Draw cone
+	App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), radius, inner, float3(0.8f, 0.6f, 1.0f));
+	App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), radius, outer, float3(0.4f, 0.6f, 1.0f));
 }
