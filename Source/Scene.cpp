@@ -205,28 +205,27 @@ void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)
 
 void Scene::CheckRaycast(LineSegment segment) 
 {
-    std::vector <Entity*> entities;
-    float hit_near = NULL, hit_far = NULL;
-
     // Get all entities with mesh components:
     std::vector<ComponentMesh*> meshes = 
         root_entity->GetComponentsInDescendants<ComponentMesh>();
-
     Entity* best_picking_candidate_entity = nullptr;
+
     float distance_max = segment.Length();
+
+    LOG("Seg Length: %f", distance_max);
 
     for (ComponentMesh* mesh : meshes)
     {
         math::LineSegment segment_local(segment);
         
-        segment_local.Transform(mesh->Owner()->Transform()->GetLocalMatrix().Inverted());
+        segment_local.Transform(mesh->Owner()->Transform()->GetMatrix().Inverted());
 
         const TriangleArray& triangles = mesh->GetTriangles();
 
         for (const Triangle& triangle : triangles)
         {
             float distance;
-            math::float3 hit_point;
+            math::float3 hit_point = math::float3::zero;
 
             if (segment_local.Intersects(triangle, &distance, &hit_point))
             {

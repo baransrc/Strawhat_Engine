@@ -73,11 +73,15 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 
 	// Cache triangles for easy access:
 	cached_triangles.reserve(number_of_triangles);
-	for (size_t i = 0; i < number_of_triangles; i += 3)
+	for (size_t i = 0; i < number_of_indices; i += 3)
 	{
-		math::float3 a(vertices[i * 8 + 0], vertices[i * 8 + 1], vertices[i * 8 + 2]);
-		math::float3 b(vertices[(i+1) * 8 + 0], vertices[(i + 1) * 8 + 1], vertices[(i + 1) * 8 + 2]);
-		math::float3 c(vertices[(i + 2) * 8 + 0], vertices[(i + 2) * 8 + 1], vertices[(i + 3) * 8 + 2]);
+		size_t index_1 = indices[i];
+		size_t index_2 = indices[i + 1];
+		size_t index_3 = indices[i + 2];
+
+		math::float3 a(vertices[index_1 * 8], vertices[index_1 * 8 + 1], vertices[index_1 * 8 + 2]);
+		math::float3 b(vertices[index_2 * 8], vertices[index_2 * 8 + 1], vertices[index_2 * 8 + 2]);
+		math::float3 c(vertices[index_3 * 8], vertices[index_3 * 8 + 1], vertices[index_3 * 8 + 2]);
 		
 		cached_triangles.push_back(math::Triangle(a, b, c));
 	}
@@ -195,10 +199,20 @@ void ComponentMesh::DrawGizmo()
 {
 	// NOTE: If you add a gizmo for ComponentMesh,
 	// check for the following:
-	/*if (!Enabled() || !owner->IsActive())
+	if (!Enabled() || !owner->IsActive())
 	{
 		return;
-	}*/
+	}
+
+	// Uncomment this if you want to debug the 
+	// triangles, but beware, this f**ks up the 
+	// framerate:
+	/*
+		for (const math::Triangle& triangle : cached_triangles)
+		{
+			App->debug_draw->DrawTriangle(triangle, math::float3(1.0f, 1.0f, 0.0f));
+		}
+	*/
 }
 
 void ComponentMesh::SetCulled(bool new_is_culled)
