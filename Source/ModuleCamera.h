@@ -66,7 +66,6 @@ public:
 	ComponentTransform* const GetTransform() const;
 
 	void HandleWindowResized(unsigned int width, unsigned int height);
-	void OnModelChanged();
 
 private:
 	void Move();

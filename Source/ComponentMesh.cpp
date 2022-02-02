@@ -126,6 +126,16 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 
 void ComponentMesh::Update()
 {
+	if (!Enabled())
+	{
+		return;
+	}
+
+	if (is_culled)
+	{
+		return;
+	}
+
 	//// Use the shader:
 	
 	//// Activate Texture Unit 0:
@@ -165,8 +175,6 @@ void ComponentMesh::Update()
 
 void ComponentMesh::Reset()
 {
-	is_currently_loaded = false;
-
 	free(indices);
 	free(vertices);
 	free(texture_ids);
@@ -174,17 +182,43 @@ void ComponentMesh::Reset()
 	indices = nullptr;
 	vertices = nullptr;
 
-	glDeleteBuffers(1, &element_buffer_object);
-	glDeleteBuffers(1, &vertex_buffer_object);
-	glDeleteVertexArrays(1, &vertex_array_object);
+	if (is_currently_loaded)
+	{
+		glDeleteBuffers(1, &element_buffer_object);
+		glDeleteBuffers(1, &vertex_buffer_object);
+		glDeleteVertexArrays(1, &vertex_array_object);
+	}
+
+	is_currently_loaded = false;
 }
 
 void ComponentMesh::DrawGizmo()
 {
+	// NOTE: If you add a gizmo for ComponentMesh,
+	// check for the following:
+	/*if (!Enabled() || !owner->IsActive())
+	{
+		return;
+	}*/
+}
+
+void ComponentMesh::SetCulled(bool new_is_culled)
+{
+	is_culled = new_is_culled;
+}
+
+bool ComponentMesh::IsCulled() const
+{
+	return is_culled;
 }
 
 void ComponentMesh::DrawInspectorContent()
 {
+	bool enabled_editor = Enabled();
+	if (ImGui::Checkbox("Enabled", &enabled_editor))
+	{
+		enabled_editor ? Enable() : Disable();
+	}
 }
 
 void ComponentMesh::LoadAABB()

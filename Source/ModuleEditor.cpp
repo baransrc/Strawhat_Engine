@@ -2,11 +2,13 @@
 #include "ModuleEditor.h"
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
+#include "ModuleSceneManager.h"
 #include "ModuleRenderExercise.h"
 
 #include "Util.h"
 #include "Globals.h"
 
+#include "Scene.h"
 #include "Entity.h"
 #include "Component.h"
 #include "ComponentLight.h"
@@ -26,7 +28,6 @@ ModuleEditor::~ModuleEditor()
 {
 }
 
-
 bool ModuleEditor::Init()
 {
 	LOG("Initializing Editor");
@@ -43,16 +44,6 @@ bool ModuleEditor::Init()
 	fps_data.reserve(TIMER_BUFFER_LENGTH);
 
 	show_demo_window = true;
-
-	// Entity related stuff, just for testing, will be deleted:
-	base_entity = App->renderer->GetLoadedModel();
-
-	Entity* light_entity = new Entity();
-	light_entity->Initialize("Light");
-	light_entity->SetParent(base_entity);
-	ComponentLight* component_light = new ComponentLight();
-	component_light->Initialize(light_entity);
-	component_light->Load(light_type::POINT);
 
 	return true;
 }
@@ -291,9 +282,11 @@ void ModuleEditor::DrawInspector()
 	ImGui::Begin("Inspector", &should_draw_inspector_window);
 	// For now. Will be deleted after ModuleSceneManager is added:
 
-	Entity* selected_entity = base_entity->selected_entity_in_hierarchy;
+	const Scene* current_scene = App->scene_manager->GetCurrentScene();
+	Entity* selected_entity = current_scene->GetSelectedEntity();
+	unsigned int root_entity_id = current_scene->GetRootEntity()->Id();
 
-	if (selected_entity != nullptr)
+	if (selected_entity != nullptr && selected_entity->Id() != root_entity_id)
 	{
 		ImGui::BeginGroup();
 		ImGui::Text(selected_entity->Name().c_str());
@@ -303,7 +296,6 @@ void ModuleEditor::DrawInspector()
 		// Show right click menu
 		if (ImGui::BeginPopupContextItem("Inspector##Window"))
 		{
-
 			if (ImGui::BeginMenu("Add Component"))
 			{
 				if (ImGui::Selectable("Camera"))
@@ -334,6 +326,12 @@ void ModuleEditor::DrawInspector()
 
 			ImGui::EndPopup();
 		}
+		
+		bool is_entity_active = selected_entity->IsActive();
+		if (ImGui::Checkbox("Active", &is_entity_active))
+		{
+			selected_entity->SetActive(is_entity_active);
+		}
 
 		for (Component* component : selected_entity->Components())
 		{
@@ -341,9 +339,22 @@ void ModuleEditor::DrawInspector()
 		}
 	}
 
-
 	ImGui::End();
 	ImGui::PopID();
+}
+
+void ModuleEditor::DrawHierarchy()
+{
+	if (!should_draw_hierarchy_window)
+	{
+		return;
+	}
+
+	ImGui::Begin("Hierarchy", &should_draw_hierarchy_window);
+
+	App->scene_manager->DrawHierarchyEditor();
+
+	ImGui::End();
 }
 
 void ModuleEditor::DrawModuleSettings()
@@ -356,12 +367,6 @@ void ModuleEditor::DrawModuleSettings()
 	ImGui::Begin("Module Settings", &show_module_settings_window);
 
 	App->renderer->OnEditor();
-
-
-	if (ImGui::CollapsingHeader("Entity Experiment"))
-	{
-		base_entity->DrawEditor();
-	}
 
 	ImGui::End();
 }
@@ -396,6 +401,8 @@ update_status ModuleEditor::Update()
 	DrawModuleSettings();
 
 	DrawInspector();
+
+	DrawHierarchy();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -8,12 +8,13 @@
 
 #include "Entity.h"
 
-ComponentMaterial::ComponentMaterial() : Component(),
-										texture_ids(nullptr),
-										number_of_texture_ids(0),
-										color_diffuse(0.2f, 0.2f, 0.2f, 1.0f),
-										shininess(0),
-										is_currently_loaded(false)
+ComponentMaterial::ComponentMaterial() : 
+	Component(),
+	texture_ids(nullptr),
+	number_of_texture_ids(0),
+	color_diffuse(0.2f, 0.2f, 0.2f, 1.0f),
+	shininess(0),
+	is_currently_loaded(false)
 {
 }
 
@@ -37,11 +38,21 @@ void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_num
 	//number_of_texture_ids = new_number_of_texture_ids;
 	number_of_texture_ids = 3;
 
+	if (is_currently_loaded)
+	{
+		Reset();
+	}
+
+	if (new_texture_ids == nullptr)
+	{
+		return;
+	}
+
 	texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * number_of_texture_ids);
+
 	for (size_t i = 0; i < number_of_texture_ids; ++i)
 	{
 		texture_ids[i] = new_texture_ids[i];
-		LOG("Texture %d id %d", i, texture_ids[i]);
 	}
 
 	// Use the shader:
@@ -66,7 +77,6 @@ void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_num
 	glBindTexture(GL_TEXTURE_2D, texture_ids[2]); // Occlusion texture
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
-
 
 	//// Activate Texture Unit 3:
 	//glActiveTexture(GL_TEXTURE3);
@@ -110,8 +120,6 @@ void ComponentMaterial::Use()
 	glBindTexture(GL_TEXTURE_2D, texture_ids[2]); // Occlusion texture
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
-
-
 }
 
 void ComponentMaterial::Reset()
@@ -121,13 +129,19 @@ void ComponentMaterial::Reset()
 	free(texture_ids);
 }
 
-
 void ComponentMaterial::DrawInspectorContent()
 {
-	if ((intptr_t)texture_ids[0] > 0)
-		ImGui::Image((void*)(intptr_t)texture_ids[0], ImVec2(150, 150));
-	if((intptr_t)texture_ids[1] > 0)
-		ImGui::Image((void*)(intptr_t)texture_ids[1], ImVec2(150, 150));
-	if ((intptr_t)texture_ids[2] > 0)
-		ImGui::Image((void*)(intptr_t)texture_ids[2], ImVec2(150, 150));
+	if (texture_ids == nullptr)
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < number_of_texture_ids; ++i)
+	{
+		if ((intptr_t)texture_ids[i] > 0)
+		{
+			ImGui::Text("Texture ID: %u", texture_ids[i]);
+			ImGui::Image((void*)(intptr_t)texture_ids[i], ImVec2(150, 150));
+		}
+	}
 }
