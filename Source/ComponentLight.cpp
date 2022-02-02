@@ -122,6 +122,10 @@ void ComponentLight::Update()
 			// Pass variables to the shader
 			SetUniformsSpotLight();
 
+			//Draw cone
+			App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), radius, inner, float3(0.8f, 0.6f, 1.0f));
+			App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), radius, outer, float3(0.4f, 0.6f, 1.0f));
+
 			break;
 		}
 	}
@@ -215,8 +219,4 @@ void ComponentLight::SetUniformsSpotLight()
 	App->shader_program->SetUniformVariable("lightS.quadratic", 0.032f);
 	App->shader_program->SetUniformVariable("lightS.shininess", shininess);
 	App->shader_program->SetUniformVariable("lightS.intensity", intensity);
-
-	//Draw cone
-	App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), radius, inner, float3(0.8f, 0.6f, 1.0f));
-	App->debug_draw->DrawCone(owner->Transform()->GetPosition(), owner->Transform()->GetFront(), radius, outer, float3(0.4f, 0.6f, 1.0f));
 }
