@@ -666,6 +666,13 @@ void ModuleDebugDraw::DrawArrow(const vec& from, const vec& to, const vec& color
     MakeDrawCall();
 }
 
+void ModuleDebugDraw::DrawLine(const vec& from, const vec& to, const vec& color)
+{
+    dd::line(from, to, color);
+
+    MakeDrawCall();
+}
+
 void ModuleDebugDraw::MakeDrawCall()
 {
     Draw(App->camera->GetCamera()->GetViewMatrix(), App->camera->GetCamera()->GetProjectionMatrix(), SCREEN_WIDTH, SCREEN_HEIGHT);
