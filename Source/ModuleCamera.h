@@ -66,7 +66,6 @@ public:
 	ComponentTransform* const GetTransform() const;
 
 	void HandleWindowResized(unsigned int width, unsigned int height);
-	void OnModelChanged();
 
 private:
 	void Move();
@@ -77,6 +76,6 @@ private:
 	void DetermineMouseInputState();
 	void DetectFocus();
 	void ExecuteFocus();
-	void SetupFocus(float3 position, float3 size);
-	void SetupFocus(float3 position, float bounding_sphere_radius);
+	void SetupFocus(math::float3 position, math::float3 size);
+	void SetupFocus(math::float3 position, float bounding_sphere_radius);
 };

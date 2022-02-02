@@ -179,7 +179,7 @@
       <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Entity.cpp">
-      <Filter>Entities</Filter>
+      <Filter>Entity</Filter>
     </ClCompile>
     <ClCompile Include="Component.cpp">
       <Filter>Components</Filter>
@@ -208,6 +208,13 @@
     <ClCompile Include="DEAR_IMGUI\include\ImGuizmo.cpp">
       <Filter>Libraries\DearImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleSceneManager.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
@@ -756,7 +763,7 @@
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="Entity.h">
-      <Filter>Entities</Filter>
+      <Filter>Entity</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
       <Filter>Components</Filter>
@@ -794,14 +801,21 @@
     </ClInclude>
     <ClInclude Include="DEAR_IMGUI\include\ImGuizmo.h">
       <Filter>Libraries\DearImGui</Filter>
+    </ClInclude>                    
+    <ClInclude Include="Scene.h">
+      <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="ModuleSceneManager.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityOperation.h">
+      <Filter>Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTree.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">
       <UniqueIdentifier>{f77adecc-2786-4481-b1b7-152540bc0778}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Entities">
-      <UniqueIdentifier>{73590d22-25c8-4495-977a-e7f09bd82aff}</UniqueIdentifier>
     </Filter>
     <Filter Include="Libraries">
       <UniqueIdentifier>{5d434057-a055-4667-8eef-53f3d525cd31}</UniqueIdentifier>
@@ -832,6 +846,12 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{f5da03b6-3dab-45d8-bc02-4581fd1f3310}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{ec975eb5-8947-44c4-a30f-5b1262017e6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entity">
+      <UniqueIdentifier>{73590d22-25c8-4495-977a-e7f09bd82aff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

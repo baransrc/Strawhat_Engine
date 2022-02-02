@@ -1,6 +1,6 @@
 #pragma once
 
-#include<list>
+#include <list>
 #include "Globals.h"
 #include "Module.h"
 
@@ -15,6 +15,7 @@ class ModuleEditor;
 class ModuleTexture;
 class ModuleCamera;
 class ModuleDebugDraw;
+class ModuleSceneManager;
 
 class Application
 {
@@ -35,6 +36,7 @@ public:
 	ModuleWindow* window = nullptr;
 	ModuleInput* input = nullptr;
 	ModuleShaderProgram* shader_program = nullptr;
+	ModuleSceneManager* scene_manager = nullptr;
 	ModuleRenderExercise* render_exercise = nullptr;
 	ModuleEditor* editor = nullptr;
 	ModuleTexture* texture = nullptr;
@@ -44,7 +46,6 @@ public:
 private:
 	char* working_directory = nullptr;
 	std::list<Module*> modules;
-
 };
 
 extern Application* App;

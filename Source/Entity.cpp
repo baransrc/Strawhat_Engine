@@ -1,22 +1,24 @@
-#include "Entity.h"
-#include "Component.h"
-#include "DEAR_IMGUI/include/imgui.h"
-#include "Globals.h"
-#include "ComponentTransform.h"
+#include "ModuleSceneManager.h"
 
-// This is for experiments on component addition and viewing for now. 
-// and will be deleted when ModuleSceneManager is added:
-Entity* Entity::selected_entity_in_hierarchy = nullptr;
+#include "Scene.h"
+#include "Entity.h"
+
+#include "Component.h"
+#include "ComponentTransform.h"
+#include "ComponentBoundingBox.h"
+
+#include "Globals.h"
 
 Entity::Entity() : 
 	name(""), 
 	active(false), 
 	id(0), 
 	parent(nullptr), 
-	being_renamed(false),
 	components_changed(nullptr),
 	components_changed_in_descendants(nullptr),
-	transform(nullptr)
+	hierarchy_changed(nullptr),
+	transform(nullptr),
+	bounding_box(nullptr)
 {
 }
 
@@ -36,6 +38,7 @@ Entity::~Entity()
 
 	children.clear();
 
+	delete hierarchy_changed;
 	delete components_changed;
 	delete components_changed_in_descendants;
 }
@@ -52,10 +55,14 @@ void Entity::Initialize(std::string new_name)
 
 	components_changed = new Event<component_type>();
 	components_changed_in_descendants = new Event<component_type>();
+	hierarchy_changed = new Event<entity_operation>();
 
 	// Initialize and add transform component:
 	transform = new ComponentTransform();
 	transform->Initialize(this);
+	// Initialize and add bounding box components:
+	bounding_box = new ComponentBoundingBox();
+	bounding_box->Initialize(this);
 	// NOTE: Initialize adds transform to components list of this entity.
 	// So, no additional need to delete it separately, as it gets deleted
 	// along with other components. Same goes with Update as well.
@@ -63,6 +70,11 @@ void Entity::Initialize(std::string new_name)
 
 void Entity::PreUpdate()
 {
+	if (!active)
+	{
+		return;
+	}
+
 	if (components.size() > 0)
 	{
 		for (Component* component : components)
@@ -86,6 +98,11 @@ void Entity::PreUpdate()
 /// </summary>
 void Entity::Update()
 {
+	if (!active)
+	{
+		return;
+	}
+
 	if (components.size() > 0)
 	{
 		for (Component* component : components)
@@ -105,6 +122,11 @@ void Entity::Update()
 
 void Entity::PostUpdate()
 {
+	if (!active)
+	{
+		return;
+	}
+
 	if (components.size() > 0)
 	{
 		for (Component* component : components)
@@ -124,11 +146,6 @@ void Entity::PostUpdate()
 
 void Entity::DrawGizmos()
 {
-	if (selected_entity_in_hierarchy == nullptr || selected_entity_in_hierarchy->Id() != Id())
-	{
-		return;
-	}
-
 	for (Component* component : components)
 	{
 		component->DrawGizmo();
@@ -279,6 +296,11 @@ Entity* Entity::Parent() const
 	return parent;
 }
 
+bool Entity::IsActive() const
+{
+	return active;
+}
+
 /// <summary>
 /// Sets this Entity's parent to new_parent. It also removes this entity from it's previous parent if 
 /// it's not nullptr, and adds this entity to the new_parent's children if new_parent is not nullptr.
@@ -299,6 +321,8 @@ void Entity::SetParent(Entity* new_parent)
 	}
 
 	parent->AddChild(this);
+
+	hierarchy_changed->Invoke(entity_operation::PARENT_CHANGED);
 }
 
 
@@ -325,6 +349,8 @@ void Entity::AddChild(Entity* child)
 	}
 
 	children.push_back(child);
+
+	hierarchy_changed->Invoke(entity_operation::CHILDREN_CHANGED);
 }
 
 /// <summary>
@@ -355,7 +381,7 @@ void Entity::RemoveChild(Entity* child)
 		children.erase(child_index);
 	}
 
-	// TODO: Add componentchanged event invoke statement here too.
+	InvokeChildHierarchyChangedEventRecursively();
 }
 
 /// <summary>
@@ -380,100 +406,47 @@ Entity* Entity::FindChild(unsigned int child_entity_id) const
 	return nullptr;
 }
 
-void Entity::DrawEditor()
+bool Entity::HasDescendant(unsigned int descendant_entity_id) const
 {
-	char main_id_buffer[64];
-	sprintf(main_id_buffer, "ent##%u\0");
+	return FindDescendant(descendant_entity_id) != nullptr;
+}
 
-	ImGui::PushID(main_id_buffer);
-
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
-
-	if (children.size() <= 0)
+Entity* Entity::FindDescendant(unsigned int descendant_entity_id) const
+{
+	if (children.size() > 0)
 	{
-		flags |= ImGuiTreeNodeFlags_Leaf;
-	}
-
-	if (selected_entity_in_hierarchy != nullptr && selected_entity_in_hierarchy->Id() == Id())
-	{
-		flags |= ImGuiTreeNodeFlags_Selected;
-	}
-
-	bool open = ImGui::TreeNodeEx(name.c_str(), flags);
-
-	// If Current node is clicked:
-	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-	{
-		selected_entity_in_hierarchy = this;
-		LOG("Selected entity in hierarchy: %u", selected_entity_in_hierarchy->Id());
-	}
-
-	// Rename text input area:
-	if (being_renamed)
-	{
-		ImGui::SetItemAllowOverlap();
-		char buffer[1024] = "Rename To";
-		char rename_id_buffer[64];
-		sprintf(rename_id_buffer, "rn##%u\0");
-
-		LOG("%s", rename_id_buffer);
-
-		ImGui::SameLine();
-		ImGui::PushID(rename_id_buffer);
-		if (ImGui::InputTextWithHint("", name.c_str(), &buffer[0], 1024, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+		for (Entity* child : children)
 		{
-			SetName(buffer);
-			being_renamed = false;
-		}
-		ImGui::PopID();
-	}
-
-	// Right Click context menu:
-	if (ImGui::BeginPopupContextItem(main_id_buffer))
-	{
-		if (ImGui::MenuItem("Add Empty"))
-		{
-			ImGui::CloseCurrentPopup();
-
-			Entity* child = new Entity();
-
-			child->Initialize("Empty");
-
-			child->SetParent(this);
-		}
-
-		if (ImGui::MenuItem("Delete"))
-		{
-			ImGui::CloseCurrentPopup();
-
-			SetParent(nullptr);
-
-			delete this;
-		}
-
-		if (ImGui::MenuItem("Rename"))
-		{
-			ImGui::CloseCurrentPopup();
-
-			being_renamed = true;
-		}
-
-		ImGui::EndPopup();
-	}
-
-	if (open)
-	{
-		if (children.size() > 0)
-		{
-			for (Entity* child : children)
+			if (child->Id() == descendant_entity_id)
 			{
-				child->DrawEditor();
+				return child;
+			}
+
+			Entity* descendant = child->FindDescendant(descendant_entity_id);
+
+			if (descendant != nullptr)
+			{
+				return descendant;
 			}
 		}
-		ImGui::TreePop();
 	}
 
-	ImGui::PopID();
+	return nullptr;
+}
+
+std::vector<Entity*> Entity::GetAllDescendants() const
+{
+	return std::vector<Entity*>();
+}
+
+void Entity::InvokeChildHierarchyChangedEventRecursively() const
+{
+	hierarchy_changed->Invoke(entity_operation::CHILDREN_CHANGED);
+	
+	if (parent != nullptr)
+	{
+		parent->InvokeChildHierarchyChangedEventRecursively();
+	}
 }
 
 void Entity::InvokeComponentsChangedEvents(component_type type) const
@@ -496,9 +469,19 @@ Event<component_type>* const Entity::GetComponentsChangedInDescendantsEvent() co
 	return components_changed_in_descendants;
 }
 
+Event<entity_operation>* const Entity::GetHierarchyChangedEvent() const
+{
+	return hierarchy_changed;
+}
+
 ComponentTransform* const Entity::Transform() const
 {
 	return transform;
+}
+
+ComponentBoundingBox* const Entity::BoundingBox() const
+{
+	return bounding_box;
 }
 
 /// <summary>

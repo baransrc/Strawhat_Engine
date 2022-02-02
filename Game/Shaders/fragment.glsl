@@ -4,7 +4,33 @@
 
 out vec4 frag_color;
 
-struct Light {
+struct LightD {
+    vec3  position;
+    vec3  direction;
+    float radius;
+    float intensity;
+  
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+	float shininess;
+
+};
+
+struct LightP {
+    vec3  position;
+    vec3  direction;
+    float radius;
+    float intensity;
+  
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+
+    float shininess;
+}; 
+
+struct LightS {
     vec3  position;
     vec3  direction;
     float radius;
@@ -15,10 +41,8 @@ struct Light {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-	
-    float constant;
-    float linear;
-    float quadratic;
+
+    float shininess;
 }; 
 
 struct Material {
@@ -36,16 +60,13 @@ in vec3 fragment_position;
 in vec3 fragment_normal;
 in vec2 fragment_texture_coordinate;
 
-uniform float shininess;
 uniform vec3 camera_position;
 
 uniform sampler2D input_texture;
 
-uniform vec3 directional_light;
-uniform vec3 directional_color;
-//uniform vec3 diffuse_color;
-uniform vec3 ambient_color;
-uniform Light light;
+uniform LightD lightD;
+uniform LightP lightP;
+uniform LightS lightS;
 uniform Material material;
 
 in vec3 world_normal;
@@ -57,80 +78,91 @@ vec3 SchlickFresnel(const vec3 f0, float cos_theta)
 
 vec3 PBRDirectional()
 {
+    // Diffuse
     vec3 N  = normalize(fragment_normal);
-    vec3 L = normalize(-light.direction);
+    vec3 L = normalize(-lightD.direction);
 
     float NdotL = max(dot(N,L), 0.0001);
 
+    vec3 diffuse_color = texture(material.diffuse, fragment_texture_coordinate).rgb;
+
+    // Specular
     vec3 view_direction = normalize(camera_position - fragment_position);
     float VdotR =  max(dot(view_direction, reflect(-L, fragment_normal)), 0.0001);
-
-    vec3 diffuse_color = texture(material.diffuse, fragment_texture_coordinate).rgb;
 
     vec3 fresnel = SchlickFresnel(texture(material.specular, fragment_texture_coordinate).rgb, NdotL);
 
     vec3 step1 = (diffuse_color * (vec3(1.0) - texture(material.specular, fragment_texture_coordinate).rgb)) / PI;
-    vec3 step2 = ((shininess + 2.0) / (2.0 * PI)) * fresnel * pow(VdotR, shininess);
-    vec3 PRBDirectional = light.diffuse * (step1 + step2) * NdotL * light.intensity;
+    vec3 step2 = ((lightD.shininess + 2.0) / (2.0 * PI)) * fresnel * pow(VdotR, lightD.shininess);
+    vec3 PRBDirectional = lightD.diffuse * (step1 + step2) * NdotL * lightD.intensity;
 
     return PRBDirectional;
 }
 
 vec3 PBRPoint()
 {
+    // Diffuse
     vec3 N  = normalize(fragment_normal);
-    vec3 L = normalize(light.position - fragment_position);
+    vec3 L = normalize(lightP.position - fragment_position);
 
     float NdotL = max(dot(N,L), 0.0001);
 
+    vec3 diffuse_color = texture(material.diffuse, fragment_texture_coordinate).rgb;
+
+    // Specular
     vec3 view_direction = normalize(camera_position - fragment_position);
     float VdotR =  max(dot(view_direction, reflect(-L, fragment_normal)), 0.0001);
-
-    vec3 diffuse_color = texture(material.diffuse, fragment_texture_coordinate).rgb;
 
     vec3 fresnel = SchlickFresnel(texture(material.specular, fragment_texture_coordinate).rgb, NdotL);
 
     // attenuation
-    float light_distance    = length(light.position - fragment_position);
-    float attenuation = max(pow(max(1 - pow(light_distance/light.radius, 4), 0.0), 2.0), 0.0) / ((light_distance * light_distance) + 1);
+    float light_distance    = length(lightP.position - fragment_position);
+    float attenuation = max(pow(max(1 - pow(light_distance/lightP.radius, 4), 0.0), 2.0), 0.0) / ((light_distance * light_distance) + 1);
 
     vec3 step1 = (diffuse_color * (vec3(1.0) - texture(material.specular, fragment_texture_coordinate).rgb)) / PI;
-    vec3 step2 = ((shininess + 2.0) / (2.0 * PI)) * fresnel * pow(VdotR, shininess);
-    vec3 PBRPoint = light.diffuse * (step1 + step2) * NdotL * attenuation * light.intensity;
+    vec3 step2 = ((lightP.shininess + 2.0) / (2.0 * PI)) * fresnel * pow(VdotR, lightP.shininess);
+    vec3 PBRPoint = lightP.diffuse * (step1 + step2) * NdotL * attenuation * lightP.intensity;
 
     return PBRPoint;
 }
 
 vec3 PBRSpot()
 {
+    // Diffuse
     vec3 N  = normalize(fragment_normal);
-    vec3 L = normalize(light.position - fragment_position);
+    vec3 L = normalize(lightS.position - fragment_position);
 
     float NdotL = max(dot(N,L), 0.0001);
 
-    vec3 view_direction = normalize(camera_position - fragment_position);
-    float VdotR =  max(dot(view_direction, reflect(-L, fragment_normal)), 0.0001);
-
     vec3 diffuse_color = texture(material.diffuse, fragment_texture_coordinate).rgb;
+
+    // Specular
+    vec3 view_direction = normalize(camera_position - fragment_position);
+    vec3 R = reflect(-L, fragment_normal);
+    float VdotR =  max(dot(view_direction, R), 0.0001);
 
     vec3 fresnel = SchlickFresnel(texture(material.specular, fragment_texture_coordinate).rgb, NdotL);
     
-    //Cone attenuation
+    // Cone attenuation
     float cone_attenuation = 0.0;
-    float C = dot(-L, normalize(light.direction));
-    float cos_inner = cos(light.inner);
-    if (C > cos_inner) cone_attenuation = 1.0;
-    float cos_outer = cos(light.outer);
-    if (C > cos_outer) cone_attenuation = (C - cos_outer)/(cos_inner - cos_outer);
+    vec3 dir = normalize(lightS.direction);
+    float C = dot(L, dir);
+    float cos_inner = cos(lightS.inner);
+    float cos_outer = cos(lightS.outer);
+    if (C > cos_inner) {
+        cone_attenuation = 1.0;
+    }else if (C > cos_outer){
+        cone_attenuation = (C - cos_outer)/(cos_inner - cos_outer);
+    }
 
-
-    // attenuation
-    float light_distance = dot(-L, normalize(light.direction));
-    float attenuation = max(pow(max(1 - pow(light_distance/light.radius, 4), 0.0), 2.0), 0.0) / ((light_distance * light_distance) + 1);
+    // Attenuation
+    float light_distance = dot(L, dir);
+    float attenuation = pow(max(1 - pow(light_distance/lightS.radius, 4), 0.0), 2.0) / ((light_distance * light_distance) + 1);
 
     vec3 step1 = (diffuse_color * (vec3(1.0) - texture(material.specular, fragment_texture_coordinate).rgb)) / PI;
-    vec3 step2 = ((shininess + 2.0) / (2.0 * PI)) * fresnel * pow(VdotR, shininess);
-    vec3 PBRSpot = light.diffuse * (step1 + step2) * NdotL * (attenuation * cone_attenuation) * light.intensity;
+    vec3 step2 = ((lightS.shininess + 2.0) / (2.0 * PI)) * fresnel * pow(VdotR, lightS.shininess);
+    // Adjusting the cosinus with the 1 - on the attenuation formula part 
+    vec3 PBRSpot = lightS.diffuse * (step1 + step2) * NdotL * ((1-attenuation) * (1-cone_attenuation)) * lightS.intensity;
 
     return PBRSpot;
  
@@ -138,12 +170,14 @@ vec3 PBRSpot()
 
 void main()
 {
+
     //vec3 PBR = PBRDirectional();
-    vec3 PBR = PBRPoint();
+    //vec3 PBR = PBRPoint();
     //vec3 PBR = PBRSpot();
-    //vec3 PBR = PBRSpot() + PBRPoint() + PBRDirectional();
-    
-    PBR += light.ambient*texture(material.diffuse, fragment_texture_coordinate).rgb;
+    vec3 PBR = PBRSpot() + PBRPoint() + PBRDirectional();
+
+    // Ambient Light
+    PBR += vec3(0.2, 0.2, 0.2)*texture(material.diffuse, fragment_texture_coordinate).rgb;
 
     frag_color = vec4(PBR, 1.0);
 

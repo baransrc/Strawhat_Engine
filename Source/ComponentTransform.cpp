@@ -1,5 +1,5 @@
 #include "ComponentTransform.h"
-#include "Entity.h"
+
 #include "ModuleDebugDraw.h"
 #include "ModuleCamera.h"
 #include "ComponentCamera.h"
@@ -13,22 +13,21 @@
 #define RAD_TO_DEG (180.0 / PI)
 
 ComponentTransform::ComponentTransform() :
-Component(),
-position(math::float3::zero),
-position_local(math::float3::zero),
-scale(math::float3::one),
-scale_local(math::float3::one),
-rotation_euler(math::float3::zero),
-rotation_euler_local(math::float3::zero),
-rotation(math::Quat::identity),
-rotation_local(math::Quat::identity),
-matrix(math::float4x4::identity),
-matrix_local(math::float4x4::identity),
-right(math::float3::zero),
-up(math::float3::zero),
-front(math::float3::zero)
+	Component(),
+	position(math::float3::zero),
+	position_local(math::float3::zero),
+	scale(math::float3::one),
+	scale_local(math::float3::one),
+	rotation_euler(math::float3::zero),
+	rotation_euler_local(math::float3::zero),
+	rotation(math::Quat::identity),
+	rotation_local(math::Quat::identity),
+	matrix(math::float4x4::identity),
+	matrix_local(math::float4x4::identity),
+	right(math::float3::unitX),
+	up(math::float3::unitY),
+	front(math::float3::unitZ)
 {
-
 }
 
 ComponentTransform::~ComponentTransform()
@@ -40,6 +39,21 @@ void ComponentTransform::Initialize(Entity* new_owner)
 	Component::Initialize(new_owner);
 
 	SetEulerRotation(math::float3::zero);
+
+	owner_hierarchy_changed_event_listener = 
+		EventListener<entity_operation>
+		(
+			std::bind
+			(
+				&ComponentTransform::HandleOwnerHierarchyChanged, 
+				this, 
+				std::placeholders::_1
+			)
+		);
+	// Listen to owner hierarchy changed event:
+	owner->GetHierarchyChangedEvent()->
+		AddListener(&owner_hierarchy_changed_event_listener);
+
 }
 
 void ComponentTransform::Update()
@@ -133,9 +147,12 @@ const math::float3& ComponentTransform::GetDirection() const
 math::Quat ComponentTransform::SimulateLookAt(const math::float3& direction)
 {
 	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
+	
 	math::float3 up_temp = direction.Cross(right_temp).Normalized();
 
-	return math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+	math::Quat orientation = math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+
+	return orientation;
 }
 
 void ComponentTransform::SetPosition(const math::float3& new_position)
@@ -154,11 +171,10 @@ void ComponentTransform::SetScale(const math::float3& new_scale)
 
 void ComponentTransform::SetEulerRotation(const math::float3& new_rotation_euler)
 {
-	math::float3 delta = (new_rotation_euler - rotation_euler).Abs() * DEG_TO_RAD;
+	math::float3 delta = (new_rotation_euler - rotation_euler) * DEG_TO_RAD;
 	math::Quat rotation_amount = math::Quat::FromEulerXYZ(delta.x, delta.y, delta.z).Normalized();
 
 	rotation = rotation_amount * (rotation);
-	rotation.Normalize();
 	rotation_euler = new_rotation_euler;
 
 	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
@@ -212,22 +228,30 @@ void ComponentTransform::Rotate(const math::Quat& rotate_by)
 
 void ComponentTransform::LookAt(const math::float3& direction)
 {
+	math::float3 right_temp = float3::unitY.Cross(direction).Normalized();
+	math::float3 up_temp = direction.Cross(right_temp).Normalized();
+
+	math::Quat orientation = math::Quat::LookAt(-float3::unitZ, direction, float3::unitY, float3::unitY);
+
 	SetRotation(SimulateLookAt(direction));
 }
 
 void ComponentTransform::DrawInspectorContent()
 {
+	// This controls the sensiti vity of sliders inside the transform editor:
+	static float variable_sensitivity = 1.0f;
+
 	math::float3 position_local_editor = position_local;
 	math::float3 rotation_local_editor = rotation_euler_local;
 	math::float3 scale_local_editor = scale_local;
 
-	if (ImGui::DragFloat3("Local Position", position_local_editor.ptr(), 1.0f, -inf, inf)) {
+	if (ImGui::DragFloat3("Local Position", position_local_editor.ptr(), variable_sensitivity, -inf, inf)) {
 		SetLocalPosition(position_local_editor);
 	}
-	if (ImGui::DragFloat3("Local Rotation", rotation_local_editor.ptr(), 1.0f, 0.0f, 360.f)) {
+	if (ImGui::DragFloat3("Local Rotation", rotation_local_editor.ptr(), variable_sensitivity, 0.0f, 360.f)) {
 		SetLocalEulerRotation(rotation_local_editor);
 	}
-	if (ImGui::DragFloat3("Local Scale", scale_local_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
+	if (ImGui::DragFloat3("Local Scale", scale_local_editor.ptr(), variable_sensitivity, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetLocalScale(scale_local_editor);
 	}
 
@@ -237,13 +261,13 @@ void ComponentTransform::DrawInspectorContent()
 	math::float3 rotation_editor = rotation_euler;
 	math::float3 scale_editor = scale;
 
-	if (ImGui::DragFloat3("Position", position_editor.ptr(), 1.0f, -inf, inf)) {
+	if (ImGui::DragFloat3("Position", position_editor.ptr(), variable_sensitivity, -inf, inf)) {
 		SetPosition(position_editor);
 	}
-	if (ImGui::DragFloat3("Rotation", rotation_editor.ptr(), 1.0f, 0.0f, 360.f)) {
+	if (ImGui::DragFloat3("Rotation", rotation_editor.ptr(), variable_sensitivity, 0.0f, 360.f)) {
 		SetEulerRotation(rotation_editor);
 	}
-	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), 1.0f, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
+	if (ImGui::DragFloat3("Scale", scale_editor.ptr(), variable_sensitivity, 0.0001f, inf, "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
 		SetScale(scale_editor);
 	}
 
@@ -253,6 +277,20 @@ void ComponentTransform::DrawInspectorContent()
 	{
 		LookAt((position - float3::zero).Normalized());
 	}
+
+	ImGui::NewLine();
+
+	ImGui::DragFloat("Sensitivity", &variable_sensitivity, 0.001f, 0.000001f, inf, "%.3f");
+}
+
+void ComponentTransform::HandleOwnerHierarchyChanged(entity_operation operation)
+{
+	if (operation != entity_operation::PARENT_CHANGED)
+	{
+		return;
+	} 
+
+	UpdateTransformOfHierarchy(transform_matrix_calculation_mode::LOCAL_FROM_GLOBAL);
 }
 
 void ComponentTransform::CalculateTransform(transform_matrix_calculation_mode mode)
