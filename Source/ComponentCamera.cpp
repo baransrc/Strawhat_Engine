@@ -95,7 +95,10 @@ void ComponentCamera::Update()
 		return;
 	}
 
-	MousePicking();
+	if (is_main_camera && should_render)
+	{
+		MousePicking();
+	}
 }
 
 void ComponentCamera::DrawGizmo()
@@ -408,24 +411,16 @@ void ComponentCamera::MousePicking()
 		return;
 	}
 
-	if(!should_render)
-	{
-		return;
-	}
-
 	float2 mouse_position = App->input->GetMousePosition();
 
-	float mouse_normX = mouse_position.x / App->window->window_width;
-	float mouse_normY = mouse_position.y / App->window->window_height;
+	float window_width = (float) App->window->window_width;
+	float window_height = (float) App->window->window_height;
 
 	// Normalize mouse position in range of -1 / 1 // -1, -1 being at the bottom left corner
-	//mouse_normX = (mouse_normX - 0.5f) / 0.5f;
-	//mouse_normY = (mouse_normY - 0.5f) / 0.5f;
+	float normalized_x = (mouse_position.x * 2.0f) - 1.0f;
+	float normalized_y = 1.0f - (mouse_position.y * 2.0f);
 
-	LineSegment line = frustum.UnProjectLineSegment(mouse_normX, mouse_normY);
-	//LineSegment line = frustum.UnProjectLineSegment(mouse_position.x, mouse_position.y);
-	LOG("largo de pene: %f", line.Length());
-	App->debug_draw->DrawLine(line.a, line.b, float3(0.9, 0.5, 0.3));
-	App->scene_manager->GetCurrentScene()->CheckRaycast(line);
+	math::LineSegment line_segment = frustum.UnProjectLineSegment(normalized_x, normalized_y);
 
+	App->scene_manager->GetCurrentScene()->CheckRaycast(line_segment);
 }

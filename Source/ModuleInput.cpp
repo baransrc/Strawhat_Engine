@@ -3,6 +3,7 @@
 #include "ModuleInput.h"
 #include "ModuleRender.h"
 #include "ModuleCamera.h"
+#include "ModuleWindow.h"
 #include "SDL/include/SDL.h"
 #include "imgui_impl_sdl.h"
 
@@ -51,6 +52,8 @@ bool ModuleInput::Init()
 // Called every draw update
 update_status ModuleInput::PreUpdate()
 {
+
+    // TODO: window size is not true on start, fix this.
     SDL_Event sdl_event;
     
     // Organize states of keyboard buttons with respect to last frame:
@@ -141,6 +144,8 @@ update_status ModuleInput::PreUpdate()
 
                 mouse_position.x = sdl_event.motion.x * window_width_inverse;
                 mouse_position.y = sdl_event.motion.y * window_height_inverse;
+
+                //LOG("MODULE INPUT: %f, %f", mouse_position.x, mouse_position.y);
             }
             break;
 

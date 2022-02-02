@@ -30,7 +30,7 @@ public:
 
 	void SetMainCamera(ComponentCamera* new_main_camera);
 	void SetSelectedEntity(Entity* new_selected_entity);
-	void CheckRaycast(const LineSegment& ray);
+	void CheckRaycast(LineSegment ray);
 
 	void CullMeshes();
 

@@ -125,7 +125,8 @@ void Scene::Initialize()
     SetMainCamera(camera_entity->GetComponent<ComponentCamera>());
     main_camera->SetIsMainCamera(true);
     // Set camera_entity's position:
-    camera_entity->Transform()->SetPosition(math::float3(0.0f, 10.0f, 10.0f));
+    camera_entity->Transform()->SetPosition(math::float3(0.0f, 50.0f, 0.0f));
+    main_camera->LookAt(math::float3(0.0f, 50.0f, 0.0f));
 
     // Add an entity with a light component as a child of root_entity:
     Entity* light_entity = new Entity();
@@ -202,74 +203,43 @@ void Scene::HandleComponentsChangedInDescendantsOfRoot(component_type type)
     mesh_components_in_scene = (root_entity->GetComponentsInDescendants<ComponentMesh>());
 }
 
-void Scene::CheckRaycast(const LineSegment& ray) 
+void Scene::CheckRaycast(LineSegment segment) 
 {
     std::vector <Entity*> entities;
     float hit_near = NULL, hit_far = NULL;
-    // Get all entities
-    std::vector<ComponentBoundingBox*> bounding_boxes = root_entity->GetComponentsInDescendants<ComponentBoundingBox>();
-    for (ComponentBoundingBox* bounding_box : bounding_boxes)
+
+    // Get all entities with mesh components:
+    std::vector<ComponentMesh*> meshes = 
+        root_entity->GetComponentsInDescendants<ComponentMesh>();
+
+    Entity* best_picking_candidate_entity = nullptr;
+    float distance_max = segment.Length();
+
+    for (ComponentMesh* mesh : meshes)
     {
+        math::LineSegment segment_local(segment);
         
-        if (ray.Intersects(bounding_box->GetBoundingBox(), hit_near, hit_far))
+        segment_local.Transform(mesh->Owner()->Transform()->GetLocalMatrix().Inverted());
+
+        const TriangleArray& triangles = mesh->GetTriangles();
+
+        for (const Triangle& triangle : triangles)
         {
-            //entities[hit_near] = bounding_box->Owner();
-            entities.push_back(bounding_box->Owner());
-        }
+            float distance;
+            math::float3 hit_point;
+
+            if (segment_local.Intersects(triangle, &distance, &hit_point))
+            {
+                if (distance < distance_max)
+                {
+                    best_picking_candidate_entity = mesh->Owner();
+                    distance_max = distance;
+                }
+            }
+            
+            LOG("HITPOINT %f, %f, %f", hit_point.x, hit_point.y, hit_point.z);
+        }   
     }
 
-    Entity* finale = nullptr;
-    float end = ray.Length();
-    LineSegment rayToMeshSpace = ray;
-
-    //std::vector<const Entity*>::iterator it;
-    for (Entity* object : entities)
-    {
-        const ComponentMesh* mesh;
-        mesh = object->GetComponent<ComponentMesh>();
-        if (mesh != NULL)
-        {
-            //if (const R_Mesh* rMesh = ((C_Mesh*)mesh)->rMeshHandle.Get())
-            //{
-                //Convert ray in world space coordinates to model space coordinates
-                
-                rayToMeshSpace.Transform(object->GetComponent<ComponentTransform>()->GetMatrix().Inverted());
-
-                //Iterate all mesh triangles until we find a hit
-                //for (unsigned int v = 0; v < rMesh->buffersSize[R_Mesh::b_indices]; v += 3)
-                //{
-                    const float* vertices = &mesh->GetVertices();
-
-                    for (size_t i = 0; i < mesh->GetNumberOfVertices() * 8; i += 8)
-                    {
-                        //temp_vertices[i / 8] = float3(mesh->GetVertices()[i + 0], mesh->vertices[i + 1], mesh->vertices[i + 2]);
-                    
-                        /*vec vertexA(&rMesh->vertices[rMesh->indices[v] * 3]);
-                        vec vertexB(&rMesh->vertices[rMesh->indices[v + 1] * 3]);
-                        vec vertexC(&rMesh->vertices[rMesh->indices[v + 2] * 3]);*/
-
-                        vec vertexA(vertices[i + 0]);
-                        vec vertexB(vertices[i + 1]);
-                        vec vertexC(vertices[i + 2]);
-                    
-                        Triangle triangle(vertexA, vertexB, vertexC);
-
-                        float newDistance = 0.0f;
-                        if (rayToMeshSpace.Intersects(triangle, &newDistance, nullptr))
-                        {
-                            if (newDistance < end)
-                            {
-                                finale = object;
-                                end = newDistance;
-                            }
-                        }
-                    }
-                //}
-        }
-    }
-    if(finale)
-        selected_entity = finale;
-
-    //free(entities);
-    free(finale);
+    SetSelectedEntity(best_picking_candidate_entity);
 }

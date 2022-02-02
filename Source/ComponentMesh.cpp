@@ -9,6 +9,7 @@
 
 #include "GLEW/include/GL/glew.h"
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
+#include "MATH_GEO_LIB/Geometry/Triangle.h"
 
 
 ComponentMesh::ComponentMesh() : Component(),
@@ -69,6 +70,17 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 	number_of_vertices = new_number_of_vertices;
 	number_of_indices = new_number_of_indices;
 	number_of_triangles = new_number_of_triangles;
+
+	// Cache triangles for easy access:
+	cached_triangles.reserve(number_of_triangles);
+	for (size_t i = 0; i < number_of_triangles; i += 3)
+	{
+		math::float3 a(vertices[i * 8 + 0], vertices[i * 8 + 1], vertices[i * 8 + 2]);
+		math::float3 b(vertices[(i+1) * 8 + 0], vertices[(i + 1) * 8 + 1], vertices[(i + 1) * 8 + 2]);
+		math::float3 c(vertices[(i + 2) * 8 + 0], vertices[(i + 2) * 8 + 1], vertices[(i + 3) * 8 + 2]);
+		
+		cached_triangles.push_back(math::Triangle(a, b, c));
+	}
 
 	// Load AABB:
 	LoadAABB();
@@ -136,15 +148,6 @@ void ComponentMesh::Update()
 		return;
 	}
 
-	//// Use the shader:
-	
-	//// Activate Texture Unit 0:
-	//glActiveTexture(GL_TEXTURE0);
-	//// Bind Texture Unit 0:
-	//glBindTexture(GL_TEXTURE_2D, texture_ids[0]); // For now we are interested in only diffuse texture
-	//// Set Texture Parameter in shader:
-	//App->shader_program->SetUniformVariable("material.diffuse", texture_ids[0]-1);
-
 	ComponentMaterial* material = (ComponentMaterial*) owner->GetComponent(component_type::MATERIAL);
 
 	if (material != nullptr)
@@ -156,13 +159,9 @@ void ComponentMesh::Update()
 	}
 	else 
 	{
-		//// Use the shader:
+		// Use the shader:
 		App->shader_program->Use();
 		App->shader_program->SetUniformVariable("model_matrix", owner->Transform()->GetMatrix(), true);
-
-		////Set default color material
-		//App->shader_program->SetUniformVariable("material.color", float4(1.0, 0.5, 0.2, 1.0));
-
 	}
 
 	// Bind VAO:
