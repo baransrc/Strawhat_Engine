@@ -1,4 +1,3 @@
-
 #include "Scene.h"
 
 #include "ComponentCamera.h"
@@ -6,6 +5,8 @@
 #include "ComponentTransform.h"
 #include "ComponentMesh.h"
 #include "ComponentBoundingBox.h"
+
+#include "ModelImporter.h"
 
 #include "MATH_GEO_LIB/Geometry/Triangle.h"
 #include "MATH_GEO_LIB/Geometry/LineSegment.h"
@@ -150,6 +151,12 @@ void Scene::Initialize()
     light_entity->AddComponent<ComponentLight>();
     light_entity->GetComponent<ComponentLight>()->Load(light_type::DIRECTIONAL);
 
+    /*
+        Entity* player_model = ModelImporter::Import();
+        player_model->SetParent(root_entity);
+    */
+
+
     // Set selected entity as the light_entity:
     // NOTE: If new stuff is added into SetSelectedEntity, 
     // just use that instead of this.
@@ -239,6 +246,9 @@ void Scene::CheckRaycast(LineSegment segment)
 
     float distance_max = segment.Length();
 
+    // NOTE: This only works when the camera is inside the model.
+    // We couldn't find any fix for now, so it stays like this.
+
     for (ComponentMesh* mesh : meshes)
     {
         math::LineSegment segment_local(segment);
@@ -264,5 +274,8 @@ void Scene::CheckRaycast(LineSegment segment)
         }   
     }
 
-    SetSelectedEntity(best_picking_candidate_entity);
+    if (best_picking_candidate_entity != nullptr)
+    {
+        SetSelectedEntity(best_picking_candidate_entity);
+    }
 }
