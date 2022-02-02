@@ -1,13 +1,11 @@
+![image](https://user-images.githubusercontent.com/42971567/152249720-c1d904c4-d65e-40db-8c58-eec4a05f5667.png)
+
 # Strawhat Engine
 Strawhat Engine is a game engine under construction for the final project of the master’s degree.
 
 [**Repository**](https://github.com/baransrc/Strawhat_Engine) [**License**](https://github.com/baransrc/Strawhat_Engine/blob/main/LICENSE)
 
-
-![image](https://user-images.githubusercontent.com/42971567/145306298-143724d2-572f-48f8-a243-df8fe5611332.png)
-
-
-## Team for the Assignment 2
+## Contributors
 - [**I. Baran Surucu**](https://github.com/baransrc)
 - [**I. Mónica Martín**](https://github.com/monikamnc)
 
