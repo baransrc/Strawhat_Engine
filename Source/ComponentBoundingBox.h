@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Entity.h"
 #include "Component.h"
 #include "Event.h"
-#include <functional>
 
 #include "MATH_GEO_LIB/Geometry/OBB.h"
+
+class ComponentMesh;
 
 class ComponentBoundingBox : public Component
 {
@@ -13,6 +15,7 @@ private:
 	float minimal_enclosing_sphere_radius;
 	math::float3 center_position;
 	EventListener<component_type> component_changed_event_listener;
+	EventListener<entity_operation> hierarchy_changed_event_listener;
 
 public:
 	ComponentBoundingBox();
@@ -21,7 +24,6 @@ public:
 	component_type Type() const override;
 	void Initialize(Entity* new_owner) override;
 	void Load();
-	void HandleComponentChanged(component_type type);
 	void Update() override;
 	void DrawGizmo() override;
 	const math::OBB& GetBoundingBox();
@@ -30,4 +32,9 @@ public:
 
 protected:
 	void DrawInspectorContent() override;
+
+private:
+	void AddMeshComponentToAABB(ComponentMesh* mesh, math::AABB& aabb) const;
+	void HandleHierarchyChanged(entity_operation operation);
+	void HandleComponentChanged(component_type type);
 };
