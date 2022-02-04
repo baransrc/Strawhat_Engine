@@ -490,7 +490,6 @@ update_status ModuleEditor::Update()
 
 	//ImGui::CaptureMouseFromApp(false);
 	
-
 	DrawImGuizmo();
 
 	SwitchImGuizmoOperationModeWithKeyboard();
@@ -521,8 +520,6 @@ update_status ModuleEditor::Update()
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 	ImGui::End();
-
-	
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

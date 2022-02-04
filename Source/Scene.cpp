@@ -9,12 +9,8 @@
 
 #include "ModelImporter.h"
 
-<<<<<<< Updated upstream
 #include "MATH_GEO_LIB/Geometry/Triangle.h"
 #include "MATH_GEO_LIB/Geometry/LineSegment.h"
-
-=======
->>>>>>> Stashed changes
 
 Scene::Scene() :
     root_entity(nullptr),

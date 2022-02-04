@@ -62,7 +62,7 @@ public:
 	void SetName(std::string new_name);
 	const std::string& Name() const;
 	unsigned int Id() const;
-	Entity* Parent() const;
+	Entity* const Parent() const;
 	bool IsActive() const;
 	void SetParent(Entity* new_parent);
 	void SetActive(bool activeness);

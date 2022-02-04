@@ -291,7 +291,7 @@ unsigned int Entity::Id() const
 /// 
 /// </summary>
 /// <returns>Parent of this Entity.</returns>
-Entity* Entity::Parent() const
+Entity* const Entity::Parent() const
 {
 	return parent;
 }
