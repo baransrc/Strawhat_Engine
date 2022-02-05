@@ -1,36 +1,28 @@
 #include "Component.h"
 #include "Entity.h"
-#include "imgui.h"
-#include "stdio.h"
+
 #include "Globals.h"
 
-Component::Component() : enabled(false), owner(nullptr)
+#include "imgui.h"
+#include "stdio.h"
+
+Component::Component() : 
+	enabled(false), 
+	owner(nullptr)
 {
 	id = GetCurrentId();
 }
 
-/// <summary>
-/// </summary>
-/// <returns>Owner of the component.</returns>
 Entity* Component::Owner() const
 {
 	return owner;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <returns>Type of the component.</returns>
 component_type Component::Type() const
 {
 	return component_type::UNDEFINED;
 }
 
-/// <summary>
-/// Is the type of Component can appear more than one in an Entity?
-/// </summary>
-/// <param name="type">Type of the Component</param>
-/// <returns>true if there can be more than one of Component of the same type in Entity, false if not.</returns>
 bool Component::CanBeMoreThanOne(component_type type)
 {
 	// NOTE: If there is a component that can be more than one in an entity,
@@ -49,10 +41,6 @@ bool Component::CanBeMoreThanOne(component_type type)
 	}
 }
 
-/// <summary>
-/// Initializes the component with it's owner.
-/// </summary>
-/// <param name="new_owner"></param>
 void Component::Initialize(Entity* new_owner)
 {
 	enabled = true;
@@ -60,54 +48,35 @@ void Component::Initialize(Entity* new_owner)
 	owner->AddComponent(this);
 }
 
-/// <summary>
-/// Enables the component.
-/// </summary>
 void Component::Enable()
 {
 	enabled = true;
 }
 
-/// <summary>
-/// Disables the component.
-/// </summary>
 void Component::Disable()
 {
 	enabled = false;
 }
 
-/// <summary>
-/// Called on each pre-update of the owner Entity.
-/// </summary>
 void Component::PreUpdate()
 {
 }
 
-/// <summary>
-/// Called on each update of the owner Entity.
-/// </summary>
+
 void Component::Update()
 {
 }
 
-/// <summary>
-/// Called on each post-update of the owner Entity.
-/// </summary>
+
 void Component::PostUpdate()
 {
 }
 
-/// <summary>
-/// Draws Gizmo of the component in editor mode.
-/// </summary>
 void Component::DrawGizmo()
 {
 
 }
 
-/// <summary>
-/// Draws Component related info to Inspector in editor mode.
-/// </summary>
 void Component::DrawInspector()
 {
 	char id_buffer[64];
@@ -132,21 +101,11 @@ void Component::DrawInspector()
 	ImGui::PopID();
 }
 
-/// <summary>
-/// Draws Inspector content of the component in editor mode.
-/// Use this function to draw custom content inside Inspector.
-/// To draw anything, you must use ImGui widgets, otherwise, you
-/// may get weird results.
-/// </summary>
 void Component::DrawInspectorContent()
 {
 	ImGui::TextWrapped("You Can override Component::DrawInspectorContent to customize this Inspector content");
 }
 
-/// <summary>
-/// Used for giving an id to the Component in Initialize method.
-/// </summary>
-/// <returns>A runtime unique id to the caller</returns>
 unsigned int Component::GetCurrentId()
 {
 	static unsigned int current_id = 0;
@@ -154,10 +113,6 @@ unsigned int Component::GetCurrentId()
 	return current_id++;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <returns>If the component is enabled.</returns>
 bool Component::Enabled() const
 {
 	return enabled;
