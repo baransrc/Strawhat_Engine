@@ -1,8 +1,9 @@
 #pragma once
 
-#include <list>
-#include "Globals.h"
 #include "Module.h"
+#include "Globals.h"
+
+#include <vector>
 
 class ModuleRender;
 class ModuleWindow;
@@ -37,7 +38,6 @@ public:
 	ModuleInput* input = nullptr;
 	ModuleShaderProgram* shader_program = nullptr;
 	ModuleSceneManager* scene_manager = nullptr;
-	ModuleRenderExercise* render_exercise = nullptr;
 	ModuleEditor* editor = nullptr;
 	ModuleTexture* texture = nullptr;
 	ModuleCamera* camera = nullptr;
@@ -45,7 +45,7 @@ public:
 
 private:
 	char* working_directory = nullptr;
-	std::list<Module*> modules;
+	std::vector<Module*> modules;
 };
 
 extern Application* App;
