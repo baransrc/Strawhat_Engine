@@ -87,7 +87,7 @@ void Scene::CullMeshes()
 
         math::OBB obb = bounding_box->GetBoundingBox();
 
-        mesh->SetCulled(!main_camera->DoesOBBHavePointInsideFrustum(obb));
+        mesh->SetCulled(!main_camera->DoesOBBIntersectFrustum(obb));
     }
 }
 

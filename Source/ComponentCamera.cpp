@@ -88,27 +88,14 @@ void ComponentCamera::PreUpdate()
 	}
 }
 
-void ComponentCamera::Update()
-{
-	if (!Enabled())
-	{
-		return;
-	}
-}
-
-// TODO: MRG.
 void ComponentCamera::DrawGizmo()
 {
-  if (!Enabled() || !owner->IsActive())
+	if (!Enabled() || !owner->IsActive())
 	{
 		return;
 	}
 
-	// You are the one neo:
-	float4x4 neo = frustum.ViewProjMatrix();
-	neo.Inverse();
-	
-  App->debug_draw->DrawFrustum(neo, float3(0.8f, 0.8f, 1.0f));
+	App->debug_draw->DrawFrustum(frustum.ViewProjMatrix().Inverted(), float3(0.8f, 0.8f, 1.0f));
 }
 
 component_type ComponentCamera::Type() const
@@ -231,110 +218,16 @@ void ComponentCamera::LookAt(const math::float3& direction)
 	owner->Transform()->LookAt(direction.Normalized());
 }
 
-bool ComponentCamera::DoesOBBHavePointInsideFrustum(const math::OBB& obb) const
+bool ComponentCamera::DoesOBBIntersectFrustum(const math::OBB& obb) const
 {
-	if (obb.Intersects(frustum))
-	{
-		return true;
-	}
-
-	// Get planes of frustum:
-	math::Plane planes[6];
-	frustum.GetPlanes(planes);
-
-	// Get points of the obb:
-	math::float3 points[8];
-	obb.GetCornerPoints(points);
-
-	// Iterate through all the points of obb:
-	for (size_t i = 0; i < 8; ++i)
-	{
-		// Start as assuming the point is inside the
-		// frustum:
-		bool is_inside_frustum = true;
-
-		// Iterate through all the planes of frustum:
-		for (size_t j = 0; j < 6; ++j)
-		{
-			// Check if the point lies on the plane or in the negative
-			// side of the plane:
-			if (!planes[j].ProjectToNegativeHalf(points[i]).Equals(points[i]))
-			{
-				// If it's not on the plane or in the negative side of the 
-				// plane, the point is not inside the frustum as it's
-				// on the positive side of the plane.
-				// Set is_inside_frustum to false, break out of loop
-				// and stop checking for current point:
-				is_inside_frustum = false;
-
-				break;
-			}
-		}
-
-		// If the point is inside the frustum, return true as obb
-		// has a point inside the frustum:
-		if (is_inside_frustum)
-		{
-			return true;
-		}
-	}
-
-	// TODO: Refactor this as we have duplicate code.
-	// Maybe have a function that compares points
-	// with planes in Util.h.
-
-	// Check if we have a false negative, but this time
-	// test frustum corner points against obb planes:
-	// Get points of frustum to points:
-	frustum.GetCornerPoints(points);
-	// Get planes of obb to planes:
-	obb.GetFacePlanes(planes);
-
-	// Iterate through all the points of frustum:
-	for (size_t i = 0; i < 8; ++i)
-	{
-		// Start as assuming the frustum point is inside the
-		// obb:
-		bool is_inside_obb = true;
-
-		// Iterate through all the planes of obb:
-		for (size_t j = 0; j < 6; ++j)
-		{
-			// Check if the point lies on the plane or in the negative
-			// side of the plane:
-			if (!planes[j].ProjectToNegativeHalf(points[i]).Equals(points[i]))
-			{
-				// If it's not on the plane or in the negative side of the 
-				// plane, the point is not inside the obb as it's
-				// on the positive side of the plane.
-				// Set is_inside_obb to false, break out of loop
-				// and stop checking for current point:
-				is_inside_obb = false;
-
-				break;
-			}
-		}
-
-		// If the point is inside the obb, return true as frustum
-		// has a point inside the obb:
-		if (is_inside_obb)
-		{
-			return true;
-		}
-	}
-	
-	// Return false as if the execution comes to this line,
-	// it means there is no point of obb that lies inside
-	// the frustum ore vice versa:
-	return false;
+	return obb.Intersects(frustum);
 }
 
-// TODO: MRG.
 void ComponentCamera::DrawInspectorContent()
 {
 	bool enabled_editor = Enabled();
 	
-  if (ImGui::Checkbox("Enabled", &enabled_editor))
+	if (ImGui::Checkbox("Enabled", &enabled_editor))
 	{
 		enabled_editor ? Enable() : Disable();
 	}
@@ -403,15 +296,7 @@ void ComponentCamera::HandleComponentChanged(component_type type)
 	UpdateTransformVariables();
 }
 
-/// <summary>
-/// x and y should be between -1 and 1.
-/// -1, 1   1, 1
-/// -1,-1   1,-1
-/// </summary>
-/// <param name="x"></param>
-/// <param name="y"></param>
-/// <returns></returns>
-math::LineSegment ComponentCamera::GenerateRayFromNormalizedPositions(float x, float y)
+math::LineSegment ComponentCamera::GenerateRayFromNormalizedPositions(float x, float y) const
 {
 	return frustum.UnProjectLineSegment(x, y);
 }
