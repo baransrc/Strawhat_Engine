@@ -8,11 +8,14 @@
 
 #include "Entity.h"
 
+// TODO: Add API's for setting shininess or diffuse color of this
+// material. They can only be set from the editor for now.
+
 ComponentMaterial::ComponentMaterial() : 
 	Component(),
 	texture_ids(nullptr),
 	number_of_texture_ids(0),
-	color_diffuse(0.2f, 0.2f, 0.2f, 1.0f),
+	color_diffuse(math::float4::one),
 	shininess(0),
 	is_currently_loaded(false)
 {
@@ -35,7 +38,7 @@ void ComponentMaterial::Initialize(Entity* new_owner)
 
 void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_number_of_texture_ids)
 {
-	//number_of_texture_ids = new_number_of_texture_ids;
+	// TODO(Monica): Hardcoded for this assignment, fix this.
 	number_of_texture_ids = 3;
 
 	if (is_currently_loaded)
@@ -78,22 +81,11 @@ void ComponentMaterial::Load(const unsigned int* new_texture_ids, size_t new_num
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
 
-	//// Activate Texture Unit 3:
-	//glActiveTexture(GL_TEXTURE3);
-	//// Bind Texture Unit 3:
-	//glBindTexture(GL_TEXTURE_2D, texture_ids[3]); // NormalMap texture
-	//// Set Texture Parameter in shader:
-	//App->shader_program->SetUniformVariable("material.normal", 3);
-
 	// Set as currently loaded:
 	is_currently_loaded = true;
 
 	// Invoke change in parent and its ancestors:
 	owner->InvokeComponentsChangedEvents(Type());
-}
-
-void ComponentMaterial::Update()
-{
 }
 
 void ComponentMaterial::Use()
@@ -120,11 +112,22 @@ void ComponentMaterial::Use()
 	glBindTexture(GL_TEXTURE_2D, texture_ids[2]); // Occlusion texture
 	// Set Texture Parameter in shader:
 	App->shader_program->SetUniformVariable("material.occlusion", 2);
+
+	// Set shininess parameter in shader:
+	// TODO (Monica): Create a shininess uniform in shader and make all
+	// lights use that for this material.
+	App->shader_program->SetUniformVariable("lightP.shininess", shininess);
+	App->shader_program->SetUniformVariable("lightD.shininess", shininess);
+	App->shader_program->SetUniformVariable("lightS.shininess", shininess);
 }
 
 void ComponentMaterial::Reset()
 {
 	is_currently_loaded = false;
+
+	shininess = 0.0f;
+
+	color_diffuse = math::float4::one;
 
 	free(texture_ids);
 }
@@ -135,6 +138,8 @@ void ComponentMaterial::DrawInspectorContent()
 	{
 		return;
 	}
+
+	ImGui::DragFloat("Shininess", &shininess, 0.1f, -inf, inf);
 
 	for (size_t i = 0; i < number_of_texture_ids; ++i)
 	{
