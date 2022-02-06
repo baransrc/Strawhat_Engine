@@ -169,29 +169,6 @@ namespace ModelImporter
 				texture_ids[2] = texture_id;
 			}
 
-			//for (size_t i = 0; i < number_of_textures; ++i)
-			//{
-			//	// Get texture file name:
-			//	/*aiReturn is_diffuse_texture = scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texture_file_path);
-			//	std::string model_texture_path(texture_file_path.data);
-			//	// If couldn't load the diffuse texture file name from material,
-			//	// continue to the next material:
-			//	if (is_diffuse_texture != aiReturn_SUCCESS)
-			//	{
-			//		continue;
-			//	}*/
-
-			//	unsigned int texture_id = i;
-			//	bool loaded = ModelImporter_LoadTexture(texture_id, texture_file_path.C_Str(), path_to_parent_directory);
-
-			//	// Since calloc defaults to 0, don't assign if not successful:
-			//	// TODO: Make sure texture with id 0 is the default texture.
-			//	if (loaded)
-			//	{
-			//		texture_ids[i] = texture_id;
-			//	}
-			//}
-
 			// Deallocate resources:
 			free(diffuse);
 			free(specular);
@@ -200,7 +177,7 @@ namespace ModelImporter
 			return texture_ids;
 		}
 
-		ComponentMesh* ModelImporter_LoadComponentMeshFromMeshData(aiMesh* mesh_data, Entity* owner, unsigned int* texture_ids, size_t number_of_textures)
+		ComponentMesh* ModelImporter_LoadComponentMeshFromMeshData(aiMesh* mesh_data, Entity* owner)
 		{
 			size_t number_of_vertices = mesh_data->mNumVertices;
 			size_t number_of_triangles = mesh_data->mNumFaces;
@@ -254,7 +231,7 @@ namespace ModelImporter
 			
 			ComponentMesh* component_mesh = new ComponentMesh();
 			component_mesh->Initialize(owner);
-			component_mesh->Load(vertices, indices, texture_ids, number_of_vertices, number_of_indices, number_of_triangles, number_of_textures);
+			component_mesh->Load(vertices, indices, number_of_vertices, number_of_indices, number_of_triangles);
 
 			return component_mesh;
 		}
@@ -305,13 +282,14 @@ namespace ModelImporter
 				component_material->Load(texture_ids, number_of_textures);
 
 				ComponentMesh* current_component_mesh = 
-					ModelImporter_LoadComponentMeshFromMeshData(current_mesh_data, current_node, texture_ids, number_of_textures);
+					ModelImporter_LoadComponentMeshFromMeshData(current_mesh_data, current_node);
 
 				// For logging purposes:
 				number_of_triangles += current_component_mesh->GetNumberOfTriangles();
 				number_of_indices += current_component_mesh->GetNumberOfIndices();
 				number_of_vertices += current_component_mesh->GetNumberOfVertices();
 				++number_of_loaded_meshes;
+				
 				free(path_to_parent_directory);
 				free(texture_ids);
 			}
@@ -328,11 +306,6 @@ namespace ModelImporter
 		}
 	}
 
-	/// <summary>
-	/// Loads Entity with children entities having ComponentMesh from the given model file.
-	/// </summary>
-	/// <param name="path_to_file">File path of the model</param>
-	/// <returns>Model as entity. User is responsible for deletion.</returns>
 	Entity* Import(const char* path_to_file)
 	{
 		Assimp::Importer importer;
@@ -358,14 +331,6 @@ namespace ModelImporter
 		// Get the parent directory path from full file path:
 		char* path_to_parent_directory = util::ConcatCStrings("", path_to_file);
 		util::SubstrAfterCharFromEnd(&path_to_parent_directory, '\\');
-
-		//Get only the name of the file
-		//char* name_of_file = util::ConcatCStrings("", path_to_file);
-		//name_of_file = util::GetStringBetween(name_of_file, "\\", ".");
-		//util::SubstrBeforeCharFromEnd(&name_of_file, '\\');
-
-		// Get Texture IDs:
-		//unsigned int* texture_ids = ModelImporter_LoadTextureIds(model, path_to_parent_directory, name_of_file);
 
 		char* model_name = util::ConcatCStrings("", path_to_file);
 		util::SubstrBeforeCharFromEnd(&model_name, '\\');

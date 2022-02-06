@@ -12,19 +12,19 @@
 #include "MATH_GEO_LIB/Geometry/Triangle.h"
 
 
-ComponentMesh::ComponentMesh() : Component(),
-								 vertices(nullptr),
-								 indices(nullptr),
-								 texture_ids(nullptr),
-								 vertex_array_object(0),
-								 vertex_buffer_object(0),
-								 element_buffer_object(0),
-								 bounding_box(),
-								 number_of_vertices(0),
-								 number_of_indices(0),
-								 number_of_triangles(0),
-								 number_of_texture_ids(0),
-								 is_currently_loaded(false)
+ComponentMesh::ComponentMesh() : 
+	Component(),
+	vertices(nullptr),
+	indices(nullptr),
+	vertex_array_object(0),
+	vertex_buffer_object(0),
+	element_buffer_object(0),
+	bounding_box(),
+	number_of_vertices(0),
+	number_of_indices(0),
+	number_of_triangles(0),
+	is_currently_loaded(false),
+	is_culled(false)
 
 {
 }
@@ -44,16 +44,8 @@ void ComponentMesh::Initialize(Entity* new_owner)
 	Component::Initialize(new_owner);
 }
 
-void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const unsigned int* new_texture_ids, size_t new_number_of_vertices, size_t new_number_of_indices, size_t new_number_of_triangles, size_t new_number_of_texture_ids)
+void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, size_t new_number_of_vertices, size_t new_number_of_indices, size_t new_number_of_triangles)
 {
-	////TODO: Get this model_textures stuff from somewhere, do not hold this for each mesh component.
-	//number_of_texture_ids = new_number_of_texture_ids;
-	//texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * number_of_texture_ids);
-	//for (size_t i = 0; i < number_of_texture_ids; ++i)
-	//{
-	//	texture_ids[i] = new_texture_ids[i];
-	//}
-
 	// If Load was called before this call, clear 
 	// all the previous mesh data and load afterwards:
 	if (is_currently_loaded)
@@ -73,6 +65,7 @@ void ComponentMesh::Load(float* new_vertices, unsigned int* new_indices, const u
 
 	// Cache triangles for easy access:
 	cached_triangles.reserve(number_of_triangles);
+
 	for (size_t i = 0; i < number_of_indices; i += 3)
 	{
 		size_t index_1 = indices[i];
@@ -180,7 +173,6 @@ void ComponentMesh::Reset()
 {
 	free(indices);
 	free(vertices);
-	free(texture_ids);
 
 	indices = nullptr;
 	vertices = nullptr;
@@ -228,6 +220,7 @@ bool ComponentMesh::IsCulled() const
 void ComponentMesh::DrawInspectorContent()
 {
 	bool enabled_editor = Enabled();
+
 	if (ImGui::Checkbox("Enabled", &enabled_editor))
 	{
 		enabled_editor ? Enable() : Disable();
