@@ -4,7 +4,6 @@
 #include "ModuleRender.h"
 #include "ModuleCamera.h"
 #include "ModuleSceneManager.h"
-#include "ModuleRenderExercise.h"
 
 #include "Util.h"
 #include "Globals.h"
@@ -84,7 +83,6 @@ void ModuleEditor::DrawMainMenuBar()
 				show_demo_window = false;
 				show_about_window = false;
 				show_console_window = false;
-				show_render_exercise_texture_info_window = false;
 				show_performance_window = false;
 				show_module_settings_window = false;
 				show_exit_popup = false;
@@ -230,16 +228,6 @@ void ModuleEditor::DrawConsoleWindow()
 
 	// End Console Window:
 	ImGui::End();
-}
-
-void ModuleEditor::DrawRenderExerciseTextureInfoWindow()
-{
-	if (show_render_exercise_texture_info_window)
-	{
-		ImGui::Begin("Render Exercise Texture", &show_render_exercise_texture_info_window);
-		App->render_exercise->DrawTextureInfoContent();
-		ImGui::End();
-	}
 }
 
 void ModuleEditor::DrawPerformanceWindow()
@@ -487,8 +475,6 @@ update_status ModuleEditor::Update()
 	ImGui::CaptureMouseFromApp(false);
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
 	ImGui::PopStyleColor();
-
-	//ImGui::CaptureMouseFromApp(false);
 	
 	DrawImGuizmo();
 
@@ -499,24 +485,31 @@ update_status ModuleEditor::Update()
 	
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawImGuizmoModeWindow();
+	
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawMainMenuBar();
+	
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawAboutWindow();
+	
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawExitPopup();
+	
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawConsoleWindow();
-	ImGui::SetNextWindowBgAlpha(0.5f);
-	DrawRenderExerciseTextureInfoWindow();
+
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawPerformanceWindow();
+
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawModuleSettings();
+
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawInspector();
+
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	DrawHierarchy();
+
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 	ImGui::End();

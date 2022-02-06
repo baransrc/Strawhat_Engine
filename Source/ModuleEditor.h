@@ -17,7 +17,6 @@ private:
 	bool show_demo_window = true;
 	bool show_about_window = false;
 	bool show_console_window = false;
-	bool show_render_exercise_texture_info_window = false;
 	bool show_performance_window = false;
 	bool show_module_settings_window = false;
 	bool show_exit_popup = false;
@@ -47,10 +46,9 @@ public:
 	void DrawExitPopup();
 	void DrawAboutWindow();
 	void DrawConsoleWindow();
-	void DrawRenderExerciseTextureInfoWindow();
 	void DrawPerformanceWindow();
 	void DrawInspector();
-  void DrawImGuizmoModeWindow();
+	void DrawImGuizmoModeWindow();
 	void DrawImGuizmo();
 	void DrawHierarchy();
 	void DrawModuleSettings();

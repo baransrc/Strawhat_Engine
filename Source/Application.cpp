@@ -5,7 +5,6 @@
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleShaderProgram.h"
-#include "ModuleRenderExercise.h"
 #include "ModuleEditor.h"
 #include "ModuleInput.h"
 #include "ModuleTexture.h"

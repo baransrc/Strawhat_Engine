@@ -214,7 +214,6 @@
     <ClCompile Include="ModuleEditor.cpp" />
     <ClCompile Include="ModuleInput.cpp" />
     <ClCompile Include="ModuleRender.cpp" />
-    <ClCompile Include="ModuleRenderExercise.cpp" />
     <ClCompile Include="ModuleSceneManager.cpp" />
     <ClCompile Include="ModuleShaderProgram.cpp" />
     <ClCompile Include="ModuleTexture.cpp" />
@@ -416,7 +415,6 @@
     <ClInclude Include="ModuleEditor.h" />
     <ClInclude Include="ModuleInput.h" />
     <ClInclude Include="ModuleRender.h" />
-    <ClInclude Include="ModuleRenderExercise.h" />
     <ClInclude Include="ModuleSceneManager.h" />
     <ClInclude Include="ModuleShaderProgram.h" />
     <ClInclude Include="ModuleTexture.h" />
