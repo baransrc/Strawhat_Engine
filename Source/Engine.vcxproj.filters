@@ -801,7 +801,7 @@
     </ClInclude>
     <ClInclude Include="DEAR_IMGUI\include\ImGuizmo.h">
       <Filter>Libraries\DearImGui</Filter>
-    </ClInclude>                    
+    </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Scene</Filter>
     </ClInclude>
@@ -812,6 +812,9 @@
       <Filter>Entity</Filter>
     </ClInclude>
     <ClInclude Include="QuadTree.h" />
+    <ClInclude Include="ComponentLightType.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Modules">

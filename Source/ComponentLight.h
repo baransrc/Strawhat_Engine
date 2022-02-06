@@ -1,77 +1,165 @@
 #pragma once
+
 #include "Component.h"
+#include "ComponentLightType.h"
+
 #include "MATH_GEO_LIB/Math/float3.h"
 #include "MATH_GEO_LIB/Math/Quat.h"
-
-
-enum class light_type
-{
-	SPOT,
-	DIRECTIONAL,
-	POINT,
-};
 
 class ComponentLight : public Component
 {
 private:
+	/// <summary>
+	/// The type of the light. Either spot, directional or 
+	/// point.
+	/// </summary>
+	light_type current_light_type;
 
-	light_type type;
-
+	/// <summary>
+	/// Radius of the point light.
+	/// </summary>
 	float radius;
-	float inner;
-	float outer;
-	float shininess;
+
+	/// <summary>
+	/// Inner angle of the spotlight light.
+	/// </summary>
+	float inner_angle;
+
+	/// <summary>
+	/// Outer angle of the spotlight light.
+	/// </summary>
+	float outer_angle;
+
+	/// <summary>
+	/// Intensity of the light. Applies to all types of
+	/// lights.
+	/// </summary>
 	float intensity;
 
-	float3 color;
-
-	bool is_currently_loaded;
+	/// <summary>
+	/// Color of the light. Applies to all types of lights.
+	/// </summary>
+	math::float3 color;
 
 public:
 	ComponentLight();
 	~ComponentLight() override;
 
+	/// <returns>
+	/// Component Type of this ComponentLight. Which
+	/// is LIGHT.
+	/// </returns>
 	component_type Type() const override;
+	
+	/// <summary>
+	/// Initializes this ComponentLight with it's owner
+	/// Entity.
+	/// </summary>
+	/// <param name="new_owner">Entity to be set as the owner of this ComponentLight.</param>
 	void Initialize(Entity* new_owner) override;
-	void Load(
-		light_type new_type
-	);
+
+	/// <summary>
+	/// Called on each Update of owner Entity.
+	/// </summary>
 	void Update() override;
-	void Reset();
+
+	/// <summary>
+	/// Called on each DrawGizmos of owner Entity.
+	/// Right now, draws a gizmo only for Spotlight.
+	/// </summary>
 	void DrawGizmo() override;
 
-	light_type GetLightType() const { return type; };
-	float3 GetLightColor() const { return color; };
-	void SetLightColor(float3 new_color) { color = new_color; };
+	/// <summary>
+	/// Sets the light_type of this ComponentLight.
+	/// </summary>
+	/// <param name="new_light_type">Light type to be set as the light_type.</param>
+	void SetLightType(light_type new_light_type);
 
-	void SetUniformsPointLight();
-	void SetUniformsDirectionalLight();
-	void SetUniformsSpotLight();
+	/// <summary>
+	/// Sets the radius of the directional light.
+	/// </summary>
+	/// <param name="new_radius">Value to be set as the radius of directional light.</param>
+	void SetRadius(float new_radius);
+
+	/// <summary>
+	/// Sets the inner angle of the spotlight.
+	/// </summary>
+	/// <param name="new_inner_angle">Value to be set as the inner angle of spotlight.</param>
+	void SetInnerAngle(float new_inner_angle);
+
+	/// <summary>
+	/// Sets the outer angle of the spotlight.
+	/// </summary>
+	/// <param name="new_outer_angle">Value to be set as outer angle of spotlight.</param>
+	void SetOuterAngle(float new_outer_angle);
+
+	/// <summary>
+	/// Sets the intensity of the light. Applies to all types of lights.
+	/// </summary>
+	/// <param name="new_intensity">Values to be set as the intesity of this ComponentLight.</param>
+	void SetIntensity(float new_intensity);
+
+	/// <summary>
+	/// Sets the color of this ComponentLight. Applies to all types of lights.
+	/// </summary>
+	/// <param name="new_color">Value to be set as the color.</param>
+	void SetColor(const math::float3& new_color);
+
+	/// <returns> 
+	/// Type of light modeled by this ComponentLight.
+	/// </returns>
+	light_type GetLightType() const;
+
+	/// <returns> 
+	/// Color of the light modeled by this ComponentLight.
+	/// </returns>
+	const math::float3& GetColor() const;
+
+	/// <returns> 
+	/// Radius of the point light modeled by this ComponentLight.
+	/// </returns>
+	const float GetRadius() const;
+
+	/// <returns> 
+	/// Inner angle of the spot light modeled by this ComponentLight.
+	/// </returns>
+	const float GetInnerAngle() const;
+
+	/// <returns> 
+	/// Outer angle of the spot light modeled by this ComponentLight.
+	/// </returns>
+	const float GetOuterAngle() const;
+
+	/// <returns> 
+	/// Intensity of the light modeled by this ComponentLight.
+	/// </returns>
+	const float GetIntensity() const;
 
 protected:
+	/// <summary>
+	/// Called on Component::DrawInspector. 
+	/// </summary>
 	void DrawInspectorContent() override;
+
+private:
+	/// <summary>
+	/// Sets the uniforms that will be sent to the shader
+	/// according to the type of light.
+	/// </summary>
+	void SetUniforms();
+
+	/// <summary>
+	/// Sends the point light uniforms to the shader.
+	/// </summary>
+	void SetUniformsPointLight();
+
+	/// <summary>
+	/// Sends the directional light uniforms to the shader.
+	/// </summary>
+	void SetUniformsDirectionalLight();
+
+	/// <summary>
+	/// Sends the spotlight uniforms to the shader.
+	/// </summary>
+	void SetUniformsSpotLight();
 };
-
-inline const char* component_light_type_to_string(light_type type)
-{
-	switch (type)
-	{
-	case light_type::SPOT:
-	{
-		return "Spot";
-	}
-	case light_type::DIRECTIONAL:
-	{
-		return "Directional";
-	}
-	case light_type::POINT:
-	{
-		return "Point";
-	}
-	default:
-	{
-		return "Refer to ComponentLight.h and add this component to the function.";
-	}
-	}
-}
-

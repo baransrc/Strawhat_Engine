@@ -304,6 +304,7 @@
     <ClInclude Include="ComponentBoundingBox.h" />
     <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentLight.h" />
+    <ClInclude Include="ComponentLightType.h" />
     <ClInclude Include="ComponentMaterial.h" />
     <ClInclude Include="ComponentMesh.h" />
     <ClInclude Include="ComponentTransform.h" />

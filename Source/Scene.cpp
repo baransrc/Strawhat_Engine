@@ -149,22 +149,22 @@ void Scene::Initialize()
     light_entity_directional->Initialize("Directional Light");
     light_entity_directional->SetParent(root_entity);
     light_entity_directional->AddComponent<ComponentLight>();
-    light_entity_directional->GetComponent<ComponentLight>()->Load(light_type::DIRECTIONAL);
+    light_entity_directional->GetComponent<ComponentLight>()->SetLightType(light_type::DIRECTIONAL);
 
     //Scene
     Entity* light_entity_point = new Entity();
     light_entity_point->Initialize("Point Light");
     light_entity_point->SetParent(root_entity);
     light_entity_point->AddComponent<ComponentLight>();
-    light_entity_point->GetComponent<ComponentLight>()->Load(light_type::POINT);
+    light_entity_point->GetComponent<ComponentLight>()->SetLightType(light_type::POINT);
     light_entity_point->Transform()->SetPosition(math::float3(12.0f, 3.0f, -18.0f));
-    light_entity_point->GetComponent<ComponentLight>()->SetLightColor(math::float3(1.0f, 0.2f, 0.0f));
+    light_entity_point->GetComponent<ComponentLight>()->SetColor(math::float3(1.0f, 0.2f, 0.0f));
 
     Entity* light_entity_spot = new Entity();
     light_entity_spot->Initialize("Spotlight");
     light_entity_spot->SetParent(root_entity);
     light_entity_spot->AddComponent<ComponentLight>();
-    light_entity_spot->GetComponent<ComponentLight>()->Load(light_type::SPOT);
+    light_entity_spot->GetComponent<ComponentLight>()->SetLightType(light_type::SPOT);
     light_entity_spot->Transform()->SetPosition(math::float3(23.0f, 14.0f, -25.0f));
 
 
