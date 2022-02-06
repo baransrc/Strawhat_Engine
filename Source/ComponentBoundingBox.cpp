@@ -9,9 +9,10 @@
 #include "MATH_GEO_LIB/Geometry/Polyhedron.h"
 #include "MATH_GEO_LIB/Geometry/Sphere.h"
 
-ComponentBoundingBox::ComponentBoundingBox() : Component(), minimal_enclosing_sphere_radius(10.0f)
+ComponentBoundingBox::ComponentBoundingBox() : 
+    Component(), 
+    minimal_enclosing_sphere_radius(1.0f)
 {
-
 }
 
 ComponentBoundingBox::~ComponentBoundingBox()
@@ -127,14 +128,6 @@ void ComponentBoundingBox::Load()
     center_position = minimal_enclosing_sphere.Centroid();
 }
 
-void ComponentBoundingBox::Update()
-{
-    // NOTE: It does not make any sense to disabling 
-    // ComponentBoundingBox stop it's update or other
-    // functions. So it's not added here. But Gizmos are not
-    // shown like the others.
-}
-
 void ComponentBoundingBox::DrawGizmo()
 {
     if (!Enabled() || !owner->IsActive())
@@ -152,17 +145,17 @@ void ComponentBoundingBox::DrawGizmo()
     App->debug_draw->DrawCuboid(vertices, math::float3(0.0f, 1.0f, 0.0f));
 }
 
-const math::OBB& ComponentBoundingBox::GetBoundingBox()
+const math::OBB& ComponentBoundingBox::GetBoundingBox() const
 {
     return obb;
 }
 
-float ComponentBoundingBox::GetMinimalEnclosingSphereRadius()
+float ComponentBoundingBox::GetMinimalEnclosingSphereRadius() const
 {
     return minimal_enclosing_sphere_radius;
 }
 
-math::float3 ComponentBoundingBox::GetCenterPosition()
+const math::float3& ComponentBoundingBox::GetCenterPosition() const
 {
     return center_position;
 }
